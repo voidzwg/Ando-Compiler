@@ -1,0 +1,16 @@
+const int x = 3;
+const int y[2]={0, 1}, z[2][2]={{0,1},{0, 1}};
+
+void fun(int a[],int b[]){
+}
+
+int fun2(int a[],int b[][2]){
+  return 1;
+}
+
+int main(){
+  int a[2]={0, 1}, b[2][2]={{0,1},{0, 1}};
+  fun(a,b[0]);
+  int c = fun2(a,b);
+return 0;
+}
