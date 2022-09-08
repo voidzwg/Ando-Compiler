@@ -1,3 +1,5 @@
+package Frontend;
+
 public class Token {
     private Tokens type;
     private String val;

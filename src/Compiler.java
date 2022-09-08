@@ -1,4 +1,7 @@
-import AST.CompUnitAST;
+import Frontend.AST.CompUnitAST;
+import Frontend.Parser;
+import IR.IRModule;
+import IR.Visitor;
 
 import java.io.*;
 
@@ -9,5 +12,8 @@ public class Compiler {
 
         Parser parser = new Parser(inputFile, outputFile);
         CompUnitAST compUnitAST = parser.parseCompUnitAST();
+
+        Visitor visitor = new Visitor();
+        IRModule module = visitor.VisitCompUnit(compUnitAST);
     }
 }

@@ -4,7 +4,7 @@ LPARENT (
 RPARENT )
 LBRACE {
 RETURNTK return
-INTCON 0
+INTCON 10
 <Number>
 SEMICN ;
 <Stmt>

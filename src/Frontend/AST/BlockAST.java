@@ -1,4 +1,4 @@
-package AST;
+package Frontend.AST;
 
 public class BlockAST {
     StmtAST stmtAST;

@@ -1,10 +1,10 @@
-import AST.*;
+package Frontend;
+
+import Frontend.AST.*;
 
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.SQLOutput;
 
 public class Parser {
     private final String inputFile;
