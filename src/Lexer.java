@@ -120,7 +120,7 @@ public class Lexer {
 
     }
 
-    public Token lex() throws IOException {
+    public Token getTok() throws IOException {
         boolean flag = false;
         while ((readIn = in.read()) != -1){
             c = (char)readIn;

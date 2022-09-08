@@ -1,5 +1,6 @@
+import AST.CompUnitAST;
+
 import java.io.*;
-import java.util.Scanner;
 
 public class Compiler {
     public static void main(String[] args) throws IOException {
@@ -7,6 +8,6 @@ public class Compiler {
         String outputFile = "output.txt";
 
         Parser parser = new Parser(inputFile, outputFile);
-        parser.parse();
+        CompUnitAST compUnitAST = parser.parseCompUnitAST();
     }
 }
