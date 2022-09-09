@@ -34,7 +34,7 @@ public class IRDump {
             out.write("i32 ");
         }
         else out.write("void ");
-        out.write(function.getName() + " {\n");
+        out.write(function.getName() + "() {\n");
 
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
         for(BasicBlock block : basicBlocks){
