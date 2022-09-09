@@ -1,69 +1,52 @@
 package IR;
 
-import Frontend.AST.BlockAST;
-import Frontend.AST.CompUnitAST;
-import Frontend.AST.FuncDefAST;
-import Frontend.AST.StmtAST;
-import IR.Type.IntegerType;
-import IR.Type.VoidType;
+import Frontend.AST.*;
 import IR.Value.*;
-import IR.Value.Instructions.RetInst;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class Visitor {
     //
     private IRBuildFactory f = IRBuildFactory.getInstance();
+    private ArrayList<Function> functions;
+    private ArrayList<GlobalVars> globalVars;
+    private Function CurFunction;
+    private BasicBlock CurBasicBlock;
+    private Instruction CurInst;
+    private Value CurValue;
 
 
-
-
+    private void visitNumberAST(NumberAST numberAST){
+        CurValue = f.buildNumber(numberAST.getIntConst());
+    }
 
     private void visitStmtAST(StmtAST stmtAST){
-        RetInst inst = new RetInst("ret", );
 
+        visitNumberAST(stmtAST.getNumberAST());
+        CurInst = f.buildRetInst(CurBasicBlock, CurValue);
     }
 
     private void visitBlockAST(BlockAST blockAST){
-        BasicBlock block = new BasicBlock();
+        CurBasicBlock = f.buildBasicBlock(CurFunction);
 
-        RetInst inst = IRParseRetInst(blockAST.getStmtAST());
-        inst.setParentbb(block);
-        block.addInst(inst);
+        visitStmtAST(blockAST.getStmtAST());
 
-        return block;
     }
 
     private void visitFuncDefAST(FuncDefAST funcDefAST){
-        String name = funcDefAST.getIdent();
-        String type_t = funcDefAST.getFuncType();
-        Type type;
+        String name = "%" + funcDefAST.getIdent();
+        String type = funcDefAST.getFuncType();
 
-        if(type_t.equals("int")){
-            type = new IntegerType(32);
-        }
-        else type = new VoidType();
-
-        Function function = new Function(name, type);
-
-        ArrayList<BasicBlock> bbs = new ArrayList<>();
-        ArrayList<Argument> args = new ArrayList<>();
-
-        BasicBlock bb = IRParseBasicBlock(funcDefAST.getBlockAST());
-        bb.setParentFunc(function);
-        bbs.add(bb);
-
-        function.setBbs(bbs);
-        function.setArgs(args);
-
-        return function;
+        CurFunction = f.buildFunction(name, type);
+        functions.add(CurFunction);
+        visitBlockAST(funcDefAST.getBlockAST());
     }
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){
+        functions = new ArrayList<>();
+        globalVars = new ArrayList<>();
 
-        IRParseFunction(compUnitAST.getFuncDefAST());
+        visitFuncDefAST(compUnitAST.getFuncDefAST());
 
-        return f.getModule();
+        return f.buildModule(functions, globalVars);
     }
 }

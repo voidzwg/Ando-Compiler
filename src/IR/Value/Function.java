@@ -27,4 +27,12 @@ public class Function extends Value{
     public void setArgs(ArrayList<Argument> args) {
         this.args = args;
     }
+
+    public ArrayList<BasicBlock> getBbs() {
+        return bbs;
+    }
+
+    public ArrayList<Argument> getArgs() {
+        return args;
+    }
 }

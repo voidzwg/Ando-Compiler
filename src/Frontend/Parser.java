@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Parser {
-    private final String inputFile;
+
     private final BufferedWriter out;
     private final Lexer lexer;
 
@@ -16,9 +16,9 @@ public class Parser {
     }
 
     //  Constructor
-    public Parser(String inputFile, String outputFile) throws IOException {
-        this.inputFile = inputFile;
-        this.out = new BufferedWriter(new FileWriter(outputFile));
+    public Parser() throws IOException {
+        String inputFile = Global.inputFile;
+        this.out = new BufferedWriter(new FileWriter(Global.outputFile));
         this.lexer = new Lexer(inputFile);
     }
 
@@ -27,9 +27,9 @@ public class Parser {
         Token numberToken = getTok();
         int intConst = Integer.parseInt(numberToken.getVal());
 
-        out.write(numberToken.getType().toString() + " " + numberToken.getVal() + '\n');
-        //  Dump
-        out.write("<Number>\n");
+//        out.write(numberToken.getType().toString() + " " + numberToken.getVal() + '\n');
+            //  Dump
+//        out.write("<Number>\n");
 
         return new NumberAST(intConst);
     }
@@ -37,29 +37,29 @@ public class Parser {
 
     private StmtAST parseStmtAST() throws IOException {
         Token retToken = getTok();   //  Consume 'return'
-        out.write(retToken.getType().toString() + " return\n");
+//        out.write(retToken.getType().toString() + " return\n");
 
         NumberAST numberAST = parseNumberAST();
         Token semcol = getTok();   //  Consume ';'
-        out.write(semcol.getType().toString() + " ;\n");
+//        out.write(semcol.getType().toString() + " ;\n");
 
         //  Dump
-        out.write("<Stmt>\n");
+//        out.write("<Stmt>\n");
 
         return new StmtAST(numberAST);
     }
 
     private BlockAST parseBlockAST() throws IOException {
         Token lBrace = getTok();   //  Consume '{'
-        out.write(lBrace.getType().toString() + " {\n");
+//        out.write(lBrace.getType().toString() + " {\n");
 
         StmtAST stmtAST = parseStmtAST();
 
         Token rBrace = getTok();   //  Consume '}'
-        out.write(rBrace.getType().toString() + " }\n");
+//        out.write(rBrace.getType().toString() + " }\n");
 
         //  Dump
-        out.write("<Block>\n");
+//        out.write("<Block>\n");
 
         return new BlockAST(stmtAST);
     }
@@ -75,18 +75,18 @@ public class Parser {
         Token rBraket = getTok();   //  Consume ')'
 
 
-        out.write(funcTypeToken.getType().toString() + " " + funcType + '\n');
-        out.write(identToken.getType().toString() + " " + ident + '\n');
-        out.write(lBraket.getType().toString() + " (\n");
-        out.write(rBraket.getType().toString() + " )\n");
+//        out.write(funcTypeToken.getType().toString() + " " + funcType + '\n');
+//        out.write(identToken.getType().toString() + " " + ident + '\n');
+//        out.write(lBraket.getType().toString() + " (\n");
+//        out.write(rBraket.getType().toString() + " )\n");
 
         BlockAST blockAST = parseBlockAST();
 
         //  Dump
         if(ident.equals("main")){
-            out.write("<MainFuncDef>\n");
+//            out.write("<MainFuncDef>\n");
         }
-        else out.write("<FuncDef>\n");
+//        else out.write("<FuncDef>\n");
 
         return new FuncDefAST(funcType, ident, blockAST);
     }
@@ -96,8 +96,8 @@ public class Parser {
         FuncDefAST funcDefAST = parseFuncDefAST();
 
         //  Dump
-        out.write("<CompUnit>\n");
-        out.close();
+//        out.write("<CompUnit>\n");
+//        out.close();
 
         return new CompUnitAST(funcDefAST);
     }

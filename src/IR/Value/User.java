@@ -13,8 +13,12 @@ public class User extends Value{
         this.operandList = new ArrayList<>();
     }
 
-    public void addOperand(Use use){
+    public void addOperand(Value value){
+        Use use = new Use(value, this);
         operandList.add(use);
     }
 
+    public ArrayList<Use> getOperandList() {
+        return operandList;
+    }
 }

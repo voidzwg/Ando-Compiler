@@ -13,4 +13,12 @@ public class IRModule {
         this.functions = functions;
         this.globalVars = globalVars;
     }
+
+    public ArrayList<Function> getFunctions() {
+        return functions;
+    }
+
+    public ArrayList<GlobalVars> getGlobalVars() {
+        return globalVars;
+    }
 }

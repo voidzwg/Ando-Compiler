@@ -11,8 +11,14 @@ public class BasicBlock extends Value{
     public static int blockNum = 0;
 
     public BasicBlock(){
+        super(String.valueOf(++blockNum), new LabelType());
+        this.insts = new ArrayList<>();
+    }
+
+    public BasicBlock(Function function){
         super("%" + String.valueOf(++blockNum), new LabelType());
         this.insts = new ArrayList<>();
+        this.parentFunc = function;
     }
 
     //  Main Methods
@@ -24,5 +30,9 @@ public class BasicBlock extends Value{
     //  Getters and Setters
     public void setParentFunc(Function parentFunc) {
         this.parentFunc = parentFunc;
+    }
+
+    public ArrayList<Instruction> getInsts() {
+        return insts;
     }
 }

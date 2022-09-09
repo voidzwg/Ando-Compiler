@@ -12,7 +12,7 @@ public abstract class Value {
 
     public Value(String name, Type type){
         this.name = name;
-        this.name = name;
+        this.type = type;
         this.useList = new ArrayList<>();
     }
 
