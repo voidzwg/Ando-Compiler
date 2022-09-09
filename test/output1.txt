@@ -1,4 +1,9 @@
-0
-0
-Nothing
-2
+INTTK int
+MAINTK main
+LPARENT (
+RPARENT )
+LBRACE {
+RETURNTK return
+INTCON 0
+SEMICN ;
+RBRACE }
