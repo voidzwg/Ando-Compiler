@@ -1,6 +1,6 @@
-package IR;
+package Utils;
 
-import Frontend.Global;
+import IR.IRModule;
 import IR.Value.*;
 import IR.Value.Instructions.RetInst;
 

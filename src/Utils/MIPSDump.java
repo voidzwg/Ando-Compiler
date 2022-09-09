@@ -1,6 +1,5 @@
-package Backend;
+package Utils;
 
-import Frontend.Global;
 import IR.IRModule;
 import IR.Value.*;
 import IR.Value.Instructions.RetInst;
@@ -10,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class CodeGen {
+public class MIPSDump {
     static BufferedWriter out;
 
     static {

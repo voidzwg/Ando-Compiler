@@ -1,24 +1,41 @@
 package Frontend;
 
 import Frontend.AST.*;
+import Utils.Global;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+
+/*
+* Parser中变量简介:
+* isBack: 用来标记是否有parser函数想要退回上一个Token, 使用于backTok中，是我认为很巧妙的一个思路
+* CurTok: 用来存储当前访问到的Tok
+* judTok: 函数中命名的judTok一般用于一个非终结符可能有多种方案构成时，用一个judTok来进行判断
+*
+* */
 
 public class Parser {
 
-    private final BufferedWriter out;
+    private boolean isBack = false;
+    private Token CurTok;
     private final Lexer lexer;
 
     private Token getTok() throws IOException {
-        return this.lexer.getTok();
+        if(!isBack){
+            CurTok = lexer.getTok();
+        }
+        else {
+            isBack = false;
+        }
+        return CurTok;
+    }
+
+    private void backTok(){
+        isBack = true;
     }
 
     //  Constructor
     public Parser() throws IOException {
         String inputFile = Global.inputFile;
-        this.out = new BufferedWriter(new FileWriter(Global.outputFile));
         this.lexer = new Lexer(inputFile);
     }
 
@@ -27,39 +44,65 @@ public class Parser {
         Token numberToken = getTok();
         int intConst = Integer.parseInt(numberToken.getVal());
 
-//        out.write(numberToken.getType().toString() + " " + numberToken.getVal() + '\n');
-            //  Dump
-//        out.write("<Number>\n");
-
         return new NumberAST(intConst);
     }
 
 
     private StmtAST parseStmtAST() throws IOException {
-        Token retToken = getTok();   //  Consume 'return'
-//        out.write(retToken.getType().toString() + " return\n");
+        getTok();   //  Consume 'return'
 
+        ExpAST expAST = parseExpAST();
+        getTok();   //  Consume ';'
+
+        return new StmtAST(expAST);
+    }
+
+    private ExpAST parseExpAST() throws IOException {
+        UnaryExpAST unaryExpAST = parseUnaryExpAST();
+
+        return new ExpAST(unaryExpAST);
+    }
+
+    private UnaryExpAST parseUnaryExpAST() throws IOException {
+        Token judTok = getTok();
+
+        //  UnaryOP UnaryExp的情况
+        if(judTok.getVal().equals("+") || judTok.getVal().equals("-") || judTok.getVal().equals("!")){
+            UnaryExpAST unaryExpAST = parseUnaryExpAST();
+            return new UnaryExpAST(judTok.getVal(), unaryExpAST);
+        }
+
+        //  PrimaryExp的情况
+        backTok();
+        PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
+
+        return new UnaryExpAST(primaryExpAST);
+    }
+
+    private PrimaryExpAST parsePrimaryExpAST() throws IOException {
+        Token judTok = getTok();
+
+        //  "(" Exp ")"
+        if(judTok.getVal().equals("(")){
+            ExpAST expAST = parseExpAST();
+            getTok();   //  Consume ')'
+
+            return new PrimaryExpAST(expAST);
+        }
+
+        //  Number
+        backTok();
         NumberAST numberAST = parseNumberAST();
-        Token semcol = getTok();   //  Consume ';'
-//        out.write(semcol.getType().toString() + " ;\n");
 
-        //  Dump
-//        out.write("<Stmt>\n");
-
-        return new StmtAST(numberAST);
+        return new PrimaryExpAST(numberAST);
     }
 
     private BlockAST parseBlockAST() throws IOException {
-        Token lBrace = getTok();   //  Consume '{'
-//        out.write(lBrace.getType().toString() + " {\n");
+        getTok();   //  Consume '{'
 
         StmtAST stmtAST = parseStmtAST();
 
-        Token rBrace = getTok();   //  Consume '}'
-//        out.write(rBrace.getType().toString() + " }\n");
-
-        //  Dump
-//        out.write("<Block>\n");
+        getTok();   //  Consume '}'
 
         return new BlockAST(stmtAST);
     }
@@ -71,22 +114,10 @@ public class Parser {
         Token identToken = getTok();
         String ident = identToken.getVal();
 
-        Token lBraket = getTok();   //  Consume '('
-        Token rBraket = getTok();   //  Consume ')'
-
-
-//        out.write(funcTypeToken.getType().toString() + " " + funcType + '\n');
-//        out.write(identToken.getType().toString() + " " + ident + '\n');
-//        out.write(lBraket.getType().toString() + " (\n");
-//        out.write(rBraket.getType().toString() + " )\n");
+        getTok();   //  Consume '('
+        getTok();   //  Consume ')'
 
         BlockAST blockAST = parseBlockAST();
-
-        //  Dump
-        if(ident.equals("main")){
-//            out.write("<MainFuncDef>\n");
-        }
-//        else out.write("<FuncDef>\n");
 
         return new FuncDefAST(funcType, ident, blockAST);
     }
@@ -94,11 +125,6 @@ public class Parser {
     public CompUnitAST parseCompUnitAST() throws IOException {
 
         FuncDefAST funcDefAST = parseFuncDefAST();
-
-        //  Dump
-//        out.write("<CompUnit>\n");
-//        out.close();
-
         return new CompUnitAST(funcDefAST);
     }
 

@@ -1,5 +1,34 @@
-	.text
-	.globl main
-main:
-	li a0, 0
-	ret
+INTTK int
+MAINTK main
+LPARENT (
+RPARENT )
+LBRACE {
+RETURNTK return
+PLUS +
+<UnaryOp>
+LBRACK (
+MINU -
+<UnaryOp>
+MINU -
+<UnaryOp>
+NOT !
+<UnaryOp>
+INTCON 6
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<UnaryExp>
+<UnaryExp>
+<UnaryExp>
+<Exp>
+RBRACK )
+<PrimaryExp>
+<UnaryExp>
+<UnaryExp>
+<Exp>
+SEMICN ;
+<Stmt>
+RBRACE }
+<Block>
+<MainFuncDef>
+<CompUnit>

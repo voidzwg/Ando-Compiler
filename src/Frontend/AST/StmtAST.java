@@ -1,13 +1,13 @@
 package Frontend.AST;
 
 public class StmtAST extends BaseAST{
-    NumberAST numberAST;
+    ExpAST expAST;
 
-    public StmtAST(NumberAST numberAST){
-        this.numberAST = numberAST;
+    public StmtAST(ExpAST expAST){
+        this.expAST = expAST;
     }
 
-    public NumberAST getNumberAST() {
-        return numberAST;
+    public ExpAST getExpAST() {
+        return expAST;
     }
 }

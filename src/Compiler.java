@@ -1,9 +1,10 @@
-import Backend.CodeGen;
+import Utils.ASTDump;
+import Utils.MIPSDump;
 import Frontend.AST.CompUnitAST;
 import Frontend.Parser;
-import IR.IRDump;
 import IR.IRModule;
 import IR.Visitor;
+import Utils.IRDump;
 
 import java.io.*;
 
@@ -13,11 +14,13 @@ public class Compiler {
         Parser parser = new Parser();
         CompUnitAST compUnitAST = parser.parseCompUnitAST();
 
+//        ASTDump.DumpCompUnit(compUnitAST);
+
         Visitor visitor = new Visitor();
         IRModule module = visitor.VisitCompUnit(compUnitAST);
 
-//        IRDump.DumpModule(module);
+        IRDump.DumpModule(module);
 
-        CodeGen.DumpMips(module);
+        MIPSDump.DumpMips(module);
     }
 }
