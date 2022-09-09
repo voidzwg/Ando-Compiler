@@ -1,3 +1,4 @@
+import Backend.CodeGen;
 import Frontend.AST.CompUnitAST;
 import Frontend.Parser;
 import IR.IRDump;
@@ -15,6 +16,8 @@ public class Compiler {
         Visitor visitor = new Visitor();
         IRModule module = visitor.VisitCompUnit(compUnitAST);
 
-        IRDump.DumpModule(module);
+//        IRDump.DumpModule(module);
+
+        CodeGen.DumpMips(module);
     }
 }
