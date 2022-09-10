@@ -1,4 +1,6 @@
-package Frontend.AST;
+package Frontend.AST.ExpAST;
+
+import Frontend.AST.NumberAST;
 
 public class PrimaryExpAST {
     private ExpAST expAST;

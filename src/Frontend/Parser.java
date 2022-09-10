@@ -1,6 +1,7 @@
 package Frontend;
 
 import Frontend.AST.*;
+import Frontend.AST.ExpAST.*;
 import Utils.Global;
 
 import java.io.IOException;
@@ -58,9 +59,50 @@ public class Parser {
     }
 
     private ExpAST parseExpAST() throws IOException {
+        AddExpAST addExp = parseAddExpAST();
+
+        return new ExpAST(addExp);
+    }
+
+    private AddExpAST parseAddExpAST() throws IOException {
+        MulExpAST mulExpAST = parseMulExpAST();
+
+        Token judTok = getTok();
+        if(judTok.getVal().equals("+")){
+            AddExpAST addExpAST = parseAddExpAST();
+            return new AddExpAST(mulExpAST, "+", addExpAST);
+        }
+        else if(judTok.getVal().equals("-")){
+            AddExpAST addExpAST = parseAddExpAST();
+            return new AddExpAST(mulExpAST, "-", addExpAST);
+        }
+
+        backTok();
+        return new AddExpAST(mulExpAST);
+    }
+
+    private MulExpAST parseMulExpAST() throws IOException {
         UnaryExpAST unaryExpAST = parseUnaryExpAST();
 
-        return new ExpAST(unaryExpAST);
+        Token judTok = getTok();
+        switch (judTok.getVal()) {
+            case "*" -> {
+                MulExpAST mulExpAST = parseMulExpAST();
+                return new MulExpAST(unaryExpAST, "*", mulExpAST);
+            }
+            case "/" -> {
+                MulExpAST mulExpAST = parseMulExpAST();
+                return new MulExpAST(unaryExpAST, "/", mulExpAST);
+            }
+            case "%" -> {
+                MulExpAST mulExpAST = parseMulExpAST();
+                return new MulExpAST(unaryExpAST, "%", mulExpAST);
+            }
+        }
+
+        backTok();
+        return new MulExpAST(unaryExpAST);
+
     }
 
     private UnaryExpAST parseUnaryExpAST() throws IOException {
@@ -100,12 +142,70 @@ public class Parser {
     private BlockAST parseBlockAST() throws IOException {
         getTok();   //  Consume '{'
 
-        StmtAST stmtAST = parseStmtAST();
+        BlockAST blockAST = new BlockAST();
 
-        getTok();   //  Consume '}'
+        while (!getTok().getVal().equals("}")) {
+            backTok();
+            BlockItemAST blockItemAST = parseBlockItemAST();
+            blockAST.addBlockItem(blockItemAST);
+        }
 
-        return new BlockAST(stmtAST);
+        return blockAST;
     }
+
+    private BlockItemAST parseBlockItemAST() throws IOException {
+        Token judTok = getTok();
+        backTok();
+        if(judTok.getVal().equals("const")){
+            DeclAST declAST = parseDeclAST();
+            return new BlockItemAST(declAST);
+        }
+        else{
+            StmtAST stmtAST = parseStmtAST();
+            return new BlockItemAST(stmtAST);
+        }
+    }
+
+    private DeclAST parseDeclAST() throws IOException {
+        ConstDeclAST constDeclAST = parseConstDeclAST();
+        return new DeclAST(constDeclAST);
+    }
+
+    private ConstDeclAST parseConstDeclAST() throws IOException {
+        getTok();   //  Consume 'const'
+        getTok();   //  Consume BType 'int'
+
+        ConstDeclAST constDeclAST = new ConstDeclAST();
+
+        ConstDefAST constDefAST = parseConstDefAST();
+        constDeclAST.addConstDef(constDefAST);
+
+        while (true) {
+            Token judTok = getTok();
+            if(judTok.getVal().equals(";")){
+                break;
+            }
+            //  这里不用backTok的原因是如果不是';', 那就一定是','. 而','我们也应去除。
+            constDefAST = parseConstDefAST();
+            constDeclAST.addConstDef(constDefAST);
+        }
+
+        return constDeclAST;
+    }
+
+    private ConstDefAST parseConstDefAST() throws IOException {
+        String ident = getTok().getVal();
+        ConstInitValAST constInitValAST = parseConstInitValAST();
+
+        return new ConstDefAST(ident, constInitValAST);
+    }
+
+    private ConstInitValAST parseConstInitValAST() throws IOException {
+        AddExpAST addExpAST = parseAddExpAST();
+        return new ConstInitValAST(addExpAST);
+    }
+
+
 
     private FuncDefAST parseFuncDefAST() throws IOException {
         Token funcTypeToken = getTok();

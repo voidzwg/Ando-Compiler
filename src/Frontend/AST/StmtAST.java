@@ -1,5 +1,7 @@
 package Frontend.AST;
 
+import Frontend.AST.ExpAST.ExpAST;
+
 public class StmtAST extends BaseAST{
     ExpAST expAST;
 

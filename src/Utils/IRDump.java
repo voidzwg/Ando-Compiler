@@ -2,6 +2,8 @@ package Utils;
 
 import IR.IRModule;
 import IR.Value.*;
+import IR.Value.Instructions.BinaryInst;
+import IR.Value.Instructions.OP;
 import IR.Value.Instructions.RetInst;
 
 import java.io.BufferedWriter;
@@ -61,10 +63,43 @@ public class IRDump {
             Value value = retInst.getValue();
             if(value.getType().isIntegerTy()) out.write("i32 ");
 
-            ConstInteger intConst = (ConstInteger)value;
-            out.write(String.valueOf(intConst.getVal()));
+            if(value instanceof ConstInteger) {
+                ConstInteger intConst = (ConstInteger) value;
+                out.write(String.valueOf(intConst.getVal()));
+            }
+
+            else out.write(value.getName());
 
             out.write("\n");
+        }
+
+        else if(inst instanceof BinaryInst){
+            BinaryInst binaryInst = (BinaryInst) inst;
+            Value left = binaryInst.getLeftVal();
+            Value right = binaryInst.getRightVal();
+            OP op = binaryInst.getOp();
+
+            if(op == OP.Add){
+                out.write(inst.getName() + " = add i32 ");
+            }
+            else if(op == OP.Sub){
+                out.write(inst.getName() + " = sub i32 ");
+            }
+            else if(op == OP.Eq){
+                out.write(inst.getName() + " = eq i32 ");
+            }
+            else if(op == OP.Mul){
+                out.write(inst.getName() + " = mul i32 ");
+            }
+            else if(op == OP.Div){
+                out.write(inst.getName() + " = div i32 ");
+            }
+            else if(op == OP.Mod){
+                out.write(inst.getName() + " = mod i32 ");
+            }
+
+            out.write(left.getName() + ", ");
+            out.write(right.getName() + "\n");
         }
     }
 }

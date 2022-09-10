@@ -11,12 +11,12 @@ public class BasicBlock extends Value{
     public static int blockNum = 0;
 
     public BasicBlock(){
-        super(String.valueOf(++blockNum), new LabelType());
+        super("%block" + String.valueOf(++blockNum), new LabelType());
         this.insts = new ArrayList<>();
     }
 
     public BasicBlock(Function function){
-        super("%" + String.valueOf(++blockNum), new LabelType());
+        super("%block" + String.valueOf(++blockNum), new LabelType());
         this.insts = new ArrayList<>();
         this.parentFunc = function;
     }

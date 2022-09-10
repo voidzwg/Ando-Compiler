@@ -1,13 +1,16 @@
 package Frontend.AST;
 
+import java.util.ArrayList;
+
 public class BlockAST {
-    StmtAST stmtAST;
+    ArrayList<BlockItemAST> BlockItems;
 
-    public BlockAST(StmtAST stmtAST) {
-        this.stmtAST = stmtAST;
+    public BlockAST() {
+        this.BlockItems = new ArrayList<>();
     }
 
-    public StmtAST getStmtAST() {
-        return stmtAST;
+    public void addBlockItem(BlockItemAST blockItemAST){
+        this.BlockItems.add(blockItemAST);
     }
+
 }

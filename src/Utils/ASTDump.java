@@ -1,6 +1,7 @@
 package Utils;
 
 import Frontend.AST.*;
+import Frontend.AST.ExpAST.*;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -61,9 +62,37 @@ public class ASTDump {
     }
 
     private static void DumpExpAST(ExpAST expAST) throws IOException {
-        DumpUnaryExpAST(expAST.getUnaryExp());
+        DumpAddExpAST(expAST.getAddExpAST());
 
         out.write("<Exp>\n");
+    }
+
+    private static void DumpAddExpAST(AddExpAST addExpAST) throws IOException {
+        DumpMulExpAST(addExpAST.getMulExpAST());
+        if (addExpAST.getType() != 1) {
+            String op = addExpAST.getOp();
+            if (op.equals("+")) {
+                out.write("PLUS +\n");
+            } else if (op.equals("-")) out.write("MINU -\n");
+            DumpAddExpAST(addExpAST.getAddExpAST());
+        }
+
+        out.write("<AddExp>\n");
+    }
+
+    private static void DumpMulExpAST(MulExpAST mulExpAST) throws IOException {
+        DumpUnaryExpAST(mulExpAST.getUnaryExpAST());
+        if(mulExpAST.getType() != 1){
+            String op = mulExpAST.getOp();
+            switch (op) {
+                case "*" -> out.write("MULT *\n");
+                case "/" -> out.write("DIV /");
+                case "%" -> out.write("MOD %");
+            }
+            DumpMulExpAST(mulExpAST.getMulExpAST());
+        }
+
+        out.write("<MulExp>\n");
     }
 
     private static void DumpUnaryExpAST(UnaryExpAST unaryExpAST) throws IOException {

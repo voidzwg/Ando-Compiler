@@ -3,6 +3,8 @@ package IR;
 import IR.Type.IntegerType;
 import IR.Type.VoidType;
 import IR.Value.*;
+import IR.Value.Instructions.BinaryInst;
+import IR.Value.Instructions.OP;
 import IR.Value.Instructions.RetInst;
 
 import java.util.ArrayList;
@@ -14,6 +16,12 @@ public class IRBuildFactory {
 
     public static IRBuildFactory getInstance(){
         return f;
+    }
+
+    public BinaryInst buildBinaryInst(OP op, Value left, Value right,BasicBlock bb){
+        BinaryInst binaryInst = new BinaryInst(op, left, right, bb);
+        bb.addInst(binaryInst);
+        return binaryInst;
     }
 
     public Value buildNumber(int val){
