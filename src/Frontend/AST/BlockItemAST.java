@@ -1,5 +1,7 @@
 package Frontend.AST;
 
+import Frontend.AST.DeclAST.DeclAST;
+
 public class BlockItemAST {
     private DeclAST declAST;
     private StmtAST stmtAST;

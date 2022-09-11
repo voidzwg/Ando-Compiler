@@ -1,4 +1,4 @@
-package Frontend.AST;
+package Frontend.AST.DeclAST;
 
 import java.util.ArrayList;
 

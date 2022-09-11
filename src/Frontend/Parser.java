@@ -1,6 +1,7 @@
 package Frontend;
 
 import Frontend.AST.*;
+import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 import Utils.Global;
 
@@ -50,12 +51,23 @@ public class Parser {
 
 
     private StmtAST parseStmtAST() throws IOException {
-        getTok();   //  Consume 'return'
+        Token judTok = getTok();   //  Consume 'return'
 
+        //  "return" Exp ";"
+        if(judTok.getVal().equals("return")) {
+            ExpAST expAST = parseExpAST();
+            getTok();   //  Consume ';'
+            return new StmtAST(expAST);
+        }
+
+        //  LVal "=" Exp ";"
+        backTok();
+        LValAST lValAST = parseLValAST();
+        getTok();   //  Consume '='
         ExpAST expAST = parseExpAST();
         getTok();   //  Consume ';'
 
-        return new StmtAST(expAST);
+        return new StmtAST(lValAST, expAST);
     }
 
     private ExpAST parseExpAST() throws IOException {
@@ -180,8 +192,55 @@ public class Parser {
     }
 
     private DeclAST parseDeclAST() throws IOException {
-        ConstDeclAST constDeclAST = parseConstDeclAST();
-        return new DeclAST(constDeclAST);
+        Token judTok = getTok();
+        backTok();
+        if(judTok.getVal().equals("const")) {
+            ConstDeclAST constDeclAST = parseConstDeclAST();
+            return new DeclAST(constDeclAST);
+        }
+        else {
+            VarDeclAST varDeclAST = parseVarDeclAST();
+            return new DeclAST(varDeclAST);
+        }
+    }
+
+    private VarDeclAST parseVarDeclAST() throws IOException {
+        getTok();   //  Consume BType 'int'
+
+        VarDeclAST varDeclAST = new VarDeclAST();
+
+        VarDefAST varDefAST = parseVarDefAST();
+        varDeclAST.addVarDef(varDefAST);
+
+        while (true){
+            Token judTok = getTok();
+            if(judTok.getVal().equals(";")){
+                break;
+            }
+            //  这里不用backTok的原因是如果不是';', 那就一定是','. 而','我们也应去除。
+            varDefAST = parseVarDefAST();
+            varDeclAST.addVarDef(varDefAST);
+        }
+
+        return varDeclAST;
+    }
+
+    private VarDefAST parseVarDefAST() throws IOException {
+        String ident = getTok().getVal();
+
+        Token judTok = getTok();
+        if(judTok.getVal().equals("=")){
+            InitValAST initValAST = parseInitValAST();
+            return new VarDefAST(ident, initValAST);
+        }
+
+        backTok();
+        return new VarDefAST(ident);
+    }
+
+    private InitValAST parseInitValAST() throws IOException {
+        ExpAST expAST = parseExpAST();
+        return new InitValAST(expAST);
     }
 
     private ConstDeclAST parseConstDeclAST() throws IOException {

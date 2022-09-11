@@ -1,6 +1,4 @@
-package Frontend.AST;
-
-import IR.Value.Value;
+package Frontend.AST.DeclAST;
 
 public class ConstDefAST {
     String ident;

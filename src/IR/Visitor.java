@@ -1,6 +1,10 @@
 package IR;
 
 import Frontend.AST.*;
+import Frontend.AST.DeclAST.ConstDeclAST;
+import Frontend.AST.DeclAST.ConstDefAST;
+import Frontend.AST.DeclAST.ConstInitValAST;
+import Frontend.AST.DeclAST.DeclAST;
 import Frontend.AST.ExpAST.*;
 import IR.Value.*;
 import IR.Value.Instructions.OP;

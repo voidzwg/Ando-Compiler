@@ -1,4 +1,4 @@
-package Frontend.AST;
+package Frontend.AST.DeclAST;
 
 import Frontend.AST.ExpAST.AddExpAST;
 import Frontend.AST.ExpAST.ConstExpAST;
