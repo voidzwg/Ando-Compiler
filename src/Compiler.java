@@ -24,6 +24,6 @@ public class Compiler {
 
         IRDump.DumpModule(module);
 
-        MIPSDump.DumpMips(module);
+//        MIPSDump.DumpMips(module);
     }
 }

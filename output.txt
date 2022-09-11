@@ -1,19 +1,4 @@
-INTTK int
-MAINTK main
-LPARENT (
-RPARENT )
-LBRACE {
-CONSTTK const
-INTTK int
-IDENFR x
-ASSIGN =
-INTCON 2
-COMMA ,
-IDENFR y
-ASSIGN =
-INTCON 4
-SEMICN ;
-RETURNTK return
-IDENFR x
-SEMICN ;
-RBRACE }
+define i32 %main() {
+%block1:
+	ret i32 30
+}

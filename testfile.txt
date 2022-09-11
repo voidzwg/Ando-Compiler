@@ -1,4 +1,5 @@
 int main() {
-    const int x = 2, y = 4;
-    return x;
+    const int x = 2+3, y = 4*5;
+    const int a = 2*x+y;
+    return a;
 }

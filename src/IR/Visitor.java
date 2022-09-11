@@ -14,6 +14,9 @@ import java.util.HashMap;
 * CurValue:在visit到一些特定节点时，需要保存当前Value，以便后续构建IR的某个结构
 * TmpValue:在二元指令涉及两个变量时，我们要先visit两次其他节点来获得两个变量，这时一个CurValue就不够用了
 * 所以这里创建了一个TmpValue来帮忙存储Value
+* isConstExp:在解析ConstExp的时候，我们希望能够将表达式的值直接计算出来，放到符号表中，
+* 因此我们在parseAddExp的时候
+*
 * */
 
 public class Visitor {
@@ -25,82 +28,150 @@ public class Visitor {
     private Value CurValue;
 
     //  符号表
-    private HashMap<String, Integer> symTbl;
+    private HashMap<String, Integer> symTbl = new HashMap<>();
+
+    //  Utils方法
+    private ConstInteger calValue(int left, String op, int right){
+        return switch (op) {
+            case "+" -> new ConstInteger(left + right);
+            case "-" -> new ConstInteger(left - right);
+            case "*" -> new ConstInteger(left * right);
+            case "/" -> new ConstInteger(left / right);
+            case "%" -> new ConstInteger(left % right);
+            default -> null;
+        };
+    }
+
 
     //  Visitor方法
     private void visitNumberAST(NumberAST numberAST){
         CurValue = f.buildNumber(numberAST.getIntConst());
     }
 
-    private void visitPrimaryExpAST(PrimaryExpAST primaryExpAST){
-        if(primaryExpAST.getType() == 1){
-            visitExpAST(primaryExpAST.getExpAST());
+    private void visitLValAST(LValAST lValAST){
+        CurValue = f.buildNumber(symTbl.get(lValAST.getIdent()));
+    }
+
+    private void visitPrimaryExpAST(PrimaryExpAST primaryExpAST, boolean isConstExp){
+        if(!isConstExp) {
+            if (primaryExpAST.getType() == 1) {
+                visitExpAST(primaryExpAST.getExpAST(), false);
+            } else if(primaryExpAST.getType() == 2){
+                visitNumberAST(primaryExpAST.getNumberAST());
+            }
+            else if(primaryExpAST.getType() == 3){
+                visitLValAST(primaryExpAST.getlValAST());
+            }
         }
         else{
-            visitNumberAST(primaryExpAST.getNumberAST());
+            if(primaryExpAST.getType() == 1){
+                visitExpAST(primaryExpAST.getExpAST(), true);
+            }
+            else if(primaryExpAST.getType() == 2){
+                NumberAST numberAST = primaryExpAST.getNumberAST();
+
+                CurValue = f.buildNumber(numberAST.getIntConst());
+            }
+            else if(primaryExpAST.getType() == 3){
+                visitLValAST(primaryExpAST.getlValAST());
+            }
         }
     }
 
-    private void visitUnaryExpAST(UnaryExpAST unaryExpAST){
-        if(unaryExpAST.getType() == 1){
-            visitPrimaryExpAST(unaryExpAST.getPrimaryExpAST());
+    private void visitUnaryExpAST(UnaryExpAST unaryExpAST, boolean isConstExp){
+        if(!isConstExp) {
+            if (unaryExpAST.getType() == 1) {
+                visitPrimaryExpAST(unaryExpAST.getPrimaryExpAST(),false);
+            } else {
+                visitUnaryExpAST(unaryExpAST.getUnaryExpAST(),false);
+                switch (unaryExpAST.getUnaryOP()) {
+                    case "+":
+
+                        break;
+                    case "-":
+                        CurValue = f.buildBinaryInst(OP.Sub, ConstInteger.constZero, CurValue, CurBasicBlock);
+                        break;
+                    case "!":
+                        CurValue = f.buildBinaryInst(OP.Eq, ConstInteger.constZero, CurValue, CurBasicBlock);
+                        break;
+                }
+            }
+        }
+        else {
+            if(unaryExpAST.getType() == 1){
+                visitPrimaryExpAST(unaryExpAST.getPrimaryExpAST(), true);
+            }
+            else if(unaryExpAST.getType() == 2){
+                visitUnaryExpAST(unaryExpAST.getUnaryExpAST(), true);
+                ConstInteger constInteger = (ConstInteger) CurValue;
+                CurValue = calValue(0, unaryExpAST.getUnaryOP(), constInteger.getVal());
+
+            }
+        }
+    }
+
+    private void visitExpAST(ExpAST expAST, boolean isConst){
+        visitAddExpAST(expAST.getAddExpAST(), isConst);
+    }
+
+    private void visitAddExpAST(AddExpAST addExpAST, boolean isConstExp){
+        if(!isConstExp) {
+            visitMulExpAST(addExpAST.getMulExpAST(), false);
+            if (addExpAST.getType() != 1) {
+                Value TmpValue = CurValue;
+                visitAddExpAST(addExpAST.getAddExpAST(), false);
+                if (addExpAST.getOp().equals("+")) {
+                    CurValue = f.buildBinaryInst(OP.Add, TmpValue, CurValue, CurBasicBlock);
+                } else if (addExpAST.getOp().equals("-")) {
+                    CurValue = f.buildBinaryInst(OP.Sub, TmpValue, CurValue, CurBasicBlock);
+                }
+            }
         }
         else{
-            visitUnaryExpAST(unaryExpAST.getUnaryExpAST());
-            switch (unaryExpAST.getUnaryOP()) {
-                case "+":
-
-                    break;
-                case "-":
-                    CurValue = f.buildBinaryInst(OP.Sub, ConstInteger.constZero, CurValue, CurBasicBlock);
-                    break;
-                case "!":
-                    CurValue = f.buildBinaryInst(OP.Eq, ConstInteger.constZero, CurValue, CurBasicBlock);
-                    break;
+            visitMulExpAST(addExpAST.getMulExpAST(), true);
+            if(addExpAST.getType() == 2){
+                ConstInteger left = (ConstInteger) CurValue;
+                visitAddExpAST(addExpAST.getAddExpAST(), true);
+                ConstInteger right = (ConstInteger) CurValue;
+                CurValue = calValue(left.getVal(), addExpAST.getOp(), right.getVal());
             }
         }
     }
 
-    private void visitExpAST(ExpAST expAST){
-        visitAddExpAST(expAST.getAddExpAST());
-    }
+    private void visitMulExpAST(MulExpAST mulExpAST, boolean isConstExp){
+        if(!isConstExp) {
+            visitUnaryExpAST(mulExpAST.getUnaryExpAST(), false);
 
-    private void visitAddExpAST(AddExpAST addExpAST){
-        visitMulExpAST(addExpAST.getMulExpAST());
-        if(addExpAST.getType() != 1){
-            Value TmpValue = CurValue;
-            visitAddExpAST(addExpAST.getAddExpAST());
-            if(addExpAST.getOp().equals("+")){
-                CurValue = f.buildBinaryInst(OP.Add, TmpValue, CurValue, CurBasicBlock);
-            }
-            else if(addExpAST.getOp().equals("-")){
-                CurValue = f.buildBinaryInst(OP.Sub, TmpValue, CurValue, CurBasicBlock);
+            if (mulExpAST.getType() != 1) {
+                Value TmpValue = CurValue;
+                visitMulExpAST(mulExpAST.getMulExpAST(), false);
+                switch (mulExpAST.getOp()) {
+                    case "*" -> CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
+                    case "/" -> CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
+                    case "%" -> CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
+                }
             }
         }
-    }
+        else{
+            visitUnaryExpAST(mulExpAST.getUnaryExpAST(), true);
+            if(mulExpAST.getType() == 2) {
+                ConstInteger left = (ConstInteger) CurValue;
+                visitMulExpAST(mulExpAST.getMulExpAST(), true);
+                ConstInteger right = (ConstInteger) CurValue;
 
-    private void visitMulExpAST(MulExpAST mulExpAST){
-        visitUnaryExpAST(mulExpAST.getUnaryExpAST());
-
-        if(mulExpAST.getType() != 1){
-            Value TmpValue = CurValue;
-            visitMulExpAST(mulExpAST.getMulExpAST());
-            switch (mulExpAST.getOp()) {
-                case "*" -> CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
-                case "/" -> CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
-                case "%" -> CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
+                CurValue = calValue(left.getVal(), mulExpAST.getOp(), right.getVal());
             }
         }
     }
 
     private void visitStmtAST(StmtAST stmtAST){
 
-        visitExpAST(stmtAST.getExpAST());
+        visitExpAST(stmtAST.getExpAST(), false);
         CurValue = f.buildRetInst(CurBasicBlock, CurValue);
     }
 
     private void visitConstExpAST(ConstExpAST constExpAST){
-        visitAddExpAST(constExpAST.getAddExpAST());
+        visitAddExpAST(constExpAST.getAddExpAST(),true);
     }
 
     private void visitConstInitValAST(ConstInitValAST constInitValAST){
