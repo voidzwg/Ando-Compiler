@@ -6,4 +6,8 @@ public class DeclAST {
     public DeclAST(ConstDeclAST constDeclAST){
         this.constDeclAST = constDeclAST;
     }
+
+    public ConstDeclAST getConstDeclAST() {
+        return constDeclAST;
+    }
 }

@@ -6,6 +6,7 @@ import Frontend.AST.ExpAST.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ASTDump {
     private static final BufferedWriter out;
@@ -46,10 +47,69 @@ public class ASTDump {
     private static void DumpBlockAST(BlockAST blockAST) throws IOException {
         out.write("LBRACE {\n");
 
-        DumpStmtAST(blockAST.getStmtAST());
+        ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();
+        for (BlockItemAST blockItemAST : blockItemASTS) {
+            DumpBlockItemAST(blockItemAST);
+        }
 
         out.write("RBRACE }\n");
         out.write("<Block>\n");
+    }
+
+    private static void DumpBlockItemAST(BlockItemAST blockItemAST) throws IOException {
+        if(blockItemAST.getType() == 1){
+            DumpDeclAST(blockItemAST.getDeclAST());
+        }
+        else if(blockItemAST.getType() == 2){
+            DumpStmtAST(blockItemAST.getStmtAST());
+        }
+
+        out.write("<BlockItem>\n");
+    }
+
+    private static void DumpDeclAST(DeclAST declAST) throws IOException {
+        DumpConstDeclAST(declAST.getConstDeclAST());
+
+        out.write("<Decl>\n");
+    }
+
+    private static void DumpConstDeclAST(ConstDeclAST constDeclAST) throws IOException {
+        out.write("CONSTTK const\n");
+        out.write("INTTK int\n");
+
+        ArrayList<ConstDefAST> constDefASTS = constDeclAST.getConstDefASTS();
+        for(int i = 0; i < constDefASTS.size(); i++){
+            DumpConstDefAST(constDefASTS.get(i));
+
+            if(i != constDefASTS.size() - 1){
+                out.write("COMMA ,\n");
+            }
+        }
+
+        out.write("SEMICN ;\n");
+
+        out.write("<ConstDecl>\n");
+    }
+
+    private static void DumpConstDefAST(ConstDefAST constDefAST) throws IOException {
+        out.write("IDENFR " + constDefAST.getIdent() + "\n");
+        out.write("ASSIGN =\n");
+
+        DumpConstInitValAST(constDefAST.getConstInitValAST());
+
+        out.write("<ConstDef>\n");
+    }
+
+    private static void DumpConstInitValAST(ConstInitValAST constInitValAST) throws IOException {
+        DumpConstExpAST(constInitValAST.getConstExpAST());
+
+        out.write("<ConstInitVal>\n");
+    }
+
+    private static void DumpConstExpAST(ConstExpAST constExpAST) throws IOException {
+        DumpAddExpAST(constExpAST.getAddExpAST());
+
+        out.write("<ConstExp>\n");
     }
 
     private static void DumpStmtAST(StmtAST stmtAST) throws IOException {
@@ -135,8 +195,22 @@ public class ASTDump {
         }
 
         //  Number
-        else DumpNumberAST(primaryExpAST.getNumberAST());
+        else if(primaryExpAST.getType() == 2){
+            DumpNumberAST(primaryExpAST.getNumberAST());
+        }
+
+        //  LVal
+        else if(primaryExpAST.getType() == 3){
+            DumpLValAST(primaryExpAST.getlValAST());
+        }
+
         out.write("<PrimaryExp>\n");
+    }
+
+    private static void DumpLValAST(LValAST lValAST) throws IOException {
+        out.write("IDENFR " + lValAST.getIdent() + "\n");
+
+        out.write("<LVal>\n");
     }
 
     private static void DumpNumberAST(NumberAST numberAST) throws IOException {

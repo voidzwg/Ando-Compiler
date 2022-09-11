@@ -1,11 +1,16 @@
 package Frontend.AST;
 
 import Frontend.AST.ExpAST.AddExpAST;
+import Frontend.AST.ExpAST.ConstExpAST;
 
 public class ConstInitValAST {
-    AddExpAST addExpAST;
+    ConstExpAST constExpAST;
 
-    public ConstInitValAST(AddExpAST addExpAST){
-        this.addExpAST = addExpAST;
+    public ConstInitValAST(ConstExpAST constExpAST){
+        this.constExpAST = constExpAST;
+    }
+
+    public ConstExpAST getConstExpAST() {
+        return constExpAST;
     }
 }

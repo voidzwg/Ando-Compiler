@@ -10,4 +10,12 @@ public class ConstDefAST {
         this.ident = ident;
         this.constInitValAST = constInitValAST;
     }
+
+    public String getIdent() {
+        return ident;
+    }
+
+    public ConstInitValAST getConstInitValAST() {
+        return constInitValAST;
+    }
 }

@@ -13,4 +13,7 @@ public class BlockAST {
         this.BlockItems.add(blockItemAST);
     }
 
+    public ArrayList<BlockItemAST> getBlockItems() {
+        return BlockItems;
+    }
 }

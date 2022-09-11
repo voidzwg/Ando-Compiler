@@ -37,7 +37,7 @@ public class Parser {
     //  Constructor
     public Parser() throws IOException {
         String inputFile = Global.inputFile;
-        this.lexer = new Lexer(inputFile);
+        this.lexer = new Lexer();
     }
 
     //  Parse Methods
@@ -132,11 +132,24 @@ public class Parser {
             return new PrimaryExpAST(expAST);
         }
 
+        //  LVal
+        if(judTok.getType() == Tokens.IDENFR){
+            backTok();
+            LValAST lValAST = parseLValAST();
+
+            return new PrimaryExpAST(lValAST);
+        }
+
         //  Number
         backTok();
         NumberAST numberAST = parseNumberAST();
 
         return new PrimaryExpAST(numberAST);
+    }
+
+    private LValAST parseLValAST() throws IOException {
+        String ident = getTok().getVal();
+        return new LValAST(ident);
     }
 
     private BlockAST parseBlockAST() throws IOException {
@@ -195,14 +208,23 @@ public class Parser {
 
     private ConstDefAST parseConstDefAST() throws IOException {
         String ident = getTok().getVal();
+
+        getTok();   //  Consume '='
+
         ConstInitValAST constInitValAST = parseConstInitValAST();
 
         return new ConstDefAST(ident, constInitValAST);
     }
 
-    private ConstInitValAST parseConstInitValAST() throws IOException {
+    private ConstExpAST parseConstExpAST() throws IOException {
         AddExpAST addExpAST = parseAddExpAST();
-        return new ConstInitValAST(addExpAST);
+        return new ConstExpAST(addExpAST);
+    }
+
+    private ConstInitValAST parseConstInitValAST() throws IOException {
+
+        ConstExpAST constExpAST = parseConstExpAST();
+        return new ConstInitValAST(constExpAST);
     }
 
 

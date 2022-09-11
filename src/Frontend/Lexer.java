@@ -1,5 +1,7 @@
 package Frontend;
 
+import Utils.Global;
+
 import java.io.*;
 import java.util.ArrayList;
 
@@ -14,9 +16,9 @@ public class Lexer {
     private int identNum = 0;
     private ArrayList<Token> symtlb = new ArrayList<>();
 
-    public Lexer(String inputFile) throws FileNotFoundException {
+    public Lexer() throws FileNotFoundException {
         //Read File
-        this.in = new PushbackReader(new FileReader(inputFile));
+        this.in = new PushbackReader(new FileReader(Global.inputFile));
     }
 
     private boolean isAlpha(char x){

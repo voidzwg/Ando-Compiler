@@ -12,4 +12,8 @@ public class ConstDeclAST {
     public void addConstDef(ConstDefAST constDefAST){
         this.constDefASTS.add(constDefAST);
     }
+
+    public ArrayList<ConstDefAST> getConstDefASTS() {
+        return constDefASTS;
+    }
 }

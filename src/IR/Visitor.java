@@ -6,6 +6,7 @@ import IR.Value.*;
 import IR.Value.Instructions.OP;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /*
 * Visitor类中一些值的说明
@@ -23,7 +24,10 @@ public class Visitor {
     private BasicBlock CurBasicBlock;
     private Value CurValue;
 
+    //  符号表
+    private HashMap<String, Integer> symTbl;
 
+    //  Visitor方法
     private void visitNumberAST(NumberAST numberAST){
         CurValue = f.buildNumber(numberAST.getIntConst());
     }
@@ -95,11 +99,49 @@ public class Visitor {
         CurValue = f.buildRetInst(CurBasicBlock, CurValue);
     }
 
+    private void visitConstExpAST(ConstExpAST constExpAST){
+        visitAddExpAST(constExpAST.getAddExpAST());
+    }
+
+    private void visitConstInitValAST(ConstInitValAST constInitValAST){
+        visitConstExpAST(constInitValAST.getConstExpAST());
+    }
+
+    private void visitConstDefAST(ConstDefAST constDefAST){
+        String ident = constDefAST.getIdent();
+
+        visitConstInitValAST(constDefAST.getConstInitValAST());
+
+        symTbl.put(ident, Integer.parseInt(CurValue.getName()));
+    }
+
+    private void visitConstDeclAST(ConstDeclAST constDeclAST){
+        ArrayList<ConstDefAST> constDefASTS = constDeclAST.getConstDefASTS();
+        for(ConstDefAST constDefAST : constDefASTS){
+            visitConstDefAST(constDefAST);
+        }
+    }
+
+    private void visitDeclAST(DeclAST declAST){
+        visitConstDeclAST(declAST.getConstDeclAST());
+    }
+
+    private void visitBlockItemAST(BlockItemAST blockItemAST){
+        if(blockItemAST.getType() == 1){
+            visitDeclAST(blockItemAST.getDeclAST());
+        }
+        else if(blockItemAST.getType() == 2){
+            visitStmtAST(blockItemAST.getStmtAST());
+        }
+    }
+
     private void visitBlockAST(BlockAST blockAST){
         CurBasicBlock = f.buildBasicBlock(CurFunction);
 
-        visitStmtAST(blockAST.getStmtAST());
-
+        ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();
+        for(BlockItemAST blockItemAST : blockItemASTS){
+            visitBlockItemAST(blockItemAST);
+        }
     }
 
     private void visitFuncDefAST(FuncDefAST funcDefAST){
