@@ -17,7 +17,7 @@ public class Compiler {
         Parser parser = new Parser();
         CompUnitAST compUnitAST = parser.parseCompUnitAST();
 
-        ASTDump.DumpCompUnit(compUnitAST);
+//        ASTDump.DumpCompUnit(compUnitAST);
 
         Visitor visitor = new Visitor();
         IRModule module = visitor.VisitCompUnit(compUnitAST);

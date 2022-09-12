@@ -181,7 +181,7 @@ public class Parser {
     private BlockItemAST parseBlockItemAST() throws IOException {
         Token judTok = getTok();
         backTok();
-        if(judTok.getVal().equals("const")){
+        if(judTok.getVal().equals("const") || judTok.getVal().equals("int")){
             DeclAST declAST = parseDeclAST();
             return new BlockItemAST(declAST);
         }

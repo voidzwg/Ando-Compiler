@@ -2,9 +2,7 @@ package Utils;
 
 import IR.IRModule;
 import IR.Value.*;
-import IR.Value.Instructions.BinaryInst;
-import IR.Value.Instructions.OP;
-import IR.Value.Instructions.RetInst;
+import IR.Value.Instructions.*;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -100,6 +98,22 @@ public class IRDump {
 
             out.write(left.getName() + ", ");
             out.write(right.getName() + "\n");
+        }
+
+        else if(inst instanceof LoadInst){
+            out.write(inst.getName() + " = load i32, i32* ");
+            out.write(((LoadInst) inst).getPointer().getName() + "\n");
+        }
+
+        else if(inst instanceof AllocInst){
+            out.write(inst.getName() + " = alloc i32\n");
+        }
+
+        else if(inst instanceof StoreInst){
+            StoreInst storeInst = (StoreInst) inst;
+            out.write("store i32 ");
+            out.write(storeInst.getValue().getName() + ", i32* ");
+            out.write(storeInst.getPointer().getName() + "\n");
         }
     }
 }

@@ -1,14 +1,13 @@
 package IR;
 
 import Frontend.AST.*;
-import Frontend.AST.DeclAST.ConstDeclAST;
-import Frontend.AST.DeclAST.ConstDefAST;
-import Frontend.AST.DeclAST.ConstInitValAST;
-import Frontend.AST.DeclAST.DeclAST;
+import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 import IR.Value.*;
+import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.OP;
 
+import java.awt.image.CropImageFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -32,7 +31,8 @@ public class Visitor {
     private Value CurValue;
 
     //  符号表
-    private HashMap<String, Integer> symTbl = new HashMap<>();
+
+    private HashMap<String, Value> symTbl = new HashMap<>();
 
     //  Utils方法
     private ConstInteger calValue(int left, String op, int right){
@@ -53,7 +53,14 @@ public class Visitor {
     }
 
     private void visitLValAST(LValAST lValAST){
-        CurValue = f.buildNumber(symTbl.get(lValAST.getIdent()));
+        Value value = symTbl.get(lValAST.getIdent());
+
+        if(value instanceof ConstInteger) {
+            ConstInteger constInteger = (ConstInteger) value;
+            CurValue = f.buildNumber(constInteger.getVal());
+        }
+
+        else CurValue = value;
     }
 
     private void visitPrimaryExpAST(PrimaryExpAST primaryExpAST, boolean isConstExp){
@@ -65,6 +72,10 @@ public class Visitor {
             }
             else if(primaryExpAST.getType() == 3){
                 visitLValAST(primaryExpAST.getlValAST());
+                //  判断LVal是常量还是变量
+                if(!(CurValue instanceof ConstInteger)) {
+                    CurValue = f.buildLoadInst(CurValue, CurBasicBlock);
+                }
             }
         }
         else{
@@ -78,6 +89,7 @@ public class Visitor {
             }
             else if(primaryExpAST.getType() == 3){
                 visitLValAST(primaryExpAST.getlValAST());
+
             }
         }
     }
@@ -169,9 +181,20 @@ public class Visitor {
     }
 
     private void visitStmtAST(StmtAST stmtAST){
-
-        visitExpAST(stmtAST.getExpAST(), false);
-        CurValue = f.buildRetInst(CurBasicBlock, CurValue);
+        //  return Exp ;
+        if(stmtAST.getType() == 1) {
+            visitExpAST(stmtAST.getExpAST(), false);
+            CurValue = f.buildRetInst(CurBasicBlock, CurValue);
+        }
+        //  LVal = Exp;
+        else {
+            visitExpAST(stmtAST.getExpAST(), false);
+            //  此时的CurVal为Exp的结果
+            Value value = CurValue;
+            //  LVal获得变量的Value
+            visitLValAST(stmtAST.getlValAST());
+            f.buildStoreInst(CurBasicBlock, value, CurValue);
+        }
     }
 
     private void visitConstExpAST(ConstExpAST constExpAST){
@@ -187,7 +210,7 @@ public class Visitor {
 
         visitConstInitValAST(constDefAST.getConstInitValAST());
 
-        symTbl.put(ident, Integer.parseInt(CurValue.getName()));
+        symTbl.put(ident, CurValue);
     }
 
     private void visitConstDeclAST(ConstDeclAST constDeclAST){
@@ -198,7 +221,33 @@ public class Visitor {
     }
 
     private void visitDeclAST(DeclAST declAST){
-        visitConstDeclAST(declAST.getConstDeclAST());
+        if(declAST.getType() == 1) visitConstDeclAST(declAST.getConstDeclAST());
+        else visitVarDeclAST(declAST.getVarDeclAST());
+    }
+
+    private void visitVarDeclAST(VarDeclAST varDeclAST){
+        ArrayList<VarDefAST> varDefASTS = varDeclAST.getVarDefASTS();
+        for(VarDefAST varDefAST : varDefASTS){
+            visitVarDefAST(varDefAST);
+        }
+    }
+
+    private void visitVarDefAST(VarDefAST varDefAST){
+        String ident = varDefAST.getIdent();
+
+        AllocInst allocInst = f.buildAllocInst("%" + ident, CurBasicBlock);
+        if(varDefAST.getType() == 2){
+            visitInitValAST(varDefAST.getInitValAST());
+            f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
+        }
+        //  未赋初值的全局变量直接置为0
+        else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
+
+        symTbl.put(ident, allocInst);
+    }
+
+    private void visitInitValAST(InitValAST initValAST){
+        visitExpAST(initValAST.getExpAST(), false);
     }
 
     private void visitBlockItemAST(BlockItemAST blockItemAST){

@@ -16,4 +16,5 @@ public class VarDeclAST {
     public void addVarDef(VarDefAST varDefAST){
         this.varDefASTS.add(varDefAST);
     }
+
 }

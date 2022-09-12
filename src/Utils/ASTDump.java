@@ -1,10 +1,7 @@
 package Utils;
 
 import Frontend.AST.*;
-import Frontend.AST.DeclAST.ConstDeclAST;
-import Frontend.AST.DeclAST.ConstDefAST;
-import Frontend.AST.DeclAST.ConstInitValAST;
-import Frontend.AST.DeclAST.DeclAST;
+import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 
 import java.io.BufferedWriter;
@@ -72,9 +69,41 @@ public class ASTDump {
     }
 
     private static void DumpDeclAST(DeclAST declAST) throws IOException {
-        DumpConstDeclAST(declAST.getConstDeclAST());
+        if(declAST.getType() == 1) {
+            DumpConstDeclAST(declAST.getConstDeclAST());
+        }
+        else DumpVarDeclAST(declAST.getVarDeclAST());
 
         out.write("<Decl>\n");
+    }
+
+    private static void DumpVarDeclAST(VarDeclAST varDeclAST) throws IOException {
+        out.write("INTTK int\n");
+        ArrayList<VarDefAST> varDefASTS = varDeclAST.getVarDefASTS();
+        for(int i = 0; i < varDefASTS.size(); i++){
+            DumpVarDefAST(varDefASTS.get(i));
+            if(i != varDefASTS.size() - 1) out.write("COMMA ,\n");
+        }
+
+        out.write("SEMICN ;\n");
+        out.write("<VarDecl>\n");
+    }
+
+    private static void DumpVarDefAST(VarDefAST varDefAST) throws IOException {
+        out.write("IDENFR " + varDefAST.getIdent() + "\n");
+
+        if(varDefAST.getType() == 2){
+            out.write("ASSIGN =\n");
+            DumpInitValAST(varDefAST.getInitValAST());
+        }
+
+        out.write("<VarDefAST>\n");
+    }
+
+    private static void DumpInitValAST(InitValAST initValAST) throws IOException {
+        DumpExpAST(initValAST.getExpAST());
+
+        out.write("<InitValAST>\n");
     }
 
     private static void DumpConstDeclAST(ConstDeclAST constDeclAST) throws IOException {
@@ -117,10 +146,15 @@ public class ASTDump {
     }
 
     private static void DumpStmtAST(StmtAST stmtAST) throws IOException {
-        out.write("RETURNTK return\n");
-
-        DumpExpAST(stmtAST.getExpAST());
-
+        if(stmtAST.getType() == 1) {
+            out.write("RETURNTK return\n");
+            DumpExpAST(stmtAST.getExpAST());
+        }
+        else {
+            DumpLValAST(stmtAST.getlValAST());
+            out.write("ASSIGN =\n");
+            DumpExpAST(stmtAST.getExpAST());
+        }
         out.write("SEMICN ;\n");
         out.write("<Stmt>\n");
     }
