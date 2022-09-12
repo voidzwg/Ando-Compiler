@@ -1,4 +1,4 @@
-package Frontend;
+package Utils;
 
 public class Global {
     public static String inputFile = "testfile.txt";

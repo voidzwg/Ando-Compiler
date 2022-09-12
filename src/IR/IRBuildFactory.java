@@ -3,7 +3,7 @@ package IR;
 import IR.Type.IntegerType;
 import IR.Type.VoidType;
 import IR.Value.*;
-import IR.Value.Instructions.RetInst;
+import IR.Value.Instructions.*;
 
 import java.util.ArrayList;
 
@@ -16,8 +16,32 @@ public class IRBuildFactory {
         return f;
     }
 
+    public BinaryInst buildBinaryInst(OP op, Value left, Value right,BasicBlock bb){
+        BinaryInst binaryInst = new BinaryInst(op, left, right, bb);
+        bb.addInst(binaryInst);
+        return binaryInst;
+    }
+
     public Value buildNumber(int val){
         return new ConstInteger(val);
+    }
+
+    public LoadInst buildLoadInst(Value pointer,BasicBlock bb){
+        LoadInst loadInst = new LoadInst(pointer, bb);
+        bb.addInst(loadInst);
+        return loadInst;
+    }
+
+    public StoreInst buildStoreInst(BasicBlock bb, Value value, Value pointer){
+        StoreInst storeInst =  new StoreInst(bb, value, pointer);
+        bb.addInst(storeInst);
+        return storeInst;
+    }
+
+    public AllocInst buildAllocInst(String name, BasicBlock bb){
+        AllocInst allocInst = new AllocInst(name, new IntegerType(32), bb);
+        bb.addInst(allocInst);
+        return allocInst;
     }
 
     public RetInst buildRetInst(BasicBlock bb, Value value){

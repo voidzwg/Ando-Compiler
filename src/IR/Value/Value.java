@@ -5,10 +5,14 @@ import IR.Use;
 
 import java.util.ArrayList;
 
-public abstract class Value {
+public class Value {
     private String name;
     private Type type;
     private ArrayList<Use> useList;
+    //  valNumber用于给value命名
+    public static int valNumber = 0;
+
+    public Value(){}
 
     public Value(String name, Type type){
         this.name = name;

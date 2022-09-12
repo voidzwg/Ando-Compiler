@@ -3,10 +3,12 @@ package IR.Value;
 import IR.Type.IntegerType;
 
 public class ConstInteger extends Constant{
-    private int val;
+    private final int val;
+
+    public static ConstInteger constZero = new ConstInteger(0);
 
     public ConstInteger(int val){
-        super("", new IntegerType(32));
+        super(String.valueOf(val), new IntegerType(32));
         this.val = val;
     }
 

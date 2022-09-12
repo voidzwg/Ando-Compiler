@@ -1,8 +1,8 @@
-package Backend;
+package Utils;
 
-import Frontend.Global;
 import IR.IRModule;
 import IR.Value.*;
+import IR.Value.Instructions.BinaryInst;
 import IR.Value.Instructions.RetInst;
 
 import java.io.BufferedWriter;
@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class CodeGen {
+public class MIPSDump {
     static BufferedWriter out;
 
     static {
@@ -40,7 +40,7 @@ public class CodeGen {
 
     private static void DumpBasicBlock(BasicBlock basicBlock) throws IOException {
         String bbName = basicBlock.getName();
-        if(bbName.equals("%1")) bbName = "main";
+        if(bbName.equals("%block1")) bbName = "main";
 
         out.write(bbName + ":\n");
 
@@ -53,12 +53,14 @@ public class CodeGen {
     private static void DumpInst(Instruction inst) throws IOException {
         if(inst instanceof RetInst){
             Value value = ((RetInst) inst).getValue();
-            ConstInteger intConst = (ConstInteger)value;
 
             out.write("\t");
-            out.write("li a0, " + intConst.getVal() + "\n");
+            out.write("li a0, " + value.getName() + "\n");
             out.write("\t");
             out.write("ret\n");
+        }
+        else if(inst instanceof BinaryInst){
+
         }
     }
 }
