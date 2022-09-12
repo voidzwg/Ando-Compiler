@@ -1,7 +1,4 @@
-import Frontend.Lexer;
-import Frontend.Token;
 import Utils.ASTDump;
-import Utils.Global;
 import Utils.MIPSDump;
 import Frontend.AST.CompUnitAST;
 import Frontend.Parser;
@@ -24,6 +21,6 @@ public class Compiler {
 
         IRDump.DumpModule(module);
 
-//        MIPSDump.DumpMips(module);
+        MIPSDump.DumpMips(module);
     }
 }

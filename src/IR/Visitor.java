@@ -7,7 +7,6 @@ import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.OP;
 
-import java.awt.image.CropImageFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -31,8 +30,10 @@ public class Visitor {
     private Value CurValue;
 
     //  符号表
-
-    private HashMap<String, Value> symTbl = new HashMap<>();
+    private ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
+    private int symTop = -1;
+    //  用于记录标识符出现的次数，以防不同block定义的变量构建Value时重名
+    private HashMap<String, Integer>symCnt = new HashMap<>();
 
     //  Utils方法
     private ConstInteger calValue(int left, String op, int right){
@@ -46,6 +47,20 @@ public class Visitor {
         };
     }
 
+    //  Find方法用于从符号表(们)找目标ident
+    //  从当前block对应的符号表逐级向下寻找。
+    //  如果没有找到返回null
+    private Value find(String ident){
+        for(int i = symTop; i >= 0; i--){
+            HashMap<String, Value> symTbl = symTbls.get(i);
+            Value res = symTbl.get(ident);
+            if(res != null){
+                return res;
+            }
+        }
+        return null;
+    }
+
 
     //  Visitor方法
     private void visitNumberAST(NumberAST numberAST){
@@ -53,7 +68,7 @@ public class Visitor {
     }
 
     private void visitLValAST(LValAST lValAST){
-        Value value = symTbl.get(lValAST.getIdent());
+        Value value = find(lValAST.getIdent());
 
         if(value instanceof ConstInteger) {
             ConstInteger constInteger = (ConstInteger) value;
@@ -187,13 +202,23 @@ public class Visitor {
             CurValue = f.buildRetInst(CurBasicBlock, CurValue);
         }
         //  LVal = Exp;
-        else {
+        else if(stmtAST.getType() == 2){
             visitExpAST(stmtAST.getExpAST(), false);
             //  此时的CurVal为Exp的结果
             Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getlValAST());
+            visitLValAST(stmtAST.getLValAST());
             f.buildStoreInst(CurBasicBlock, value, CurValue);
+        }
+        //  Block
+        else if(stmtAST.getType() == 3){
+            visitBlockAST(stmtAST.getBlockAST());
+        }
+        //  [Exp] ;
+        else if(stmtAST.getType() == 4){
+            if(stmtAST.isHasExp()){
+                visitExpAST(stmtAST.getExpAST(), false);
+            }
         }
     }
 
@@ -210,7 +235,7 @@ public class Visitor {
 
         visitConstInitValAST(constDefAST.getConstInitValAST());
 
-        symTbl.put(ident, CurValue);
+        symTbls.get(symTop).put(ident, CurValue);
     }
 
     private void visitConstDeclAST(ConstDeclAST constDeclAST){
@@ -235,7 +260,15 @@ public class Visitor {
     private void visitVarDefAST(VarDefAST varDefAST){
         String ident = varDefAST.getIdent();
 
-        AllocInst allocInst = f.buildAllocInst("%" + ident, CurBasicBlock);
+        int cnt = 0;
+        if(symCnt.get(ident) == null){
+            symCnt.put(ident, 0);
+        }
+        else{
+            cnt = symCnt.get(ident) + 1;
+            symCnt.replace(ident, cnt);
+        }
+        AllocInst allocInst = f.buildAllocInst("%" + ident + "_" + cnt, CurBasicBlock);
         if(varDefAST.getType() == 2){
             visitInitValAST(varDefAST.getInitValAST());
             f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
@@ -243,7 +276,7 @@ public class Visitor {
         //  未赋初值的全局变量直接置为0
         else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
 
-        symTbl.put(ident, allocInst);
+        symTbls.get(symTop).put(ident, allocInst);
     }
 
     private void visitInitValAST(InitValAST initValAST){
@@ -260,12 +293,15 @@ public class Visitor {
     }
 
     private void visitBlockAST(BlockAST blockAST){
-        CurBasicBlock = f.buildBasicBlock(CurFunction);
+        symTop++;
+        symTbls.add(new HashMap<>());
 
         ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();
         for(BlockItemAST blockItemAST : blockItemASTS){
             visitBlockItemAST(blockItemAST);
         }
+
+        symTop--;
     }
 
     private void visitFuncDefAST(FuncDefAST funcDefAST){
@@ -274,6 +310,7 @@ public class Visitor {
 
         CurFunction = f.buildFunction(name, type);
         functions.add(CurFunction);
+        CurBasicBlock = f.buildBasicBlock(CurFunction);
         visitBlockAST(funcDefAST.getBlockAST());
     }
 

@@ -149,13 +149,39 @@ public class ASTDump {
         if(stmtAST.getType() == 1) {
             out.write("RETURNTK return\n");
             DumpExpAST(stmtAST.getExpAST());
+            out.write("SEMICN ;\n");
         }
-        else {
-            DumpLValAST(stmtAST.getlValAST());
+        else if(stmtAST.getType() == 2){
+            DumpLValAST(stmtAST.getLValAST());
             out.write("ASSIGN =\n");
             DumpExpAST(stmtAST.getExpAST());
+            out.write("SEMICN ;\n");
         }
-        out.write("SEMICN ;\n");
+        else if(stmtAST.getType() == 3){
+            DumpBlockAST(stmtAST.getBlockAST());
+        }
+        else if(stmtAST.getType() == 4){
+            if(stmtAST.isHasExp()){
+                DumpExpAST(stmtAST.getExpAST());
+            }
+            out.write("SEMICN ;\n");
+        }
+        else if(stmtAST.getType() == 5){
+            out.write("IFTK if\n");
+            out.write("LBRACK (\n");
+            DumpExpAST(stmtAST.getExpAST());
+            out.write("RBRACK )\n");
+            DumpStmtAST(stmtAST.getIfStmtAST());
+        }
+        else if(stmtAST.getType() == 6){
+            out.write("IFTK if\n");
+            out.write("LBRACK (\n");
+            DumpExpAST(stmtAST.getExpAST());
+            out.write("RBRACK )\n");
+            DumpStmtAST(stmtAST.getIfStmtAST());
+            out.write("ELSETK else\n");
+            DumpStmtAST(stmtAST.getElseStmtAST());
+        }
         out.write("<Stmt>\n");
     }
 

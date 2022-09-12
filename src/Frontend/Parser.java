@@ -70,12 +70,32 @@ public class Parser {
             return new StmtAST(lValAST, expAST);
         }
 
+        //  Block
         else if(judTok.getVal().equals("{")){
             backTok();
             BlockAST blockAST = parseBlockAST();
             return new StmtAST(blockAST);
         }
 
+        else if(judTok.getVal().equals("if")){
+            getTok();   //  Consume '('
+            ExpAST expAST = parseExpAST();
+            getTok();   //  Consume ')'
+            StmtAST ifStmtAST = parseStmtAST();
+
+            judTok = getTok();
+            if(judTok.getVal().equals("else")){
+                StmtAST elseStmtAST = parseStmtAST();
+                return new StmtAST(expAST, ifStmtAST, elseStmtAST);
+            }
+
+            else {
+                backTok();
+                return new StmtAST(expAST, ifStmtAST);
+            }
+        }
+
+        //  [Exp] ;
         else {
             if(!judTok.getVal().equals(";")) {
                 backTok();

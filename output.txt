@@ -1,20 +1,85 @@
-define i32 %main() {
-%block1:
-	%x = alloc i32
-	%1 = mul i32 3, 1
-	%2 = add i32 2, %1
-	store i32 %2, i32* %x
-
-	%3 = load i32, i32* %x
-	%4 = add i32 %3, 10
-	store i32 %4, i32* %x
-
-	%y = alloc i32
-	%5 = load i32, i32* %x
-	%6 = add i32 1, -2
-	%7 = mul i32 %6, 2
-	%8 = add i32 %5, %7
-	store i32 %8, i32* %y
-	%9 = load i32, i32* %y
-	ret i32 %9
-}
+INTTK int
+MAINTK main
+LPARENT (
+RPARENT )
+LBRACE {
+INTTK int
+IDENFR a
+ASSIGN =
+INTCON 2
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+<InitValAST>
+<VarDefAST>
+SEMICN ;
+<VarDecl>
+<Decl>
+<BlockItem>
+IFTK if
+LBRACK (
+IDENFR a
+<LVal>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+RBRACK )
+LBRACE {
+IDENFR a
+<LVal>
+ASSIGN =
+IDENFR a
+<LVal>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+PLUS +
+INTCON 1
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<AddExp>
+<Exp>
+SEMICN ;
+<Stmt>
+<BlockItem>
+RBRACE }
+<Block>
+<Stmt>
+ELSETK else
+IDENFR a
+<LVal>
+ASSIGN =
+INTCON 0
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+SEMICN ;
+<Stmt>
+<Stmt>
+<BlockItem>
+RETURNTK return
+IDENFR a
+<LVal>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+SEMICN ;
+<Stmt>
+<BlockItem>
+RBRACE }
+<Block>
+<MainFuncDef>
+<CompUnit>

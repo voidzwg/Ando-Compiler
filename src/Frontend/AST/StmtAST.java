@@ -7,6 +7,8 @@ public class StmtAST extends BaseAST{
     private ExpAST expAST;
     private LValAST lValAST;
     private BlockAST blockAST;
+    private StmtAST ifStmtAST;
+    private StmtAST elseStmtAST;
     //  对于[Exp]表示是否有Exp
     private boolean hasExp;
     private final int type;
@@ -37,16 +39,43 @@ public class StmtAST extends BaseAST{
         this.type = 4;
     }
 
+    //  if( Exp ) Stmt
+    public StmtAST(ExpAST expAST,StmtAST ifStmtAST) {
+        this.expAST = expAST;
+        this.ifStmtAST = ifStmtAST;
+        this.type = 5;
+    }
+
+    //  if( Exp ) Stmt else Stmt
+    public StmtAST(ExpAST expAST, StmtAST ifStmtAST, StmtAST elseStmtAST) {
+        this.expAST = expAST;
+        this.ifStmtAST = ifStmtAST;
+        this.elseStmtAST = elseStmtAST;
+        this.type = 6;
+    }
+
     public ExpAST getExpAST() {
         return expAST;
     }
 
-    public LValAST getlValAST() {
+    public LValAST getLValAST() {
         return lValAST;
     }
 
     public BlockAST getBlockAST() {
         return blockAST;
+    }
+
+    public boolean isHasExp() {
+        return hasExp;
+    }
+
+    public StmtAST getIfStmtAST() {
+        return ifStmtAST;
+    }
+
+    public StmtAST getElseStmtAST() {
+        return elseStmtAST;
     }
 
     public int getType() {
