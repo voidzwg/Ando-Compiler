@@ -61,13 +61,29 @@ public class Parser {
         }
 
         //  LVal "=" Exp ";"
-        backTok();
-        LValAST lValAST = parseLValAST();
-        getTok();   //  Consume '='
-        ExpAST expAST = parseExpAST();
-        getTok();   //  Consume ';'
+        else if(judTok.getType() == Tokens.IDENFR){
+            backTok();
+            LValAST lValAST = parseLValAST();
+            getTok();   //  Consume '='
+            ExpAST expAST = parseExpAST();
+            getTok();   //  Consume ';'
+            return new StmtAST(lValAST, expAST);
+        }
 
-        return new StmtAST(lValAST, expAST);
+        else if(judTok.getVal().equals("{")){
+            backTok();
+            BlockAST blockAST = parseBlockAST();
+            return new StmtAST(blockAST);
+        }
+
+        else {
+            if(!judTok.getVal().equals(";")) {
+                backTok();
+                ExpAST expAST = parseExpAST();
+                return new StmtAST(expAST, true);
+            }
+            else return new StmtAST(null, false);
+        }
     }
 
     private ExpAST parseExpAST() throws IOException {
