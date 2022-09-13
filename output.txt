@@ -1,85 +1,16 @@
-INTTK int
-MAINTK main
-LPARENT (
-RPARENT )
-LBRACE {
-INTTK int
-IDENFR a
-ASSIGN =
-INTCON 2
-<Number>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<Exp>
-<InitValAST>
-<VarDefAST>
-SEMICN ;
-<VarDecl>
-<Decl>
-<BlockItem>
-IFTK if
-LBRACK (
-IDENFR a
-<LVal>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<Exp>
-RBRACK )
-LBRACE {
-IDENFR a
-<LVal>
-ASSIGN =
-IDENFR a
-<LVal>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-PLUS +
-INTCON 1
-<Number>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<AddExp>
-<Exp>
-SEMICN ;
-<Stmt>
-<BlockItem>
-RBRACE }
-<Block>
-<Stmt>
-ELSETK else
-IDENFR a
-<LVal>
-ASSIGN =
-INTCON 0
-<Number>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<Exp>
-SEMICN ;
-<Stmt>
-<Stmt>
-<BlockItem>
-RETURNTK return
-IDENFR a
-<LVal>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<Exp>
-SEMICN ;
-<Stmt>
-<BlockItem>
-RBRACE }
-<Block>
-<MainFuncDef>
-<CompUnit>
+define i32 %main() {
+block1:
+	%a_0 = alloc i32
+	store i32 2, i32* %a_0
+	%1 = load i32, i32* %a_0
+	%2 = icmp ne 0 %1 
+	br i1 %2, label %block2, label %block3
+block2:
+	%3 = load i32, i32* %a_0
+	%4 = add i32 %3, 1
+	store i32 %4, i32* %a_0
+block3:
+	store i32 0, i32* %a_0
+	%5 = load i32, i32* %a_0
+	ret i32 %5
+}

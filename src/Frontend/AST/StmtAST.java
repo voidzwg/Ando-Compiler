@@ -9,6 +9,7 @@ public class StmtAST extends BaseAST{
     private BlockAST blockAST;
     private StmtAST ifStmtAST;
     private StmtAST elseStmtAST;
+    private CondAST condAST;
     //  对于[Exp]表示是否有Exp
     private boolean hasExp;
     private final int type;
@@ -39,16 +40,16 @@ public class StmtAST extends BaseAST{
         this.type = 4;
     }
 
-    //  if( Exp ) Stmt
-    public StmtAST(ExpAST expAST,StmtAST ifStmtAST) {
-        this.expAST = expAST;
+    //  if( Cond ) Stmt
+    public StmtAST(StmtAST ifStmtAST, CondAST condAST) {
+        this.condAST = condAST;
         this.ifStmtAST = ifStmtAST;
         this.type = 5;
     }
 
-    //  if( Exp ) Stmt else Stmt
-    public StmtAST(ExpAST expAST, StmtAST ifStmtAST, StmtAST elseStmtAST) {
-        this.expAST = expAST;
+    //  if( Cond ) Stmt else Stmt
+    public StmtAST(StmtAST ifStmtAST, CondAST condAST, StmtAST elseStmtAST) {
+        this.condAST = condAST;
         this.ifStmtAST = ifStmtAST;
         this.elseStmtAST = elseStmtAST;
         this.type = 6;
@@ -64,6 +65,10 @@ public class StmtAST extends BaseAST{
 
     public BlockAST getBlockAST() {
         return blockAST;
+    }
+
+    public CondAST getCondAST() {
+        return condAST;
     }
 
     public boolean isHasExp() {

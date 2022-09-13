@@ -169,20 +169,73 @@ public class ASTDump {
         else if(stmtAST.getType() == 5){
             out.write("IFTK if\n");
             out.write("LBRACK (\n");
-            DumpExpAST(stmtAST.getExpAST());
+            DumpCondAST(stmtAST.getCondAST());
             out.write("RBRACK )\n");
             DumpStmtAST(stmtAST.getIfStmtAST());
         }
         else if(stmtAST.getType() == 6){
             out.write("IFTK if\n");
             out.write("LBRACK (\n");
-            DumpExpAST(stmtAST.getExpAST());
+            DumpCondAST(stmtAST.getCondAST());
             out.write("RBRACK )\n");
             DumpStmtAST(stmtAST.getIfStmtAST());
             out.write("ELSETK else\n");
             DumpStmtAST(stmtAST.getElseStmtAST());
         }
         out.write("<Stmt>\n");
+    }
+
+    private static void DumpCondAST(CondAST condAST) throws IOException {
+        DumpLOrExpAST(condAST.getLOrExpAST());
+        out.write("<Cond>\n");
+    }
+
+    private static void DumpLOrExpAST(LOrExpAST lOrExpAST) throws IOException {
+        if(lOrExpAST.getType() == 1){
+            DumpLAndExpAST(lOrExpAST.getLAndExpAST());
+        }
+        else if(lOrExpAST.getType() == 2){
+            DumpLAndExpAST(lOrExpAST.getLAndExpAST());
+            out.write("OR ||\n");
+            DumpLOrExpAST(lOrExpAST.getLOrExpAST());
+        }
+
+        out.write("<LOrExp>\n");
+    }
+
+    private static void DumpLAndExpAST(LAndExpAST lAndExpAST) throws IOException {
+        DumpEqExpAST(lAndExpAST.getEqExpAST());
+        if(lAndExpAST.getType() == 2){
+            out.write("AND &&\n");
+            DumpLAndExpAST(lAndExpAST.getLAndExpAST());
+        }
+        out.write("<LAndExp>\n");
+    }
+
+    private static void DumpEqExpAST(EqExpAST eqExpAST) throws IOException {
+        DumpRelExpAST(eqExpAST.getRelExpAST());
+        if(eqExpAST.getType() == 2) {
+            String op = eqExpAST.getOp();
+            if (op.equals("==")) out.write("EQL ==\n");
+            else out.write("NEQ !=\n");
+            DumpEqExpAST(eqExpAST.getEqExpAST());
+        }
+
+        out.write("<EqExp>\n");
+    }
+
+    private static void DumpRelExpAST(RelExpAST relExpAST) throws IOException {
+        DumpAddExpAST(relExpAST.getAddExpAST());
+        if(relExpAST.getType() == 2){
+            String op = relExpAST.getOp();
+            switch (op) {
+                case "<" -> out.write("LSS <\n");
+                case "<=" -> out.write("LEQ <=\n");
+                case ">" -> out.write("GRE >\n");
+                case ">=" -> out.write("GEQ >=\n");
+            }
+            DumpRelExpAST(relExpAST.getRelExpAST());
+        }
     }
 
     private static void DumpExpAST(ExpAST expAST) throws IOException {

@@ -26,6 +26,18 @@ public class IRBuildFactory {
         return new ConstInteger(val);
     }
 
+    public CmpInst buildCmpInst(Value left, Value right, OP op, BasicBlock bb){
+        CmpInst cmpInst = new CmpInst(left, right, op, bb);
+        bb.addInst(cmpInst);
+        return cmpInst;
+    }
+
+    public BrInst buildBrInst(Value judVal, BasicBlock left, BasicBlock right, BasicBlock cur){
+        BrInst brInst = new BrInst(judVal, left, right, cur);
+        cur.addInst(brInst);
+        return brInst;
+    }
+
     public LoadInst buildLoadInst(Value pointer,BasicBlock bb){
         LoadInst loadInst = new LoadInst(pointer, bb);
         bb.addInst(loadInst);

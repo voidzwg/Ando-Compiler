@@ -40,7 +40,7 @@ public class MIPSDump {
 
     private static void DumpBasicBlock(BasicBlock basicBlock) throws IOException {
         String bbName = basicBlock.getName();
-        if(bbName.equals("%block1")) bbName = "main";
+        if(bbName.equals("block1")) bbName = "main";
 
         out.write(bbName + ":\n");
 

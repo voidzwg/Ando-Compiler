@@ -18,9 +18,8 @@ public class Compiler {
 
         Visitor visitor = new Visitor();
         IRModule module = visitor.VisitCompUnit(compUnitAST);
-
         IRDump.DumpModule(module);
 
-        MIPSDump.DumpMips(module);
+//        MIPSDump.DumpMips(module);
     }
 }

@@ -3,7 +3,6 @@ package Frontend;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
-import Utils.Global;
 
 import java.io.IOException;
 
@@ -37,7 +36,6 @@ public class Parser {
 
     //  Constructor
     public Parser() throws IOException {
-        String inputFile = Global.inputFile;
         this.lexer = new Lexer();
     }
 
@@ -79,19 +77,19 @@ public class Parser {
 
         else if(judTok.getVal().equals("if")){
             getTok();   //  Consume '('
-            ExpAST expAST = parseExpAST();
+            CondAST condAST = parseCondAST();
             getTok();   //  Consume ')'
             StmtAST ifStmtAST = parseStmtAST();
 
             judTok = getTok();
             if(judTok.getVal().equals("else")){
                 StmtAST elseStmtAST = parseStmtAST();
-                return new StmtAST(expAST, ifStmtAST, elseStmtAST);
+                return new StmtAST(ifStmtAST, condAST ,elseStmtAST);
             }
 
             else {
                 backTok();
-                return new StmtAST(expAST, ifStmtAST);
+                return new StmtAST(ifStmtAST, condAST);
             }
         }
 
@@ -103,6 +101,65 @@ public class Parser {
                 return new StmtAST(expAST, true);
             }
             else return new StmtAST(null, false);
+        }
+    }
+
+    private CondAST parseCondAST() throws IOException {
+        LOrExpAST lOrExpAST = parseLOrExpAST();
+        return new CondAST(lOrExpAST);
+    }
+
+    private LOrExpAST parseLOrExpAST() throws IOException {
+        LAndExpAST lAndExpAST = parseLAndExpAST();
+        Token judTok = getTok();
+        if(judTok.getType() == Tokens.OR){
+            LOrExpAST lOrExpAST = parseLOrExpAST();
+            return new LOrExpAST(lAndExpAST, lOrExpAST);
+        }
+        else {
+            backTok();
+            return new LOrExpAST(lAndExpAST);
+        }
+    }
+
+    private LAndExpAST parseLAndExpAST() throws IOException {
+        EqExpAST eqExpAST = parseEqExpAST();
+        Token judTok = getTok();
+        if(judTok.getType() == Tokens.AND){
+            LAndExpAST lAndExpAST = parseLAndExpAST();
+            return new LAndExpAST(eqExpAST, lAndExpAST);
+        }
+        else {
+            backTok();
+            return new LAndExpAST(eqExpAST);
+        }
+
+    }
+
+    private EqExpAST parseEqExpAST() throws IOException {
+        RelExpAST relExpAST = parseRelExpAST();
+        Token judTok = getTok();
+        if(judTok.getType() == Tokens.EQL || judTok.getType() == Tokens.NEQ){
+            EqExpAST eqExpAST = parseEqExpAST();
+            return new EqExpAST(relExpAST, judTok.getVal(),eqExpAST);
+        }
+        else {
+            backTok();
+            return new EqExpAST(relExpAST);
+        }
+    }
+
+    private RelExpAST parseRelExpAST() throws IOException {
+        AddExpAST addExpAST = parseAddExpAST();
+        Token judTok = getTok();
+        String op = judTok.getVal();
+        if(op.equals("<") || op.equals("<=") || op.equals(">") || op.equals(">=")){
+            RelExpAST relExpAST = parseRelExpAST();
+            return new RelExpAST(addExpAST, op ,relExpAST);
+        }
+        else{
+            backTok();
+            return new RelExpAST(addExpAST);
         }
     }
 

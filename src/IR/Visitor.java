@@ -27,13 +27,16 @@ public class Visitor {
     private ArrayList<GlobalVars> globalVars;
     private Function CurFunction;
     private BasicBlock CurBasicBlock;
+    //  这两个block在if/else 时使用
+    private BasicBlock CurTrueBlock;
+    private BasicBlock CurFalseBlock;
     private Value CurValue;
 
     //  符号表
-    private ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
+    private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
     private int symTop = -1;
     //  用于记录标识符出现的次数，以防不同block定义的变量构建Value时重名
-    private HashMap<String, Integer>symCnt = new HashMap<>();
+    private final HashMap<String, Integer>symCnt = new HashMap<>();
 
     //  Utils方法
     private ConstInteger calValue(int left, String op, int right){
@@ -104,7 +107,6 @@ public class Visitor {
             }
             else if(primaryExpAST.getType() == 3){
                 visitLValAST(primaryExpAST.getlValAST());
-
             }
         }
     }
@@ -195,6 +197,58 @@ public class Visitor {
         }
     }
 
+    private void visitLOrExpAST(LOrExpAST lOrExpAST){
+        visitLAndExpAST(lOrExpAST.getLAndExpAST());
+        CurValue = f.buildCmpInst(ConstInteger.constZero, CurValue, OP.Ne, CurBasicBlock);
+        f.buildBrInst(CurValue, CurTrueBlock, CurFalseBlock, CurBasicBlock);
+//        if(lOrExpAST.getType() == 2){
+//            Value TmpValue = CurValue;
+//            visitLOrExpAST(lOrExpAST.getLOrExpAST());
+//
+//        }
+    }
+
+    private void visitRelExpAST(RelExpAST relExpAST){
+        visitAddExpAST(relExpAST.getAddExpAST(), false);
+        if(relExpAST.getType() == 2){
+            Value TmpValue = CurValue;
+            visitRelExpAST(relExpAST.getRelExpAST());
+            String op = relExpAST.getOp();
+            switch (op) {
+                case "<" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
+                case "<=" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
+                case ">" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Gt, CurBasicBlock);
+                case ">=" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ge, CurBasicBlock);
+            }
+        }
+
+    }
+
+    private void visitEqExpAST(EqExpAST eqExpAST){
+        visitRelExpAST(eqExpAST.getRelExpAST());
+        if(eqExpAST.getType() == 2){
+            Value TmpValue = CurValue;
+            visitEqExpAST(eqExpAST.getEqExpAST());
+            if(eqExpAST.getOp().equals("==")){
+                CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Eq, CurBasicBlock);
+            }
+            else CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ne, CurBasicBlock);
+        }
+    }
+
+    private void visitLAndExpAST(LAndExpAST lAndExpAST){
+        visitEqExpAST(lAndExpAST.getEqExpAST());
+
+    }
+
+
+    private void visitCondAST(CondAST condAST){
+        CurTrueBlock = f.buildBasicBlock(CurFunction);
+        CurFalseBlock = f.buildBasicBlock(CurFunction);
+        visitLOrExpAST(condAST.getLOrExpAST());
+
+    }
+
     private void visitStmtAST(StmtAST stmtAST){
         //  return Exp ;
         if(stmtAST.getType() == 1) {
@@ -219,6 +273,20 @@ public class Visitor {
             if(stmtAST.isHasExp()){
                 visitExpAST(stmtAST.getExpAST(), false);
             }
+        }
+        //  if ( Cond ) Stmt
+        else if(stmtAST.getType() == 5){
+            visitCondAST(stmtAST.getCondAST());
+            CurBasicBlock = CurTrueBlock;
+            visitStmtAST(stmtAST.getIfStmtAST());
+        }
+        //  if ( Cond ) Stmt else Stmt
+        else if(stmtAST.getType() == 6){
+            visitCondAST(stmtAST.getCondAST());
+            CurBasicBlock = CurTrueBlock;
+            visitStmtAST(stmtAST.getIfStmtAST());
+            CurBasicBlock = CurFalseBlock;
+            visitStmtAST(stmtAST.getElseStmtAST());
         }
     }
 
