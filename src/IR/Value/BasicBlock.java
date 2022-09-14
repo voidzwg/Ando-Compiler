@@ -7,18 +7,21 @@ import java.util.ArrayList;
 public class BasicBlock extends Value{
     private Function parentFunc;
     private ArrayList<Instruction> insts;
+    private boolean isTerminal;
 
     public static int blockNum = 0;
 
     public BasicBlock(){
         super("block" + String.valueOf(++blockNum), new LabelType());
         this.insts = new ArrayList<>();
+        this.isTerminal = false;
     }
 
     public BasicBlock(Function function){
         super("block" + String.valueOf(++blockNum), new LabelType());
         this.insts = new ArrayList<>();
         this.parentFunc = function;
+        this.isTerminal = false;
     }
 
     //  Main Methods
@@ -34,5 +37,9 @@ public class BasicBlock extends Value{
 
     public ArrayList<Instruction> getInsts() {
         return insts;
+    }
+
+    public void setTerminal(boolean terminal) {
+        isTerminal = terminal;
     }
 }

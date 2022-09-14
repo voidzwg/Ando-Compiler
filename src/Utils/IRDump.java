@@ -133,10 +133,17 @@ public class IRDump {
 
         else if(inst instanceof BrInst){
             BrInst brInst = (BrInst) inst;
-            out.write("br i1 ");
-            out.write(brInst.getJudVal().getName() + ", ");
-            out.write("label %" + brInst.getLabelLeft().getName() + ", ");
-            out.write("label %" + brInst.getLabelRight().getName() + "\n");
+            if(brInst.getJumType() == 1) {
+                out.write("br i1 ");
+                out.write(brInst.getJudVal().getName() + ", ");
+                out.write("label %" + brInst.getLabelLeft().getName() + ", ");
+                out.write("label %" + brInst.getLabelRight().getName() + "\n");
+            }
+            //  直接跳转
+            else {
+                out.write("br label %");
+                out.write(brInst.getLabelJump().getName() + "\n");
+            }
         }
     }
 }

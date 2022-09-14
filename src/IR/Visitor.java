@@ -27,9 +27,16 @@ public class Visitor {
     private ArrayList<GlobalVars> globalVars;
     private Function CurFunction;
     private BasicBlock CurBasicBlock;
+    private BasicBlock TmpFalseBLock = null;
     //  这两个block在if/else 时使用
-    private BasicBlock CurTrueBlock;
-    private BasicBlock CurFalseBlock;
+    //  用数组模拟栈，为了解决if/else嵌套问题
+    private final ArrayList<BasicBlock> CurTrueBlocks = new ArrayList<>();
+    private final ArrayList<BasicBlock> CurFalseBlocks = new ArrayList<>();
+    //  用于短路求值
+    private final ArrayList<BasicBlock> NxtLOrBlocks = new ArrayList<>();
+    private final ArrayList<BasicBlock> NxtLAndBLocks = new ArrayList<>();
+    //  这些栈共用一个栈顶
+
     private Value CurValue;
 
     //  符号表
@@ -48,6 +55,56 @@ public class Visitor {
             case "%" -> new ConstInteger(left % right);
             default -> null;
         };
+    }
+
+    private BasicBlock getCurFalseBlock(){
+        int top = CurFalseBlocks.size();
+        return CurFalseBlocks.get(top - 1);
+    }
+
+    private BasicBlock getCurTrueBlock(){
+        int top = CurTrueBlocks.size();
+        return CurTrueBlocks.get(top - 1);
+    }
+
+    private BasicBlock getNxtLorBlock(){
+        int top = NxtLOrBlocks.size();
+        return NxtLOrBlocks.get(top - 1);
+    }
+
+    private BasicBlock getNxtLAndBlock(){
+        int top = NxtLAndBLocks.size();
+        return NxtLAndBLocks.get(top - 1);
+    }
+
+    private void popCurTrueBlock(){
+        int top = CurTrueBlocks.size();
+        CurTrueBlocks.remove(top - 1);
+    }
+
+    private void popCurFalseBlock(){
+        int top = CurFalseBlocks.size();
+        CurFalseBlocks.remove(top - 1);
+    }
+
+    private void popNxtLOrBlock(){
+        int top = NxtLOrBlocks.size();
+        NxtLOrBlocks.remove(top - 1);
+    }
+
+    private void popNxtLAndBlock(){
+        int top = NxtLAndBLocks.size();
+        NxtLAndBLocks.remove(top - 1);
+    }
+
+    private void initIfBlocks(){
+        CurTrueBlocks.add(f.buildBasicBlock(CurFunction));
+        CurFalseBlocks.add(f.buildBasicBlock(CurFunction));
+    }
+
+    private void popIfBlocks(){
+        popCurTrueBlock();
+        popCurFalseBlock();
     }
 
     //  Find方法用于从符号表(们)找目标ident
@@ -198,14 +255,28 @@ public class Visitor {
     }
 
     private void visitLOrExpAST(LOrExpAST lOrExpAST){
+        if(lOrExpAST.getType() == 2) {
+            //  在LAnd中的一项为false的时候，我们需要跳转到下一个LOr项
+            //  因此我们需要构建br指令跳转到NxtLOrBlock
+            //  同时判断lOrExp的type是为了确保还有后续的LOr表达式
+            NxtLOrBlocks.add(f.buildBasicBlock(CurFunction));
+        }
+        else NxtLOrBlocks.add(getCurFalseBlock());
+
+
         visitLAndExpAST(lOrExpAST.getLAndExpAST());
+        //  此处构建的BrInst可以理解为LOr层面上的，即如果一项为true，则直接跳转
+        //  Build Br指令之后一定要切换CurBasicBlock
+        //  这个Br指令无论有1个还是多个LAnd表达式我们都要构建，
+        //  那么便无法实现跳转到CurTrue或者CurFalse
         CurValue = f.buildCmpInst(ConstInteger.constZero, CurValue, OP.Ne, CurBasicBlock);
-        f.buildBrInst(CurValue, CurTrueBlock, CurFalseBlock, CurBasicBlock);
-//        if(lOrExpAST.getType() == 2){
-//            Value TmpValue = CurValue;
-//            visitLOrExpAST(lOrExpAST.getLOrExpAST());
-//
-//        }
+        f.buildBrInst(CurValue, getCurTrueBlock(), getNxtLorBlock(), CurBasicBlock);
+        CurBasicBlock = getNxtLorBlock();
+        if(lOrExpAST.getType() == 2){
+            visitLOrExpAST(lOrExpAST.getLOrExpAST());
+        }
+
+        popNxtLOrBlock();
     }
 
     private void visitRelExpAST(RelExpAST relExpAST){
@@ -237,16 +308,26 @@ public class Visitor {
     }
 
     private void visitLAndExpAST(LAndExpAST lAndExpAST){
+        if(lAndExpAST.getType() == 2) NxtLAndBLocks.add(f.buildBasicBlock(CurFunction));
+        else NxtLAndBLocks.add(getCurTrueBlock());
+
         visitEqExpAST(lAndExpAST.getEqExpAST());
 
+        //  这个构建br指令我们放在里面是因为当只有一个EqExp项的时候，我们不需要构建br
+        //  此种情况直接回到上级LOrExp，visitLOrExpAST()会构建br
+        if(lAndExpAST.getType() == 2){
+            CurValue = f.buildCmpInst(ConstInteger.constZero, CurValue, OP.Eq, CurBasicBlock);
+            f.buildBrInst(CurValue, getNxtLorBlock(), getNxtLAndBlock(),CurBasicBlock);
+            CurBasicBlock = getNxtLAndBlock();
+            visitLAndExpAST(lAndExpAST.getLAndExpAST());
+        }
+
+        popNxtLAndBlock();
     }
 
 
     private void visitCondAST(CondAST condAST){
-        CurTrueBlock = f.buildBasicBlock(CurFunction);
-        CurFalseBlock = f.buildBasicBlock(CurFunction);
         visitLOrExpAST(condAST.getLOrExpAST());
-
     }
 
     private void visitStmtAST(StmtAST stmtAST){
@@ -276,17 +357,70 @@ public class Visitor {
         }
         //  if ( Cond ) Stmt
         else if(stmtAST.getType() == 5){
+            //  InitIfBlock
+            CurTrueBlocks.add(f.buildBasicBlock(CurFunction));
+            CurFalseBlocks.add(f.buildBasicBlock(CurFunction));
+
             visitCondAST(stmtAST.getCondAST());
-            CurBasicBlock = CurTrueBlock;
+            //  visitCondAST后，原来的CurBasicBLock已经被构建了一个br指令
+            //  (被visitLOrExpAST，它一定构建一条br指令)，所以我们切换到True Block
+            CurBasicBlock = getCurTrueBlock();
+            //  接下来我们为True Block构建指令，visitStmtAST
             visitStmtAST(stmtAST.getIfStmtAST());
+            //  问题在于，在Stmt中，CurBasicBlock可能变化甚至终结
+            //  True Block跳转到if语句后的CurFalseBlock
+            //  如果True Block含if语句 那么现在的CurBlock已经改变
+            //  此处的BuildBr应该为未终结的True Block服务，而不是已经改变了的getCurFalseBLock
+            //  所以我们需要将CurBasicBlock与当前TrueBlock进行比较
+            if(CurBasicBlock == getCurTrueBlock()) {
+                f.buildBrInst(getCurFalseBlock(), CurBasicBlock);
+            }
+
+            //  接下来为CurFalseBlock构建br指令
+            //  此时实际上是给下一层的CurFalseBlock构建指令
+            //  因为我们只有访问第i层的True Block,才能为第i+1层的False Block构建好所有非终结指令
+            //  只有非终结指令构建完，我们才能构建br指令
+            //  所以我们用一个TmpFalseBlock记录下一层的False Block
+            CurBasicBlock = getCurFalseBlock();
+            if(TmpFalseBLock != null){
+                f.buildBrInst(CurBasicBlock, TmpFalseBLock);
+            }
+            TmpFalseBLock = CurBasicBlock;
+
+            popIfBlocks();
+
+            if(CurFalseBlocks.size() == 0) TmpFalseBLock = null;
         }
         //  if ( Cond ) Stmt else Stmt
         else if(stmtAST.getType() == 6){
+            CurTrueBlocks.add(f.buildBasicBlock(CurFunction));
+            CurFalseBlocks.add(f.buildBasicBlock(CurFunction));
+
             visitCondAST(stmtAST.getCondAST());
-            CurBasicBlock = CurTrueBlock;
+
+            //  构建if/else之后的Block
+            BasicBlock newBlock = f.buildBasicBlock(CurFunction);
+
+            //  原理同上，此处为True Block中不含if语句的情况
+            CurBasicBlock = getCurTrueBlock();
             visitStmtAST(stmtAST.getIfStmtAST());
-            CurBasicBlock = CurFalseBlock;
+            if(CurBasicBlock == getCurTrueBlock()) {
+                f.buildBrInst(newBlock, CurBasicBlock);
+            }
+
+            //  FalseBlock
+            CurBasicBlock = getCurFalseBlock();
             visitStmtAST(stmtAST.getElseStmtAST());
+            if(CurBasicBlock == getCurFalseBlock()) {
+                f.buildBrInst(newBlock, CurBasicBlock);
+            }
+
+            //  与上面不同的是，这里构建是用的Block不是False Block而是new Block
+            //  其实采用什么Block完全与下一级里的
+
+            CurBasicBlock = newBlock;
+
+            popIfBlocks();
         }
     }
 

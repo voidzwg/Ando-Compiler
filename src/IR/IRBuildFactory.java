@@ -32,10 +32,16 @@ public class IRBuildFactory {
         return cmpInst;
     }
 
-    public BrInst buildBrInst(Value judVal, BasicBlock left, BasicBlock right, BasicBlock cur){
+    public void buildBrInst(BasicBlock jumpBB, BasicBlock basicBlock){
+        BrInst brInst = new BrInst(jumpBB, basicBlock);
+        basicBlock.addInst(brInst);
+        basicBlock.setTerminal(true);
+    }
+
+    public void buildBrInst(Value judVal, BasicBlock left, BasicBlock right, BasicBlock cur){
         BrInst brInst = new BrInst(judVal, left, right, cur);
         cur.addInst(brInst);
-        return brInst;
+        cur.setTerminal(true);
     }
 
     public LoadInst buildLoadInst(Value pointer,BasicBlock bb){
@@ -44,10 +50,9 @@ public class IRBuildFactory {
         return loadInst;
     }
 
-    public StoreInst buildStoreInst(BasicBlock bb, Value value, Value pointer){
+    public void buildStoreInst(BasicBlock bb, Value value, Value pointer){
         StoreInst storeInst =  new StoreInst(bb, value, pointer);
         bb.addInst(storeInst);
-        return storeInst;
     }
 
     public AllocInst buildAllocInst(String name, BasicBlock bb){
