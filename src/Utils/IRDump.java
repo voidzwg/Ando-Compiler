@@ -115,5 +115,35 @@ public class IRDump {
             out.write(storeInst.getValue().getName() + ", i32* ");
             out.write(storeInst.getPointer().getName() + "\n");
         }
+
+        else if(inst instanceof CmpInst){
+            CmpInst cmpInst = (CmpInst) inst;
+            OP op = cmpInst.getOp();
+            out.write(cmpInst.getName() + " = icmp ");
+            if(op == OP.Eq) out.write("eq");
+            else if(op == OP.Ne) out.write("ne");
+            else if(op == OP.Gt) out.write("sgt");
+            else if(op == OP.Ge) out.write("sge");
+            else if(op == OP.Lt) out.write("slt");
+            else if(op == OP.Le) out.write("sle");
+
+            out.write(" " + cmpInst.getLeftVal().getName());
+            out.write(" " + cmpInst.getRightVal().getName() + " " + "\n");
+        }
+
+        else if(inst instanceof BrInst){
+            BrInst brInst = (BrInst) inst;
+            if(brInst.getJumType() == 1) {
+                out.write("br i1 ");
+                out.write(brInst.getJudVal().getName() + ", ");
+                out.write("label %" + brInst.getLabelLeft().getName() + ", ");
+                out.write("label %" + brInst.getLabelRight().getName() + "\n");
+            }
+            //  直接跳转
+            else {
+                out.write("br label %");
+                out.write(brInst.getLabelJump().getName() + "\n");
+            }
+        }
     }
 }

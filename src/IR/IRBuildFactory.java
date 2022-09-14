@@ -26,16 +26,33 @@ public class IRBuildFactory {
         return new ConstInteger(val);
     }
 
+    public CmpInst buildCmpInst(Value left, Value right, OP op, BasicBlock bb){
+        CmpInst cmpInst = new CmpInst(left, right, op, bb);
+        bb.addInst(cmpInst);
+        return cmpInst;
+    }
+
+    public void buildBrInst(BasicBlock jumpBB, BasicBlock basicBlock){
+        BrInst brInst = new BrInst(jumpBB, basicBlock);
+        basicBlock.addInst(brInst);
+        basicBlock.setTerminal(true);
+    }
+
+    public void buildBrInst(Value judVal, BasicBlock left, BasicBlock right, BasicBlock cur){
+        BrInst brInst = new BrInst(judVal, left, right, cur);
+        cur.addInst(brInst);
+        cur.setTerminal(true);
+    }
+
     public LoadInst buildLoadInst(Value pointer,BasicBlock bb){
         LoadInst loadInst = new LoadInst(pointer, bb);
         bb.addInst(loadInst);
         return loadInst;
     }
 
-    public StoreInst buildStoreInst(BasicBlock bb, Value value, Value pointer){
+    public void buildStoreInst(BasicBlock bb, Value value, Value pointer){
         StoreInst storeInst =  new StoreInst(bb, value, pointer);
         bb.addInst(storeInst);
-        return storeInst;
     }
 
     public AllocInst buildAllocInst(String name, BasicBlock bb){
