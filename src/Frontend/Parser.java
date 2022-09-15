@@ -93,6 +93,14 @@ public class Parser {
             }
         }
 
+        else if(judTok.getVal().equals("while")){
+            getTok();   //  Consume '('
+            CondAST condAST = parseCondAST();
+            getTok();   //  Consume ')'
+            StmtAST loopStmt = parseStmtAST();
+            return new StmtAST(condAST, loopStmt);
+        }
+
         //  [Exp] ;
         else {
             if(!judTok.getVal().equals(";")) {

@@ -3,6 +3,7 @@ package Utils;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
+import Frontend.Tokens;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -181,6 +182,14 @@ public class ASTDump {
             DumpStmtAST(stmtAST.getIfStmtAST());
             out.write("ELSETK else\n");
             DumpStmtAST(stmtAST.getElseStmtAST());
+        }
+        else if(stmtAST.getType() == 7){
+            out.write("WHILETK while\n");
+            out.write("LBRACK (\n");
+            DumpCondAST(stmtAST.getCondAST());
+            out.write("RBRACK )\n");
+
+            DumpStmtAST(stmtAST.getLoopStmt());
         }
         out.write("<Stmt>\n");
     }

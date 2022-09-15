@@ -328,6 +328,21 @@ public class Visitor {
             //  最后令CurBlock为NxtBlock
             CurBasicBlock = NxtBlock;
         }
+        else if(stmtAST.getType() == 7){
+            //  构建要跳转的CurCondBlock
+            BasicBlock CurCondBlock = f.buildBasicBlock(CurFunction);
+            f.buildBrInst(CurCondBlock, CurBasicBlock);
+            CurBasicBlock = CurCondBlock;
+
+            BasicBlock TrueBlock = f.buildBasicBlock(CurFunction);
+            BasicBlock FalseBlock = f.buildBasicBlock(CurFunction);
+            visitCondAST(stmtAST.getCondAST(), TrueBlock, FalseBlock);
+
+            CurBasicBlock = TrueBlock;
+            visitStmtAST(stmtAST.getLoopStmt());
+            f.buildBrInst(CurCondBlock, CurBasicBlock);
+            CurBasicBlock = FalseBlock;
+        }
     }
 
     private void visitConstExpAST(ConstExpAST constExpAST){

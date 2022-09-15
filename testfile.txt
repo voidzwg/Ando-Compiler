@@ -1,19 +1,11 @@
 int main(){
-    int a;
-    a = 5;
-    int b;
-    b = 10;
-    if(a || b == 8) {
-        return a;
+    int i = 0;
+    while (i < 10) {
+        if(i < 9){
+            i = i + 1;
+        }
+        else i = i + 2;
+        i = i + 3;
     }
-    else {
-        if (b == 10 && a == 1)
-            a = 25;
-        else if (b == 10 && a == -5)
-            a = a + 15;
-        else
-            a = -+a;
-    }
-
-    return a;
+    return i;
 }
