@@ -1,62 +1,13 @@
 define i32 %main() {
 block1:
-	%a_0 = alloc i32
-	store i32 0, i32* %a_0
-	store i32 5, i32* %a_0
-	%b_0 = alloc i32
-	store i32 0, i32* %b_0
-	store i32 10, i32* %b_0
-	%1 = load i32, i32* %a_0
-	%2 = icmp ne %1 0 
-	br i1 %2, label %block2, label %block5
+	br label %block2
 block2:
-	%6 = load i32, i32* %a_0
-	ret i32 %6
-	br label %block4
+	%1 = icmp ne 1 0 
+	br i1 %1, label %block3, label %block4
 block3:
-	%7 = load i32, i32* %b_0
-	%8 = icmp eq %7 10 
-	%9 = icmp ne %8 0 
-	br i1 %9, label %block9, label %block7
-block4:
-	%24 = load i32, i32* %a_0
-	ret i32 %24
-block5:
-	%3 = load i32, i32* %b_0
-	%4 = icmp eq %3 8 
-	%5 = icmp ne %4 0 
-	br i1 %5, label %block2, label %block3
-block6:
-	store i32 25, i32* %a_0
-	br label %block8
-block7:
-	%13 = load i32, i32* %b_0
-	%14 = icmp eq %13 10 
-	%15 = icmp ne %14 0 
-	br i1 %15, label %block13, label %block11
-block8:
 	br label %block4
-block9:
-	%10 = load i32, i32* %a_0
-	%11 = icmp eq %10 1 
-	%12 = icmp ne %11 0 
-	br i1 %12, label %block6, label %block7
-block10:
-	%20 = load i32, i32* %a_0
-	%21 = add i32 %20, 15
-	store i32 %21, i32* %a_0
-	br label %block12
-block11:
-	%22 = load i32, i32* %a_0
-	%23 = sub i32 0, %22
-	store i32 %23, i32* %a_0
-	br label %block12
-block12:
-	br label %block8
-block13:
-	%16 = load i32, i32* %a_0
-	%17 = sub i32 0, 5
-	%18 = icmp eq %16 %17 
-	%19 = icmp ne %18 0 
-	br i1 %19, label %block10, label %block11
+block4:
+	ret i32 0
+block5:
+	br label %block2
 }

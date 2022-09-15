@@ -1,19 +1,7 @@
 int main(){
-    int a;
-    a = 5;
-    int b;
-    b = 10;
-    if(a || b == 8) {
-        return a;
+    const int x = 3-2*1;
+    while(x){
+        break;
     }
-    else {
-        if (b == 10 && a == 1)
-            a = 25;
-        else if (b == 10 && a == -5)
-            a = a + 15;
-        else
-            a = -+a;
-    }
-
-    return a;
+    return 0;
 }

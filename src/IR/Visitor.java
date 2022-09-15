@@ -30,6 +30,20 @@ public class Visitor {
 
     private Value CurValue;
 
+    //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
+    //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
+    //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
+    //  我们只要在回溯的时候为上一层的block构建br即可
+    //  即只需在上一层为操作下一层的数据
+
+    //  而对于while，while内有无continue和break，我们处理方法是不一样的
+    //  如果出现break/continue，我们必须要直接构建br指令并切换CurBasicBlock
+    //  因此我们不能在while之后统一做，必须在处理break和continue的时候操作
+    //  这就导致我们要在递归的下一层用到上一层的数据，这是之前的方法无法实现的
+    //  所以我们选择用栈来保存while的嵌套信息
+    private ArrayList<BasicBlock> whileEntryBLocks = new ArrayList<>();
+    private ArrayList<BasicBlock> whileOutBlocks = new ArrayList<>();
+
     //  符号表
     private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
     private int symTop = -1;
@@ -37,6 +51,35 @@ public class Visitor {
     private final HashMap<String, Integer>symCnt = new HashMap<>();
 
     //  Utils方法
+    private void pushWhileEntry(BasicBlock whileEntryBlock){
+        whileEntryBLocks.add(whileEntryBlock);
+    }
+
+    private void pushWhileOut(BasicBlock whileOutBlock){
+        whileOutBlocks.add(whileOutBlock);
+    }
+
+    private void popWhileEntry(){
+        int len = whileEntryBLocks.size();
+        whileEntryBLocks.remove(len - 1);
+    }
+
+    private void popWhileOut(){
+        int len = whileOutBlocks.size();
+        whileOutBlocks.remove(len - 1);
+    }
+
+    private BasicBlock getWhileEntry(){
+        int len = whileEntryBLocks.size();
+        return whileEntryBLocks.get(len - 1);
+    }
+
+    private BasicBlock getWhileOut(){
+        int len = whileOutBlocks.size();
+        return whileOutBlocks.get(len - 1);
+    }
+
+
     private ConstInteger calValue(int left, String op, int right){
         return switch (op) {
             case "+" -> new ConstInteger(left + right);
@@ -327,6 +370,41 @@ public class Visitor {
 
             //  最后令CurBlock为NxtBlock
             CurBasicBlock = NxtBlock;
+        }
+        else if(stmtAST.getType() == 7){
+            //  构建要跳转的CurCondBlock
+            BasicBlock CurCondBlock = f.buildBasicBlock(CurFunction);
+            f.buildBrInst(CurCondBlock, CurBasicBlock);
+            CurBasicBlock = CurCondBlock;
+
+            BasicBlock TrueBlock = f.buildBasicBlock(CurFunction);
+            BasicBlock FalseBlock = f.buildBasicBlock(CurFunction);
+            //  入栈，注意这里entry为CurCondBlock，因为continue要重新判断条件
+            pushWhileEntry(CurCondBlock);
+            pushWhileOut(FalseBlock);
+
+            visitCondAST(stmtAST.getCondAST(), TrueBlock, FalseBlock);
+
+            CurBasicBlock = TrueBlock;
+            visitStmtAST(stmtAST.getLoopStmt());
+            f.buildBrInst(CurCondBlock, CurBasicBlock);
+            CurBasicBlock = FalseBlock;
+
+            //  while内的指令构建完了，出栈
+            popWhileEntry();
+            popWhileOut();
+        }
+        //  continue;
+        else if(stmtAST.getType() == 8){
+            BasicBlock whileEntryBlock = getWhileEntry();
+            f.buildBrInst(whileEntryBlock, CurBasicBlock);
+            CurBasicBlock = f.buildBasicBlock(CurFunction);
+        }
+        //  break;
+        else if(stmtAST.getType() == 9){
+            BasicBlock whileOutBlock = getWhileOut();
+            f.buildBrInst(whileOutBlock, CurBasicBlock);
+            CurBasicBlock = f.buildBasicBlock(CurFunction);
         }
     }
 
