@@ -101,6 +101,18 @@ public class Parser {
             return new StmtAST(condAST, loopStmt);
         }
 
+        else if(judTok.getVal().equals("continue")){
+            getTok();   //  Consume ';'
+            ContinueAST continueAST = new ContinueAST();
+            return new StmtAST(continueAST);
+        }
+
+        else if(judTok.getVal().equals("break")){
+            getTok();   //  Consume ';'
+            BreakAST breakAST = new BreakAST();
+            return new StmtAST(breakAST);
+        }
+
         //  [Exp] ;
         else {
             if(!judTok.getVal().equals(";")) {

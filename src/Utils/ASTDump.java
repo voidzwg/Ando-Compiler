@@ -191,6 +191,15 @@ public class ASTDump {
 
             DumpStmtAST(stmtAST.getLoopStmt());
         }
+        else if(stmtAST.getType() == 8){
+            out.write("BREAKTK break\n");
+            out.write("SEMCOL ;\n");
+        }
+        else if(stmtAST.getType() == 9){
+            out.write("CONTINUETK continue\n");
+            out.write("SEMCOL ;\n");
+        }
+
         out.write("<Stmt>\n");
     }
 

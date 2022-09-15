@@ -1,11 +1,7 @@
 int main(){
-    int i = 0;
-    while (i < 10) {
-        if(i < 9){
-            i = i + 1;
-        }
-        else i = i + 2;
-        i = i + 3;
+    const int x = 3-2*1;
+    while(x){
+        break;
     }
-    return i;
+    return 0;
 }

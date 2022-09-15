@@ -3,7 +3,7 @@ package Frontend.AST;
 import Frontend.AST.ExpAST.LOrExpAST;
 
 public class CondAST {
-    private LOrExpAST lOrExpAST;
+    private final LOrExpAST lOrExpAST;
 
     public CondAST(LOrExpAST lOrExpAST) {
         this.lOrExpAST = lOrExpAST;
