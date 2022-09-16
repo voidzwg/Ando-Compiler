@@ -1,13 +1,24 @@
 define i32 %main() {
 block1:
+	%i_0 = alloc i32
+	store i32 0, i32* %i_0
+	%pow_0 = alloc i32
+	store i32 1, i32* %pow_0
 	br label %block2
 block2:
-	%1 = icmp ne 1 0 
-	br i1 %1, label %block3, label %block4
+	%1 = load i32, i32* %i_0
+	%2 = icmp slt %1 7 
+	%3 = icmp ne %2 0 
+	br i1 %3, label %block3, label %block4
 block3:
-	br label %block4
-block4:
-	ret i32 0
-block5:
+	%4 = load i32, i32* %pow_0
+	%5 = mul i32 %4, 2
+	store i32 %5, i32* %pow_0
+	%6 = load i32, i32* %i_0
+	%7 = add i32 %6, 1
+	store i32 %7, i32* %i_0
 	br label %block2
+block4:
+	%8 = load i32, i32* %pow_0
+	ret i32 %8
 }

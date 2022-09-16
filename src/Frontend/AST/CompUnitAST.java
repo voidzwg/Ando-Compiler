@@ -1,13 +1,16 @@
 package Frontend.AST;
 
+import java.util.ArrayList;
+
 public class CompUnitAST {
-    FuncDefAST funcDefAST;
+    ArrayList<FuncDefAST> funcDefASTS;
 
-    public CompUnitAST(FuncDefAST funcDefAST) {
-        this.funcDefAST = funcDefAST;
+    public CompUnitAST(ArrayList<FuncDefAST> funcDefASTS) {
+        this.funcDefASTS = funcDefASTS;
     }
 
-    public FuncDefAST getFuncDefAST() {
-        return funcDefAST;
+    public ArrayList<FuncDefAST> getFuncDefASTS() {
+        return funcDefASTS;
     }
+
 }

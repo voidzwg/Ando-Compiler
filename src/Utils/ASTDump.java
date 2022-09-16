@@ -22,9 +22,25 @@ public class ASTDump {
     }
 
     public static void DumpCompUnit(CompUnitAST compUnitAST) throws IOException {
-        DumpFuncDefAST(compUnitAST.getFuncDefAST());
+        ArrayList<FuncDefAST> funcDefASTS = compUnitAST.getFuncDefASTS();
+        int len = funcDefASTS.size();
+
+        for (FuncDefAST funcDefAST : funcDefASTS) {
+            DumpFuncDefAST(funcDefAST);
+        }
+
         out.write("<CompUnit>");
         out.close();
+    }
+
+    private static void DumpFuncFParamsAST(FuncFParamsAST funcFParamsAST) throws IOException {
+        ArrayList<FuncFParamAST> funcFParamASTS = funcFParamsAST.getFuncFParamASTS();
+
+        for(FuncFParamAST funcFParamAST : funcFParamASTS){
+            DumpFuncFParamAST(funcFParamAST);
+        }
+
+        out.write("<FuncFParams>");
     }
 
     private static void DumpFuncDefAST(FuncDefAST funcDefAST) throws IOException {
@@ -38,12 +54,30 @@ public class ASTDump {
         else out.write("IDENFR " + funcName + "\n");
 
         out.write("LPARENT (\n");
+
+        if(funcDefAST.getType() == 2){
+
+            FuncFParamsAST funcFParamsAST = funcDefAST.getFuncFParamsAST();
+            DumpFuncFParamsAST(funcFParamsAST);
+        }
+
         out.write("RPARENT )\n");
 
         DumpBlockAST(funcDefAST.getBlockAST());
 
         if(funcName.equals("main")) out.write("<MainFuncDef>\n");
         else out.write("<FuncDefUnit>\n");
+    }
+
+    private static void DumpFuncFParamAST(FuncFParamAST funcFParamAST) throws IOException {
+        String bType = funcFParamAST.getbType();
+        if(bType.equals("void")) out.write("VOIDTK void\n");
+        else if(bType.equals("int")) out.write("INTTK int\n");
+
+        String ident = funcFParamAST.getIdent();
+        out.write("IDENFR " + ident + "\n");
+
+        out.write("<FuncFParam\n>");
     }
 
     private static void DumpBlockAST(BlockAST blockAST) throws IOException {

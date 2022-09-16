@@ -1,7 +1,10 @@
-int main(){
-    const int x = 3-2*1;
-    while(x){
-        break;
-    }
-    return 0;
+int half(int x) {
+  return x / 2;
+}
+
+void f() {}
+
+int main() {
+  f();
+  return half(10);
 }
