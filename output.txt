@@ -1,24 +1,77 @@
-define i32 %main() {
-block1:
-	%i_0 = alloc i32
-	store i32 0, i32* %i_0
-	%pow_0 = alloc i32
-	store i32 1, i32* %pow_0
-	br label %block2
-block2:
-	%1 = load i32, i32* %i_0
-	%2 = icmp slt %1 7 
-	%3 = icmp ne %2 0 
-	br i1 %3, label %block3, label %block4
-block3:
-	%4 = load i32, i32* %pow_0
-	%5 = mul i32 %4, 2
-	store i32 %5, i32* %pow_0
-	%6 = load i32, i32* %i_0
-	%7 = add i32 %6, 1
-	store i32 %7, i32* %i_0
-	br label %block2
-block4:
-	%8 = load i32, i32* %pow_0
-	ret i32 %8
-}
+INTTK int
+IDENFR half
+LPARENT (
+INTTK int
+IDENFR x
+<FuncFParam>
+<FuncFParams>
+RPARENT )
+LBRACE {
+RETURNTK return
+IDENFR x
+<LVal>
+<PrimaryExp>
+<UnaryExp>
+DIV /
+INTCON 2
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<MulExp>
+<AddExp>
+<Exp>
+SEMICN ;
+<Stmt>
+<BlockItem>
+RBRACE }
+<Block>
+<FuncDefUnit>
+VOIDTK void
+IDENFR f
+LPARENT (
+RPARENT )
+LBRACE {
+RBRACE }
+<Block>
+<FuncDefUnit>
+INTTK int
+MAINTK main
+LPARENT (
+RPARENT )
+LBRACE {
+IDENFR f
+LBRACKET (
+RBRACKET )
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+SEMICN ;
+<Stmt>
+<BlockItem>
+SEMICN ;
+<Stmt>
+<BlockItem>
+RETURNTK return
+IDENFR half
+LBRACKET (
+INTCON 10
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+<FuncRParams>RBRACKET )
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+SEMICN ;
+<Stmt>
+<BlockItem>
+RBRACE }
+<Block>
+<MainFuncDef>
+<CompUnit>

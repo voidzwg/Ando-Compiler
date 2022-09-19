@@ -7,7 +7,7 @@ public class UnaryExpAST {
     private String unaryOP;
     private UnaryExpAST unaryExpAST;
     private String ident;
-    private FuncRParamsAST funcRParamASTS;
+    private FuncRParamsAST funcRParamsAST;
     //  type表示改UnaryExp的类型，按顺序依次为1，2
     private int type;
 
@@ -22,10 +22,15 @@ public class UnaryExpAST {
         this.type = 2;
     }
 
-    public UnaryExpAST(String ident, FuncRParamsAST funcRParamASTS) {
+    public UnaryExpAST(String ident, FuncRParamsAST funcRParamsAST) {
         this.ident = ident;
-        this.funcRParamASTS = funcRParamASTS;
+        this.funcRParamsAST = funcRParamsAST;
         this.type = 3;
+    }
+
+    public UnaryExpAST(String ident) {
+        this.ident = ident;
+        this.type = 4;
     }
 
     public PrimaryExpAST getPrimaryExpAST() {
@@ -38,6 +43,14 @@ public class UnaryExpAST {
 
     public UnaryExpAST getUnaryExpAST() {
         return unaryExpAST;
+    }
+
+    public String getIdent() {
+        return ident;
+    }
+
+    public FuncRParamsAST getFuncRParamsAST() {
+        return funcRParamsAST;
     }
 
     public int getType() {

@@ -40,7 +40,7 @@ public class ASTDump {
             DumpFuncFParamAST(funcFParamAST);
         }
 
-        out.write("<FuncFParams>");
+        out.write("<FuncFParams>\n");
     }
 
     private static void DumpFuncDefAST(FuncDefAST funcDefAST) throws IOException {
@@ -77,7 +77,7 @@ public class ASTDump {
         String ident = funcFParamAST.getIdent();
         out.write("IDENFR " + ident + "\n");
 
-        out.write("<FuncFParam\n>");
+        out.write("<FuncFParam>\n");
     }
 
     private static void DumpBlockAST(BlockAST blockAST) throws IOException {
@@ -315,13 +315,24 @@ public class ASTDump {
             String op = mulExpAST.getOp();
             switch (op) {
                 case "*" -> out.write("MULT *\n");
-                case "/" -> out.write("DIV /");
-                case "%" -> out.write("MOD %");
+                case "/" -> out.write("DIV /\n");
+                case "%" -> out.write("MOD %\n");
             }
             DumpMulExpAST(mulExpAST.getMulExpAST());
         }
 
         out.write("<MulExp>\n");
+    }
+
+    private static void DumpFuncRParamsAST(FuncRParamsAST funcRParamsAST) throws IOException {
+        ArrayList<ExpAST> expASTS = funcRParamsAST.getExpASTS();
+
+        for(int i = 0; i < expASTS.size(); i++){
+            DumpExpAST(expASTS.get(i));
+            if(i != expASTS.size() - 1) out.write("COMMA ,\n");
+        }
+
+        out.write("<FuncRParams>");
     }
 
     private static void DumpUnaryExpAST(UnaryExpAST unaryExpAST) throws IOException {
@@ -330,7 +341,7 @@ public class ASTDump {
             DumpPrimaryExp(unaryExpAST.getPrimaryExpAST());
         }
 
-        else{
+        else if (unaryExpAST.getType() == 2){
             String op = unaryExpAST.getUnaryOP();
             switch (op) {
                 case "+" -> {
@@ -348,6 +359,22 @@ public class ASTDump {
             }
 
             DumpUnaryExpAST(unaryExpAST.getUnaryExpAST());
+        }
+
+        else if(unaryExpAST.getType() == 3){
+            out.write("IDENFR " + unaryExpAST.getIdent() + "\n");
+            out.write("LBRACKET (\n");
+
+            DumpFuncRParamsAST(unaryExpAST.getFuncRParamsAST());
+
+            out.write("RBRACKET )\n");
+        }
+
+        else if(unaryExpAST.getType() == 4){
+            out.write("IDENFR " + unaryExpAST.getIdent() + "\n");
+            out.write("LBRACKET (\n");
+
+            out.write("RBRACKET )\n");
         }
 
         out.write("<UnaryExp>\n");

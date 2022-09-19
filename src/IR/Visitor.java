@@ -504,7 +504,11 @@ public class Visitor {
         functions = new ArrayList<>();
         globalVars = new ArrayList<>();
 
-        visitFuncDefAST(compUnitAST.getFuncDefAST());
+        ArrayList<FuncDefAST> funcDefASTS = compUnitAST.getFuncDefASTS();
+        for (FuncDefAST funcDefAST : funcDefASTS) {
+            visitFuncDefAST(funcDefAST);
+            functions.add(CurFunction);
+        }
 
         return f.buildModule(functions, globalVars);
     }

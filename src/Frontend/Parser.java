@@ -5,7 +5,6 @@ import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /*
@@ -50,7 +49,8 @@ public class Parser {
 
     private StmtAST parseStmtAST() throws IOException {
         Token judTok = getTok();   //  Consume 'return'
-
+        Token judTok2 = getTok();
+        backTok(1);
         //  "return" Exp ";"
         if(judTok.getVal().equals("return")) {
             ExpAST expAST = parseExpAST();
@@ -59,7 +59,7 @@ public class Parser {
         }
 
         //  LVal "=" Exp ";"
-        else if(judTok.getType() == Tokens.IDENFR){
+        else if(judTok.getType() == Tokens.IDENFR && judTok2.getVal().equals("=")){
             backTok(1);
             LValAST lValAST = parseLValAST();
             getTok();   //  Consume '='
@@ -261,8 +261,16 @@ public class Parser {
             if(judTok.getVal().equals("(")){
                 backTok(2);
                 String ident = getTok().getVal();
-                FuncRParamsAST funcRParamsAST = parseFuncRParamsAST();
-                return new UnaryExpAST(ident, funcRParamsAST);
+                getTok();   //  Consume '('
+
+                judTok = getTok();  //  判断有无FuncRParams
+                if(!judTok.getVal().equals(")")){
+                    backTok(1);
+                    FuncRParamsAST funcRParamsAST = parseFuncRParamsAST();
+                    getTok();   //  Consume ')'
+                    return new UnaryExpAST(ident, funcRParamsAST);
+                }
+                else return new UnaryExpAST(ident);
             }
             else {
                 backTok(2);
@@ -468,16 +476,20 @@ public class Parser {
 
         getTok();   //  Consume '('
 
-        FuncFParamsAST funcFParams = null;
+        FuncFParamsAST funcFParams;
 
         Token judTok = getTok();
         if(!judTok.getVal().equals(")")){
+            backTok(1);
             funcFParams = parseFuncFParamsAST();
+            getTok();   //  Consume ')'
+            BlockAST blockAST = parseBlockAST();
+            return new FuncDefAST(funcType, ident, blockAST, funcFParams);
         }
-
-        BlockAST blockAST = parseBlockAST();
-
-        return new FuncDefAST(funcType, ident, blockAST, funcFParams);
+        else{
+            BlockAST blockAST = parseBlockAST();
+            return new FuncDefAST(funcType, ident, blockAST);
+        }
     }
 
     public CompUnitAST parseCompUnitAST() throws IOException {
