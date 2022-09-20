@@ -7,6 +7,7 @@ import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.OP;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -23,13 +24,12 @@ import java.util.HashMap;
 
 public class Visitor {
     private final IRBuildFactory f = IRBuildFactory.getInstance();
-    private ArrayList<Function> functions;
-    private ArrayList<GlobalVars> globalVars;
     private Function CurFunction;
     private BasicBlock CurBasicBlock;
 
     private Value CurValue;
 
+    private IRModule module;
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
@@ -41,8 +41,8 @@ public class Visitor {
     //  因此我们不能在while之后统一做，必须在处理break和continue的时候操作
     //  这就导致我们要在递归的下一层用到上一层的数据，这是之前的方法无法实现的
     //  所以我们选择用栈来保存while的嵌套信息
-    private ArrayList<BasicBlock> whileEntryBLocks = new ArrayList<>();
-    private ArrayList<BasicBlock> whileOutBlocks = new ArrayList<>();
+    private final ArrayList<BasicBlock> whileEntryBLocks = new ArrayList<>();
+    private final ArrayList<BasicBlock> whileOutBlocks = new ArrayList<>();
 
     //  符号表
     private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
@@ -51,6 +51,18 @@ public class Visitor {
     private final HashMap<String, Integer>symCnt = new HashMap<>();
 
     //  Utils方法
+    private int addSymCnt(String ident){
+        int cnt = 0;
+        if(symCnt.get(ident) == null){
+            symCnt.put(ident, 0);
+        }
+        else{
+            cnt = symCnt.get(ident) + 1;
+            symCnt.replace(ident, cnt);
+        }
+        return cnt;
+    }
+
     private void pushWhileEntry(BasicBlock whileEntryBlock){
         whileEntryBLocks.add(whileEntryBlock);
     }
@@ -77,6 +89,19 @@ public class Visitor {
     private BasicBlock getWhileOut(){
         int len = whileOutBlocks.size();
         return whileOutBlocks.get(len - 1);
+    }
+
+    private void pushSymTbl(){
+        symTop++;
+        if(symTbls.size() == symTop) symTbls.add(new HashMap<>());
+    }
+
+    private void popSymTbl(){
+        symTop--;
+    }
+
+    private void pushSymbol(String ident, Value value){
+        symTbls.get(symTop).put(ident, value);
     }
 
 
@@ -156,7 +181,8 @@ public class Visitor {
         if(!isConstExp) {
             if (unaryExpAST.getType() == 1) {
                 visitPrimaryExpAST(unaryExpAST.getPrimaryExpAST(),false);
-            } else {
+            }
+            else if(unaryExpAST.getType() == 2){
                 visitUnaryExpAST(unaryExpAST.getUnaryExpAST(),false);
                 switch (unaryExpAST.getUnaryOP()) {
                     case "+":
@@ -169,6 +195,23 @@ public class Visitor {
                         CurValue = f.buildBinaryInst(OP.Eq, ConstInteger.constZero, CurValue, CurBasicBlock);
                         break;
                 }
+            }
+            else if(unaryExpAST.getType() == 3){
+                String funcName = unaryExpAST.getIdent();
+                Function function = (Function) find(funcName);
+
+                ArrayList<Value> values = new ArrayList<>();
+                ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
+                for(ExpAST expAST : expASTS){
+                    visitExpAST(expAST, false);
+                    values.add(CurValue);
+                }
+                CurValue = f.buildCallInst(CurBasicBlock, function, values);
+            }
+            else if(unaryExpAST.getType() == 4){
+                String funcName = unaryExpAST.getIdent();
+                Function function = (Function) find(funcName);
+                CurValue = f.buildCallInst(CurBasicBlock, function);
             }
         }
         else {
@@ -421,7 +464,7 @@ public class Visitor {
 
         visitConstInitValAST(constDefAST.getConstInitValAST());
 
-        symTbls.get(symTop).put(ident, CurValue);
+        pushSymbol(ident, CurValue);
     }
 
     private void visitConstDeclAST(ConstDeclAST constDeclAST){
@@ -446,14 +489,8 @@ public class Visitor {
     private void visitVarDefAST(VarDefAST varDefAST){
         String ident = varDefAST.getIdent();
 
-        int cnt = 0;
-        if(symCnt.get(ident) == null){
-            symCnt.put(ident, 0);
-        }
-        else{
-            cnt = symCnt.get(ident) + 1;
-            symCnt.replace(ident, cnt);
-        }
+        int cnt = addSymCnt(ident);
+
         AllocInst allocInst = f.buildAllocInst("%" + ident + "_" + cnt, CurBasicBlock);
         if(varDefAST.getType() == 2){
             visitInitValAST(varDefAST.getInitValAST());
@@ -462,7 +499,7 @@ public class Visitor {
         //  未赋初值的全局变量直接置为0
         else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
 
-        symTbls.get(symTop).put(ident, allocInst);
+        pushSymbol(ident, allocInst);
     }
 
     private void visitInitValAST(InitValAST initValAST){
@@ -479,33 +516,59 @@ public class Visitor {
     }
 
     private void visitBlockAST(BlockAST blockAST){
-        symTop++;
-        symTbls.add(new HashMap<>());
+        pushSymTbl();
 
         ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();
         for(BlockItemAST blockItemAST : blockItemASTS){
             visitBlockItemAST(blockItemAST);
         }
 
-        symTop--;
+        popSymTbl();
     }
 
     private void visitFuncDefAST(FuncDefAST funcDefAST){
-        String name = "%" + funcDefAST.getIdent();
+        String ident = funcDefAST.getIdent();
         String type = funcDefAST.getFuncType();
-
-        CurFunction = f.buildFunction(name, type);
-        functions.add(CurFunction);
+        CurFunction = f.buildFunction("@" + ident, type, module);
         CurBasicBlock = f.buildBasicBlock(CurFunction);
+
+        pushSymbol(ident, CurFunction);
+
+        //  Has FuncFParams
+        if(funcDefAST.getType() == 2){
+            pushSymTbl();
+
+            FuncFParamsAST funcFParamsAST = funcDefAST.getFuncFParamsAST();
+            ArrayList<FuncFParamAST> funcFParamASTS = funcFParamsAST.getFuncFParamASTS();
+            for(FuncFParamAST funcFParamAST : funcFParamASTS){
+                String identArg = funcFParamAST.getIdent();
+                String typeArg = funcFParamAST.getbType();
+
+                int cnt = addSymCnt(identArg);
+
+                Argument argument = f.buildArgument("%" + identArg + "_" + cnt, typeArg, CurFunction);
+                pushSymbol(identArg, argument);
+            }
+
+            popSymTbl();
+        }
+
         visitBlockAST(funcDefAST.getBlockAST());
     }
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){
-        functions = new ArrayList<>();
-        globalVars = new ArrayList<>();
+        ArrayList<Function> functions = new ArrayList<>();
+        ArrayList<GlobalVars> globalVars = new ArrayList<>();
 
-        visitFuncDefAST(compUnitAST.getFuncDefAST());
+        module = new IRModule(functions, globalVars);
+        //  构建全局域
+        pushSymTbl();
 
-        return f.buildModule(functions, globalVars);
+        ArrayList<FuncDefAST> funcDefASTS = compUnitAST.getFuncDefASTS();
+        for (FuncDefAST funcDefAST : funcDefASTS) {
+            visitFuncDefAST(funcDefAST);
+        }
+
+        return module;
     }
 }

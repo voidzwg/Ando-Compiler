@@ -5,6 +5,7 @@ import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /*
 * Parser中变量简介:
@@ -16,22 +17,20 @@ import java.io.IOException;
 
 public class Parser {
 
-    private boolean isBack = false;
-    private Token CurTok;
+    private ArrayList<Token> CurTok = new ArrayList<>();
+    private int cTop = -1;
     private final Lexer lexer;
 
     private Token getTok() throws IOException {
-        if(!isBack){
-            CurTok = lexer.getTok();
+        if(cTop == CurTok.size() - 1){
+            CurTok.add(lexer.getTok());
         }
-        else {
-            isBack = false;
-        }
-        return CurTok;
+        cTop++;
+        return CurTok.get(cTop);
     }
 
-    private void backTok(){
-        isBack = true;
+    private void backTok(int index){
+        cTop-=index;
     }
 
     //  Constructor
@@ -50,7 +49,8 @@ public class Parser {
 
     private StmtAST parseStmtAST() throws IOException {
         Token judTok = getTok();   //  Consume 'return'
-
+        Token judTok2 = getTok();
+        backTok(1);
         //  "return" Exp ";"
         if(judTok.getVal().equals("return")) {
             ExpAST expAST = parseExpAST();
@@ -59,8 +59,8 @@ public class Parser {
         }
 
         //  LVal "=" Exp ";"
-        else if(judTok.getType() == Tokens.IDENFR){
-            backTok();
+        else if(judTok.getType() == Tokens.IDENFR && judTok2.getVal().equals("=")){
+            backTok(1);
             LValAST lValAST = parseLValAST();
             getTok();   //  Consume '='
             ExpAST expAST = parseExpAST();
@@ -70,7 +70,7 @@ public class Parser {
 
         //  Block
         else if(judTok.getVal().equals("{")){
-            backTok();
+            backTok(1);
             BlockAST blockAST = parseBlockAST();
             return new StmtAST(blockAST);
         }
@@ -88,7 +88,7 @@ public class Parser {
             }
 
             else {
-                backTok();
+                backTok(1);
                 return new StmtAST(ifStmtAST, condAST);
             }
         }
@@ -116,7 +116,7 @@ public class Parser {
         //  [Exp] ;
         else {
             if(!judTok.getVal().equals(";")) {
-                backTok();
+                backTok(1);
                 ExpAST expAST = parseExpAST();
                 return new StmtAST(expAST, true);
             }
@@ -137,7 +137,7 @@ public class Parser {
             return new LOrExpAST(lAndExpAST, lOrExpAST);
         }
         else {
-            backTok();
+            backTok(1);
             return new LOrExpAST(lAndExpAST);
         }
     }
@@ -150,7 +150,7 @@ public class Parser {
             return new LAndExpAST(eqExpAST, lAndExpAST);
         }
         else {
-            backTok();
+            backTok(1);
             return new LAndExpAST(eqExpAST);
         }
 
@@ -164,7 +164,7 @@ public class Parser {
             return new EqExpAST(relExpAST, judTok.getVal(),eqExpAST);
         }
         else {
-            backTok();
+            backTok(1);
             return new EqExpAST(relExpAST);
         }
     }
@@ -178,7 +178,7 @@ public class Parser {
             return new RelExpAST(addExpAST, op ,relExpAST);
         }
         else{
-            backTok();
+            backTok(1);
             return new RelExpAST(addExpAST);
         }
     }
@@ -202,7 +202,7 @@ public class Parser {
             return new AddExpAST(mulExpAST, "-", addExpAST);
         }
 
-        backTok();
+        backTok(1);
         return new AddExpAST(mulExpAST);
     }
 
@@ -225,9 +225,27 @@ public class Parser {
             }
         }
 
-        backTok();
+        backTok(1);
         return new MulExpAST(unaryExpAST);
 
+    }
+
+    private FuncRParamsAST parseFuncRParamsAST() throws IOException {
+        ArrayList<ExpAST> expASTS = new ArrayList<>();
+        ExpAST expAST = parseExpAST();
+        expASTS.add(expAST);
+        while (true){
+            Token judTok = getTok();
+            if(!judTok.getVal().equals(",")){
+                backTok(1);
+                break;
+            }
+            else {
+                expAST = parseExpAST();
+                expASTS.add(expAST);
+            }
+        }
+        return new FuncRParamsAST(expASTS);
     }
 
     private UnaryExpAST parseUnaryExpAST() throws IOException {
@@ -238,12 +256,34 @@ public class Parser {
             UnaryExpAST unaryExpAST = parseUnaryExpAST();
             return new UnaryExpAST(judTok.getVal(), unaryExpAST);
         }
+        else if(judTok.getType() == Tokens.IDENFR){
+            judTok = getTok();
+            if(judTok.getVal().equals("(")){
+                backTok(2);
+                String ident = getTok().getVal();
+                getTok();   //  Consume '('
 
-        //  PrimaryExp的情况
-        backTok();
-        PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
-
-        return new UnaryExpAST(primaryExpAST);
+                judTok = getTok();  //  判断有无FuncRParams
+                if(!judTok.getVal().equals(")")){
+                    backTok(1);
+                    FuncRParamsAST funcRParamsAST = parseFuncRParamsAST();
+                    getTok();   //  Consume ')'
+                    return new UnaryExpAST(ident, funcRParamsAST);
+                }
+                else return new UnaryExpAST(ident);
+            }
+            else {
+                backTok(2);
+                PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
+                return new UnaryExpAST(primaryExpAST);
+            }
+        }
+        //  不是ident肯定是PrimaryExp的情况
+        else {
+            backTok(1);
+            PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
+            return new UnaryExpAST(primaryExpAST);
+        }
     }
 
     private PrimaryExpAST parsePrimaryExpAST() throws IOException {
@@ -259,14 +299,14 @@ public class Parser {
 
         //  LVal
         if(judTok.getType() == Tokens.IDENFR){
-            backTok();
+            backTok(1);
             LValAST lValAST = parseLValAST();
 
             return new PrimaryExpAST(lValAST);
         }
 
         //  Number
-        backTok();
+        backTok(1);
         NumberAST numberAST = parseNumberAST();
 
         return new PrimaryExpAST(numberAST);
@@ -283,7 +323,7 @@ public class Parser {
         BlockAST blockAST = new BlockAST();
 
         while (!getTok().getVal().equals("}")) {
-            backTok();
+            backTok(1);
             BlockItemAST blockItemAST = parseBlockItemAST();
             blockAST.addBlockItem(blockItemAST);
         }
@@ -293,7 +333,7 @@ public class Parser {
 
     private BlockItemAST parseBlockItemAST() throws IOException {
         Token judTok = getTok();
-        backTok();
+        backTok(1);
         if(judTok.getVal().equals("const") || judTok.getVal().equals("int")){
             DeclAST declAST = parseDeclAST();
             return new BlockItemAST(declAST);
@@ -306,7 +346,7 @@ public class Parser {
 
     private DeclAST parseDeclAST() throws IOException {
         Token judTok = getTok();
-        backTok();
+        backTok(1);
         if(judTok.getVal().equals("const")) {
             ConstDeclAST constDeclAST = parseConstDeclAST();
             return new DeclAST(constDeclAST);
@@ -347,7 +387,7 @@ public class Parser {
             return new VarDefAST(ident, initValAST);
         }
 
-        backTok();
+        backTok(1);
         return new VarDefAST(ident);
     }
 
@@ -399,7 +439,33 @@ public class Parser {
         return new ConstInitValAST(constExpAST);
     }
 
+    private FuncFParamAST parseFuncFParamAST() throws IOException {
+        String bType = getTok().getVal();
+        String ident = getTok().getVal();
 
+        return new FuncFParamAST(bType, ident);
+    }
+
+    private FuncFParamsAST parseFuncFParamsAST() throws IOException {
+        ArrayList<FuncFParamAST> funcFParamASTS = new ArrayList<>();
+
+        FuncFParamAST funcFParamAST = parseFuncFParamAST();
+        funcFParamASTS.add(funcFParamAST);
+
+        while(true){
+            Token judTok = getTok();
+            if(judTok.getVal().equals(",")){
+                funcFParamAST = parseFuncFParamAST();
+                funcFParamASTS.add(funcFParamAST);
+            }
+            else {
+                backTok(1);
+                break;
+            }
+        }
+
+        return new FuncFParamsAST(funcFParamASTS);
+    }
 
     private FuncDefAST parseFuncDefAST() throws IOException {
         Token funcTypeToken = getTok();
@@ -409,17 +475,40 @@ public class Parser {
         String ident = identToken.getVal();
 
         getTok();   //  Consume '('
-        getTok();   //  Consume ')'
 
-        BlockAST blockAST = parseBlockAST();
+        FuncFParamsAST funcFParams;
 
-        return new FuncDefAST(funcType, ident, blockAST);
+        Token judTok = getTok();
+        if(!judTok.getVal().equals(")")){
+            backTok(1);
+            funcFParams = parseFuncFParamsAST();
+            getTok();   //  Consume ')'
+            BlockAST blockAST = parseBlockAST();
+            return new FuncDefAST(funcType, ident, blockAST, funcFParams);
+        }
+        else{
+            BlockAST blockAST = parseBlockAST();
+            return new FuncDefAST(funcType, ident, blockAST);
+        }
     }
 
     public CompUnitAST parseCompUnitAST() throws IOException {
-
+        ArrayList<FuncDefAST> funcDefASTS = new ArrayList<>();
         FuncDefAST funcDefAST = parseFuncDefAST();
-        return new CompUnitAST(funcDefAST);
+        funcDefASTS.add(funcDefAST);
+        while(true){
+            Token judTok = getTok();
+            if(judTok == null){
+                break;
+            }
+            else {
+                backTok(1);
+                funcDefAST = parseFuncDefAST();
+                funcDefASTS.add(funcDefAST);
+            }
+        }
+
+        return new CompUnitAST(funcDefASTS);
     }
 
 }

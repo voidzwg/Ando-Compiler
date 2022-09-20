@@ -1,7 +1,11 @@
-int main(){
-    const int x = 3-2*1;
-    while(x){
-        break;
+int gcd(int m, int n) {
+    if (n == 0) {
+        return m;
     }
-    return 0;
+    return gcd(n, m % n);
+}
+
+int main() {
+    int a = 100, b = 48;
+    return gcd(a,b);
 }
