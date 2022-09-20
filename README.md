@@ -1,5 +1,11 @@
 # Ando-Compiler
 
+## 使用方法
+
+在Compiler下与src同级的testfile.txt中编写要编译的sysY代码，运行Compiler，随后你将在output.txt中看到输出。
+
+Tips：如果要看到语法分析结果，将Compiler.java中ASTDump下面的几行全部注释掉就可以了(
+
 ## lab总览
 
 > lab流程参考文档：https://buaa-se-compiling.github.io/miniSysY-tutorial与https://pku-minic.github.io/online-doc
