@@ -67,19 +67,44 @@ public class IRBuildFactory {
         return retInst;
     }
 
+    public CallInst buildCallInst(BasicBlock bb, Function callFunc, ArrayList<Value> values){
+        CallInst callInst = new CallInst(bb, callFunc, values);
+        bb.addInst(callInst);
+        return callInst;
+    }
+    public CallInst buildCallInst(BasicBlock bb, Function callFunc){
+        CallInst callInst = new CallInst(bb, callFunc);
+        bb.addInst(callInst);
+        return callInst;
+    }
+
     public BasicBlock buildBasicBlock(Function CurFunction){
         BasicBlock bb = new BasicBlock(CurFunction);
         CurFunction.getBbs().add(bb);
         return bb;
     }
 
-    public Function buildFunction(String name, String type){
-
-        if(type.equals("int")) return new Function(name, new IntegerType(32));
-        else return new Function(name, new VoidType());
+    public Argument buildArgument(String name, String type, Function parentFunc){
+        Argument argument = null;
+        if(type.equals("int")){
+            argument = new Argument(name, new IntegerType(32), parentFunc);
+        }
+        else {
+            argument = new Argument(name, new VoidType(), parentFunc);
+        }
+        parentFunc.addArg(argument);
+        return argument;
     }
+    public Function buildFunction(String name, String type, IRModule module){
 
-    public IRModule buildModule(ArrayList<Function> functions, ArrayList<GlobalVars> globalVars) {
-        return new IRModule(functions, globalVars);
+        Function function = null;
+        if(type.equals("int")){
+            function = new Function(name, new IntegerType(32));
+        }
+        else {
+            function = new Function(name, new VoidType());
+        }
+        module.addFunction(function);
+        return function;
     }
 }

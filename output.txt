@@ -1,28 +1,31 @@
-define i32 %main() {
+define i32 @gcd(i32 %m_0, i32 %n_0) {
 block1:
-	%k_0 = alloc i32
-	store i32 3, i32* %k_0
-	br label %block2
-block2:
-	%1 = load i32, i32* %k_0
-	%2 = icmp slt %1 5 
+	%1 = load i32, i32* %n_0
+	%2 = icmp eq %1 0 
 	%3 = icmp ne %2 0 
-	br i1 %3, label %block3, label %block4
+	br i1 %3, label %block2, label %block3
+block2:
+	%4 = load i32, i32* %m_0
+	ret i32 %4
+	br label %block3
 block3:
-	%4 = load i32, i32* %k_0
-	%5 = add i32 %4, 1
-	store i32 %5, i32* %k_0
-	%6 = load i32, i32* %k_0
-	%7 = icmp eq %6 4 
-	%8 = icmp ne %7 0 
-	br i1 %8, label %block5, label %block6
-block4:
-	%9 = load i32, i32* %k_0
+	%5 = load i32, i32* %n_0
+	%6 = load i32, i32* %m_0
+	%7 = load i32, i32* %n_0
+	%8 = mod i32 %6, %7
+	%9 = call i32 @gcd(i32 %5, i32 %8)
 	ret i32 %9
-block5:
-	br label %block4
-block6:
-	br label %block2
-block7:
-	br label %block6
 }
+
+define i32 @main() {
+block4:
+	%a_0 = alloc i32
+	store i32 100, i32* %a_0
+	%b_0 = alloc i32
+	store i32 48, i32* %b_0
+	%10 = load i32, i32* %a_0
+	%11 = load i32, i32* %b_0
+	%12 = call i32 @gcd(i32 %10, i32 %11)
+	ret i32 %12
+}
+

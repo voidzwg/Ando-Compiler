@@ -1,11 +1,11 @@
-int main(){
-    const int x = 5;
-    int k = 3;
-    while(k < x){
-        k = k + 1;
-        if(k == 4){
-            break;
-        }
+int gcd(int m, int n) {
+    if (n == 0) {
+        return m;
     }
-    return k;
+    return gcd(n, m % n);
+}
+
+int main() {
+    int a = 100, b = 48;
+    return gcd(a,b);
 }

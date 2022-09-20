@@ -20,13 +20,9 @@ public class Function extends Value{
         this.args = args;
     }
 
-    public void setBbs(ArrayList<BasicBlock> bbs) {
-        this.bbs = bbs;
-    }
 
-    public void setArgs(ArrayList<Argument> args) {
-        this.args = args;
-    }
+
+    public void addArg(Argument argument){ args.add(argument); }
 
     public ArrayList<BasicBlock> getBbs() {
         return bbs;

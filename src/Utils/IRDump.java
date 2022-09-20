@@ -24,8 +24,16 @@ public class IRDump {
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
             DumpFunction(function);
+            out.write("\n");
         }
         out.close();
+    }
+
+    private static void DumpArgument(Argument argument) throws IOException {
+        if(argument.getType().isIntegerTy()){
+            out.write("i32 ");
+            out.write(argument.getName());
+        }
     }
 
     private static void DumpFunction(Function function) throws IOException {
@@ -34,14 +42,23 @@ public class IRDump {
             out.write("i32 ");
         }
         else out.write("void ");
-        out.write(function.getName() + "() {\n");
+        out.write(function.getName() + "(");
+
+        ArrayList<Argument> arguments = function.getArgs();
+        for(int i = 0; i < arguments.size(); i++){
+            Argument argument = arguments.get(i);
+            DumpArgument(argument);
+            if(i != arguments.size() - 1) out.write(", ");
+        }
+
+        out.write(") {\n");
 
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
         for(BasicBlock block : basicBlocks){
             DumpBasicBlock(block);
         }
 
-        out.write("}");
+        out.write("}\n");
     }
 
     private static void DumpBasicBlock(BasicBlock bb) throws IOException {
@@ -144,6 +161,31 @@ public class IRDump {
                 out.write("br label %");
                 out.write(brInst.getLabelJump().getName() + "\n");
             }
+        }
+
+        else if(inst instanceof CallInst){
+            CallInst callInst = (CallInst) inst;
+            if(!callInst.getType().isVoidTy()){
+                out.write(callInst.getName() + " = ");
+            }
+
+            if(callInst.getType().isVoidTy()) out.write("call void ");
+            else if(callInst.getType().isIntegerTy()) out.write("call i32 ");
+
+            out.write(callInst.getCallFunc().getName());
+            out.write("(");
+
+            ArrayList<Value> values = callInst.getValues();
+            for(int i = 0; i < values.size(); i++){
+                Value value = values.get(i);
+                if(value.getType().isIntegerTy()){
+                    out.write("i32 ");
+                }
+                out.write(value.getName());
+                if(i != values.size() - 1) out.write(", ");
+            }
+
+            out.write(")\n");
         }
     }
 }

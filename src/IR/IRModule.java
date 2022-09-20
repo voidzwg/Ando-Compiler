@@ -21,4 +21,8 @@ public class IRModule {
     public ArrayList<GlobalVars> getGlobalVars() {
         return globalVars;
     }
+
+    public void addFunction(Function function){
+        functions.add(function);
+    }
 }
