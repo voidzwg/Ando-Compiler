@@ -1,5 +1,5 @@
 # Ando-Compiler
-
+[![CodeFactor](https://www.codefactor.io/repository/github/ando233/ando-compiler/badge)](https://www.codefactor.io/repository/github/ando233/ando-compiler)
 ## 使用方法
 
 在Compiler下与src同级的testfile.txt中编写要编译的sysY代码，运行Compiler，随后你将在output.txt中看到输出。
