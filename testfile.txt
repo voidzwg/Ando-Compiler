@@ -1,20 +1,8 @@
-int gcd(int m, int n) {
-    if (n == 0) {
-    {
-    int m = 4;
-    {
-    int m = 5;
-    }
-    }
-        return m;
-    }
-    return gcd(n, m % n);
-}
+const int a = 4;
+const int x[5] = {0, 1, 2, 3, a};
 
-int main() {
-{
-int m = 5;
-}
-    int a = 100, b = 48;
-    return gcd(a,b);
+int main(){
+    int c;
+
+    return c;
 }

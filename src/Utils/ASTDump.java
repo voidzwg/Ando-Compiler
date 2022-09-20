@@ -7,6 +7,7 @@ import Frontend.AST.ExpAST.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ASTDump {
@@ -21,6 +22,11 @@ public class ASTDump {
     }
 
     public static void DumpCompUnit(CompUnitAST compUnitAST) throws IOException {
+        ArrayList<DeclAST> declASTS = compUnitAST.getDeclASTS();
+        for(DeclAST declAST : declASTS){
+            DumpDeclAST(declAST);
+        }
+
         ArrayList<FuncDefAST> funcDefASTS = compUnitAST.getFuncDefASTS();
 
         for (FuncDefAST funcDefAST : funcDefASTS) {
@@ -97,8 +103,6 @@ public class ASTDump {
         else if(blockItemAST.getType() == 2){
             DumpStmtAST(blockItemAST.getStmtAST());
         }
-
-        out.write("<BlockItem>\n");
     }
 
     private static void DumpDeclAST(DeclAST declAST) throws IOException {
@@ -106,8 +110,6 @@ public class ASTDump {
             DumpConstDeclAST(declAST.getConstDeclAST());
         }
         else DumpVarDeclAST(declAST.getVarDeclAST());
-
-        out.write("<Decl>\n");
     }
 
     private static void DumpVarDeclAST(VarDeclAST varDeclAST) throws IOException {
@@ -140,6 +142,7 @@ public class ASTDump {
     }
 
     private static void DumpConstDeclAST(ConstDeclAST constDeclAST) throws IOException {
+
         out.write("CONSTTK const\n");
         out.write("INTTK int\n");
 
@@ -159,6 +162,16 @@ public class ASTDump {
 
     private static void DumpConstDefAST(ConstDefAST constDefAST) throws IOException {
         out.write("IDENFR " + constDefAST.getIdent() + "\n");
+
+        if(constDefAST.getType() == 2){
+            ArrayList<ConstExpAST> constExpASTS = constDefAST.getConstExpASTS();
+            for(ConstExpAST constExpAST : constExpASTS){
+                out.write("LBRACK [\n");
+                DumpConstExpAST(constExpAST);
+                out.write("RBRACK ]\n");
+            }
+        }
+
         out.write("ASSIGN =\n");
 
         DumpConstInitValAST(constDefAST.getConstInitValAST());
@@ -167,7 +180,22 @@ public class ASTDump {
     }
 
     private static void DumpConstInitValAST(ConstInitValAST constInitValAST) throws IOException {
-        DumpConstExpAST(constInitValAST.getConstExpAST());
+        if(constInitValAST.getType() == 1){
+            DumpConstExpAST(constInitValAST.getConstExpAST());
+        }
+        else if(constInitValAST.getType() == 2){
+            out.write("LBRACE {\n");
+
+            ArrayList<ConstInitValAST> constInitValASTS = constInitValAST.getConstInitValASTS();
+            for(int i = 0; i < constInitValASTS.size(); i++){
+                ConstInitValAST constInitValAST1 = constInitValASTS.get(i);
+                DumpConstInitValAST(constInitValAST1);
+
+                if(i != constInitValASTS.size() - 1) out.write("COMMA ,\n");
+            }
+
+            out.write("RBRACE }\n");
+        }
 
         out.write("<ConstInitVal>\n");
     }
