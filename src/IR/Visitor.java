@@ -7,7 +7,6 @@ import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.OP;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 

@@ -19,10 +19,6 @@ public class Use {
         this.value = value;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public Value getValue() {
         return value;
     }

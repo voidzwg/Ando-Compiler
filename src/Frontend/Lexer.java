@@ -3,7 +3,6 @@ package Frontend;
 import Utils.Global;
 
 import java.io.*;
-import java.util.ArrayList;
 
 public class Lexer {
     public int line = 1;
@@ -12,9 +11,6 @@ public class Lexer {
     private char c;
     private int readIn;
 
-    //Symbol Table
-    private int identNum = 0;
-    private ArrayList<Token> symtlb = new ArrayList<>();
 
     public Lexer() throws FileNotFoundException {
         //Read File
@@ -47,37 +43,21 @@ public class Lexer {
         }
         in.unread(c);
         String ident = identBuilder.toString();
-        switch (ident) {
-            case "main":
-                return new Token(Tokens.MAINTK,ident);
-            case "const":
-                return new Token(Tokens.CONSTTK,ident);
-            case "int":
-                return new Token(Tokens.INTTK,ident);
-            case "break":
-                return new Token(Tokens.BREAKTK,ident);
-            case "continue":
-                return new Token(Tokens.CONTINUETK,ident);
-            case "if":
-                return new Token(Tokens.IFTK,ident);
-            case "else":
-                return new Token(Tokens.ELSETK,ident);
-            case "while":
-                return new Token(Tokens.WHILETK,ident);
-            case "getint":
-                return new Token(Tokens.GETINTTK,ident);
-            case "printf":
-                return new Token(Tokens.PRINTFTK,ident);
-            case "return":
-                return new Token(Tokens.RETURNTK,ident);
-            case "void":
-                return new Token(Tokens.VOIDTK,ident);
-            default:
-                identNum++;
-                Token token = new Token(Tokens.IDENFR, ident);
-                symtlb.add(token);
-                return token;
-        }
+        return switch (ident) {
+            case "main" -> new Token(Tokens.MAINTK, ident);
+            case "const" -> new Token(Tokens.CONSTTK, ident);
+            case "int" -> new Token(Tokens.INTTK, ident);
+            case "break" -> new Token(Tokens.BREAKTK, ident);
+            case "continue" -> new Token(Tokens.CONTINUETK, ident);
+            case "if" -> new Token(Tokens.IFTK, ident);
+            case "else" -> new Token(Tokens.ELSETK, ident);
+            case "while" -> new Token(Tokens.WHILETK, ident);
+            case "getint" -> new Token(Tokens.GETINTTK, ident);
+            case "printf" -> new Token(Tokens.PRINTFTK, ident);
+            case "return" -> new Token(Tokens.RETURNTK, ident);
+            case "void" -> new Token(Tokens.VOIDTK, ident);
+            default -> new Token(Tokens.IDENFR, ident);
+        };
 
 
     }
@@ -125,7 +105,6 @@ public class Lexer {
     }
 
     public Token getTok() throws IOException {
-        boolean flag = false;
         while ((readIn = in.read()) != -1){
             c = (char)readIn;
 

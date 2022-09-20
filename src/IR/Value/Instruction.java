@@ -17,10 +17,6 @@ public abstract class Instruction extends User{
 
     //  Getters and Setters
 
-    public void setParentbb(BasicBlock parentbb) {
-        this.parentbb = parentbb;
-    }
-
     public OP getOp() {
         return op;
     }

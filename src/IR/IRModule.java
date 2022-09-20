@@ -6,8 +6,8 @@ import IR.Value.GlobalVars;
 import java.util.ArrayList;
 
 public class IRModule {
-    private ArrayList<Function> functions;
-    private ArrayList<GlobalVars> globalVars;
+    private final ArrayList<Function> functions;
+    private final ArrayList<GlobalVars> globalVars;
 
     public IRModule(ArrayList<Function> functions, ArrayList<GlobalVars> globalVars){
         this.functions = functions;

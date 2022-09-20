@@ -3,7 +3,6 @@ package Utils;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
-import Frontend.Tokens;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -23,7 +22,6 @@ public class ASTDump {
 
     public static void DumpCompUnit(CompUnitAST compUnitAST) throws IOException {
         ArrayList<FuncDefAST> funcDefASTS = compUnitAST.getFuncDefASTS();
-        int len = funcDefASTS.size();
 
         for (FuncDefAST funcDefAST : funcDefASTS) {
             DumpFuncDefAST(funcDefAST);
