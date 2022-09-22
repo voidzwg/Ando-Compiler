@@ -21,6 +21,9 @@ public class IRDump {
     }
 
     public static void DumpModule(IRModule module) throws IOException {
+        out.write("declare i32 @getint()\n");
+        out.write("declare ");
+
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
             DumpFunction(function);

@@ -1,8 +1,5 @@
-const int a = 4;
-const int x[5] = {0, 1, 2, 3, a};
-
 int main(){
-    int c;
-
-    return c;
+    int b;
+    b = getint();
+    return b;
 }

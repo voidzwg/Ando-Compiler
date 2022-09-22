@@ -3,6 +3,7 @@ package IR;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
+import IR.Type.IntegerType;
 import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.OP;
@@ -105,14 +106,20 @@ public class Visitor {
 
 
     private ConstInteger calValue(int left, String op, int right){
-        return switch (op) {
-            case "+" -> new ConstInteger(left + right);
-            case "-" -> new ConstInteger(left - right);
-            case "*" -> new ConstInteger(left * right);
-            case "/" -> new ConstInteger(left / right);
-            case "%" -> new ConstInteger(left % right);
-            default -> null;
-        };
+        switch (op) {
+            case "+":
+                return new ConstInteger(left + right);
+            case "-":
+                return new ConstInteger(left - right);
+            case "*":
+                return new ConstInteger(left * right);
+            case "/":
+                return new ConstInteger(left / right);
+            case "%":
+                return new ConstInteger(left % right);
+            default:
+                return null;
+        }
     }
 
     //  Find方法用于从符号表(们)找目标ident
@@ -262,9 +269,15 @@ public class Visitor {
                 Value TmpValue = CurValue;
                 visitMulExpAST(mulExpAST.getMulExpAST(), false);
                 switch (mulExpAST.getOp()) {
-                    case "*" -> CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
-                    case "/" -> CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
-                    case "%" -> CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
+                    case "*" :{
+                        CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
+                    }
+                    case "/" :{
+                        CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
+                    }
+                    case "%" :{
+                        CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
+                    }
                 }
             }
         }
@@ -305,10 +318,18 @@ public class Visitor {
             visitRelExpAST(relExpAST.getRelExpAST());
             String op = relExpAST.getOp();
             switch (op) {
-                case "<" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
-                case "<=" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
-                case ">" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Gt, CurBasicBlock);
-                case ">=" -> CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ge, CurBasicBlock);
+                case "<" :{
+                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
+                }
+                case "<=" :{
+                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
+                }
+                case ">" :{
+                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Gt, CurBasicBlock);
+                }
+                case ">=" :{
+                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ge, CurBasicBlock);
+                }
             }
         }
 
@@ -447,6 +468,17 @@ public class Visitor {
             BasicBlock whileOutBlock = getWhileOut();
             f.buildBrInst(whileOutBlock, CurBasicBlock);
             CurBasicBlock = f.buildBasicBlock(CurFunction);
+        }
+        //  LVal = getint();
+        else if(stmtAST.getType() == 10){
+            Function function = new Function("@getint", new IntegerType(32));
+            CurValue = f.buildCallInst(CurBasicBlock, function);
+
+            Value value = CurValue;
+            //  LVal获得变量的Value
+            visitLValAST(stmtAST.getLValAST());
+            //  此时CurValue是LVal
+            f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
     }
 

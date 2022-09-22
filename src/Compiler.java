@@ -16,9 +16,9 @@ public class Compiler {
 
         ASTDump.DumpCompUnit(compUnitAST);
 
-//        Visitor visitor = new Visitor();
-//        IRModule module = visitor.VisitCompUnit(compUnitAST);
-//        IRDump.DumpModule(module);
+        Visitor visitor = new Visitor();
+        IRModule module = visitor.VisitCompUnit(compUnitAST);
+        IRDump.DumpModule(module);
 
 //        MIPSDump.DumpMips(module);
     }

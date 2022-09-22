@@ -40,8 +40,9 @@ public class ASTDump {
     private static void DumpFuncFParamsAST(FuncFParamsAST funcFParamsAST) throws IOException {
         ArrayList<FuncFParamAST> funcFParamASTS = funcFParamsAST.getFuncFParamASTS();
 
-        for(FuncFParamAST funcFParamAST : funcFParamASTS){
-            DumpFuncFParamAST(funcFParamAST);
+        for(int i = 0; i < funcFParamASTS.size(); i++){
+            DumpFuncFParamAST(funcFParamASTS.get(i));
+            if(i != funcFParamASTS.size() - 1) out.write("COMMA ,\n");
         }
 
         out.write("<FuncFParams>\n");
@@ -54,6 +55,11 @@ public class ASTDump {
         else out.write("VOIDTK void\n");
 
         String funcName = funcDefAST.getIdent();
+
+        if(!funcName.equals("main")){
+            out.write("<FuncType>\n");
+        }
+
         if(funcName.equals("main")) out.write("MAINTK main\n");
         else out.write("IDENFR " + funcName + "\n");
 
@@ -70,7 +76,7 @@ public class ASTDump {
         DumpBlockAST(funcDefAST.getBlockAST());
 
         if(funcName.equals("main")) out.write("<MainFuncDef>\n");
-        else out.write("<FuncDefUnit>\n");
+        else out.write("<FuncDef>\n");
     }
 
     private static void DumpFuncFParamAST(FuncFParamAST funcFParamAST) throws IOException {
@@ -80,6 +86,19 @@ public class ASTDump {
 
         String ident = funcFParamAST.getIdent();
         out.write("IDENFR " + ident + "\n");
+
+        if(funcFParamAST.getType() == 2){
+            out.write("LBRACK [\n");
+            out.write("RBRACK ]\n");
+
+            ArrayList<ConstExpAST> constExpASTS = funcFParamAST.getConstExpASTS();
+            for (ConstExpAST constExpAST : constExpASTS) {
+                out.write("LBRACK [\n");
+                DumpConstExpAST(constExpAST);
+                out.write("RBRACK ]\n");
+            }
+        }
+
 
         out.write("<FuncFParam>\n");
     }
@@ -126,19 +145,45 @@ public class ASTDump {
 
     private static void DumpVarDefAST(VarDefAST varDefAST) throws IOException {
         out.write("IDENFR " + varDefAST.getIdent() + "\n");
+        int varDefType = varDefAST.getType();
 
-        if(varDefAST.getType() == 2){
+        if(varDefType == 3 || varDefType == 4){
+            ArrayList<ConstExpAST> constExpASTS = varDefAST.getConstExpASTS();
+            for(ConstExpAST constExpAST : constExpASTS){
+                out.write("LBRACK [\n");
+
+                DumpConstExpAST(constExpAST);
+
+                out.write("RBRACK ]\n");
+            }
+        }
+
+        if(varDefType == 2 || varDefType == 4){
             out.write("ASSIGN =\n");
             DumpInitValAST(varDefAST.getInitValAST());
         }
 
-        out.write("<VarDefAST>\n");
+        out.write("<VarDef>\n");
     }
 
     private static void DumpInitValAST(InitValAST initValAST) throws IOException {
-        DumpExpAST(initValAST.getExpAST());
+        if(initValAST.getType() == 1){
+            DumpExpAST(initValAST.getExpAST());
+        }
+        else if(initValAST.getType() == 2){
+            out.write("LBRACE {\n");
 
-        out.write("<InitValAST>\n");
+            ArrayList<InitValAST> initValASTS = initValAST.getInitValASTS();
+            for(int i = 0; i < initValASTS.size(); i++){
+                InitValAST initValAST1 = initValASTS.get(i);
+                DumpInitValAST(initValAST1);
+                if(i != initValASTS.size() - 1) out.write("COMMA ,\n");
+            }
+
+            out.write("RBRACE }\n");
+        }
+
+        out.write("<InitVal>\n");
     }
 
     private static void DumpConstDeclAST(ConstDeclAST constDeclAST) throws IOException {
@@ -207,57 +252,84 @@ public class ASTDump {
     }
 
     private static void DumpStmtAST(StmtAST stmtAST) throws IOException {
-        if(stmtAST.getType() == 1) {
+        int stmtType = stmtAST.getType();
+        if(stmtType == 1) {
             out.write("RETURNTK return\n");
             DumpExpAST(stmtAST.getExpAST());
             out.write("SEMICN ;\n");
         }
-        else if(stmtAST.getType() == 2){
+        else if(stmtType == 2){
             DumpLValAST(stmtAST.getLValAST());
             out.write("ASSIGN =\n");
             DumpExpAST(stmtAST.getExpAST());
             out.write("SEMICN ;\n");
         }
-        else if(stmtAST.getType() == 3){
+        else if(stmtType == 3){
             DumpBlockAST(stmtAST.getBlockAST());
         }
-        else if(stmtAST.getType() == 4){
+        else if(stmtType == 4){
             if(stmtAST.isHasExp()){
                 DumpExpAST(stmtAST.getExpAST());
             }
             out.write("SEMICN ;\n");
         }
-        else if(stmtAST.getType() == 5){
+        else if(stmtType == 5){
             out.write("IFTK if\n");
-            out.write("LBRACK (\n");
+            out.write("LPARENT (\n");
             DumpCondAST(stmtAST.getCondAST());
-            out.write("RBRACK )\n");
+            out.write("RPARENT )\n");
             DumpStmtAST(stmtAST.getIfStmtAST());
         }
-        else if(stmtAST.getType() == 6){
+        else if(stmtType == 6){
             out.write("IFTK if\n");
-            out.write("LBRACK (\n");
+            out.write("LPARENT (\n");
             DumpCondAST(stmtAST.getCondAST());
-            out.write("RBRACK )\n");
+            out.write("RPARENT )\n");
             DumpStmtAST(stmtAST.getIfStmtAST());
             out.write("ELSETK else\n");
             DumpStmtAST(stmtAST.getElseStmtAST());
         }
-        else if(stmtAST.getType() == 7){
+        else if(stmtType == 7){
             out.write("WHILETK while\n");
-            out.write("LBRACK (\n");
+            out.write("LPARENT (\n");
             DumpCondAST(stmtAST.getCondAST());
-            out.write("RBRACK )\n");
+            out.write("RPARENT )\n");
 
             DumpStmtAST(stmtAST.getLoopStmt());
         }
-        else if(stmtAST.getType() == 8){
-            out.write("BREAKTK break\n");
-            out.write("SEMCOL ;\n");
-        }
-        else if(stmtAST.getType() == 9){
+        else if(stmtType == 8){
             out.write("CONTINUETK continue\n");
-            out.write("SEMCOL ;\n");
+            out.write("SEMICN ;\n");
+        }
+        else if(stmtType == 9){
+            out.write("BREAKTK break\n");
+            out.write("SEMICN ;\n");
+        }
+        else if(stmtType == 10){
+            DumpLValAST(stmtAST.getLValAST());
+            out.write("ASSIGN =\n");
+            out.write("GETINTTK getint\n");
+            out.write("LPARENT (\n");
+            out.write("RPARENT )\n");
+            out.write("SEMICN ;\n");
+        }
+        else if(stmtType == 11){
+            out.write("PRINTFTK printf\n");
+            out.write("LPARENT (\n");
+
+            out.write("STRCON " + stmtAST.getfString() + "\n");
+
+            ArrayList<ExpAST> expASTS = stmtAST.getExpASTS();
+            for(ExpAST expAST : expASTS){
+                out.write("COMMA ,\n");
+                DumpExpAST(expAST);
+            }
+            out.write("RPARENT )\n");
+            out.write("SEMICN ;\n");
+        }
+        else if(stmtType == 12){
+            out.write("RETURNTK return\n");
+            out.write("SEMICN ;\n");
         }
 
         out.write("<Stmt>\n");
@@ -269,48 +341,56 @@ public class ASTDump {
     }
 
     private static void DumpLOrExpAST(LOrExpAST lOrExpAST) throws IOException {
-        if(lOrExpAST.getType() == 1){
-            DumpLAndExpAST(lOrExpAST.getLAndExpAST());
-        }
-        else if(lOrExpAST.getType() == 2){
-            DumpLAndExpAST(lOrExpAST.getLAndExpAST());
+        DumpLAndExpAST(lOrExpAST.getLAndExpAST());
+        out.write("<LOrExp>\n");
+        if(lOrExpAST.getType() == 2){
             out.write("OR ||\n");
             DumpLOrExpAST(lOrExpAST.getLOrExpAST());
         }
-
-        out.write("<LOrExp>\n");
     }
 
     private static void DumpLAndExpAST(LAndExpAST lAndExpAST) throws IOException {
         DumpEqExpAST(lAndExpAST.getEqExpAST());
+        out.write("<LAndExp>\n");
         if(lAndExpAST.getType() == 2){
             out.write("AND &&\n");
             DumpLAndExpAST(lAndExpAST.getLAndExpAST());
         }
-        out.write("<LAndExp>\n");
     }
 
     private static void DumpEqExpAST(EqExpAST eqExpAST) throws IOException {
         DumpRelExpAST(eqExpAST.getRelExpAST());
+        out.write("<EqExp>\n");
         if(eqExpAST.getType() == 2) {
             String op = eqExpAST.getOp();
             if (op.equals("==")) out.write("EQL ==\n");
             else out.write("NEQ !=\n");
             DumpEqExpAST(eqExpAST.getEqExpAST());
         }
-
-        out.write("<EqExp>\n");
     }
 
     private static void DumpRelExpAST(RelExpAST relExpAST) throws IOException {
         DumpAddExpAST(relExpAST.getAddExpAST());
+        out.write("<RelExp>\n");
         if(relExpAST.getType() == 2){
             String op = relExpAST.getOp();
             switch (op) {
-                case "<" -> out.write("LSS <\n");
-                case "<=" -> out.write("LEQ <=\n");
-                case ">" -> out.write("GRE >\n");
-                case ">=" -> out.write("GEQ >=\n");
+                case "<" :{
+                    out.write("LSS <\n");
+                    break;
+                }
+                case "<=" :{
+                    out.write("LEQ <=\n");
+                    break;
+                }
+                case ">" :{
+                    out.write("GRE >\n");
+                    break;
+                }
+                case ">=" :{
+                    out.write("GEQ >=\n");
+                    break;
+                }
             }
             DumpRelExpAST(relExpAST.getRelExpAST());
         }
@@ -324,6 +404,7 @@ public class ASTDump {
 
     private static void DumpAddExpAST(AddExpAST addExpAST) throws IOException {
         DumpMulExpAST(addExpAST.getMulExpAST());
+        out.write("<AddExp>\n");
         if (addExpAST.getType() != 1) {
             String op = addExpAST.getOp();
             if (op.equals("+")) {
@@ -332,22 +413,29 @@ public class ASTDump {
             DumpAddExpAST(addExpAST.getAddExpAST());
         }
 
-        out.write("<AddExp>\n");
     }
 
     private static void DumpMulExpAST(MulExpAST mulExpAST) throws IOException {
         DumpUnaryExpAST(mulExpAST.getUnaryExpAST());
+        out.write("<MulExp>\n");
         if(mulExpAST.getType() != 1){
             String op = mulExpAST.getOp();
             switch (op) {
-                case "*" -> out.write("MULT *\n");
-                case "/" -> out.write("DIV /\n");
-                case "%" -> out.write("MOD %\n");
+                case "*" :{
+                    out.write("MULT *\n");
+                    break;
+                }
+                case "/" :{
+                    out.write("DIV /\n");
+                    break;
+                }
+                case "%" :{
+                    out.write("MOD %\n");
+                    break;
+                }
             }
             DumpMulExpAST(mulExpAST.getMulExpAST());
         }
-
-        out.write("<MulExp>\n");
     }
 
     private static void DumpFuncRParamsAST(FuncRParamsAST funcRParamsAST) throws IOException {
@@ -358,7 +446,7 @@ public class ASTDump {
             if(i != expASTS.size() - 1) out.write("COMMA ,\n");
         }
 
-        out.write("<FuncRParams>");
+        out.write("<FuncRParams>\n");
     }
 
     private static void DumpUnaryExpAST(UnaryExpAST unaryExpAST) throws IOException {
@@ -370,17 +458,20 @@ public class ASTDump {
         else if (unaryExpAST.getType() == 2){
             String op = unaryExpAST.getUnaryOP();
             switch (op) {
-                case "+" -> {
+                case "+" : {
                     out.write("PLUS +\n");
                     out.write("<UnaryOp>\n");
+                    break;
                 }
-                case "-" -> {
+                case "-" : {
                     out.write("MINU -\n");
                     out.write("<UnaryOp>\n");
+                    break;
                 }
-                case "!" -> {
+                case "!" : {
                     out.write("NOT !\n");
                     out.write("<UnaryOp>\n");
+                    break;
                 }
             }
 
@@ -389,18 +480,18 @@ public class ASTDump {
 
         else if(unaryExpAST.getType() == 3){
             out.write("IDENFR " + unaryExpAST.getIdent() + "\n");
-            out.write("LBRACKET (\n");
+            out.write("LPARENT (\n");
 
             DumpFuncRParamsAST(unaryExpAST.getFuncRParamsAST());
 
-            out.write("RBRACKET )\n");
+            out.write("RPARENT )\n");
         }
 
         else if(unaryExpAST.getType() == 4){
             out.write("IDENFR " + unaryExpAST.getIdent() + "\n");
-            out.write("LBRACKET (\n");
+            out.write("LPARENT (\n");
 
-            out.write("RBRACKET )\n");
+            out.write("RPARENT )\n");
         }
 
         out.write("<UnaryExp>\n");
@@ -409,11 +500,11 @@ public class ASTDump {
     private static void DumpPrimaryExp(PrimaryExpAST primaryExpAST) throws IOException {
         //  "(" Exp ")"
         if(primaryExpAST.getType() == 1) {
-            out.write("LBRACK (\n");
+            out.write("LPARENT (\n");
 
             DumpExpAST(primaryExpAST.getExpAST());
 
-            out.write("RBRACK )\n");
+            out.write("RPARENT )\n");
         }
 
         //  Number
@@ -431,6 +522,17 @@ public class ASTDump {
 
     private static void DumpLValAST(LValAST lValAST) throws IOException {
         out.write("IDENFR " + lValAST.getIdent() + "\n");
+
+        if(lValAST.getType() == 2){
+            ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
+            for(ExpAST expAST : expASTS){
+                out.write("LBRACK [\n");
+
+                DumpExpAST(expAST);
+
+                out.write("RBRACK ]\n");
+            }
+        }
 
         out.write("<LVal>\n");
     }

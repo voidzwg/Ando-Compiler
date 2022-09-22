@@ -3,6 +3,8 @@ package Frontend.AST;
 import Frontend.AST.ExpAST.ExpAST;
 import Frontend.AST.ExpAST.LValAST;
 
+import java.util.ArrayList;
+
 public class StmtAST extends BaseAST{
     private ExpAST expAST;
     private LValAST lValAST;
@@ -15,7 +17,9 @@ public class StmtAST extends BaseAST{
     private ContinueAST continueAST;
     //  对于[Exp]表示是否有Exp
     private boolean hasExp;
-    private final int type;
+    private String fString;
+    private ArrayList<ExpAST> expASTS;
+    private int type;
 
     // return Exp ;
     public StmtAST(ExpAST expAST){
@@ -72,6 +76,30 @@ public class StmtAST extends BaseAST{
     public StmtAST(BreakAST breakAST) {
         this.breakAST = breakAST;
         this.type = 9;
+    }
+
+    //  LVal = getint();
+    public StmtAST(LValAST lValAST){
+        this.lValAST = lValAST;
+        this.type = 10;
+    }
+
+    public StmtAST(String fString, ArrayList<ExpAST> expASTS){
+        this.fString = fString;
+        this.expASTS = expASTS;
+        this.type = 11;
+    }
+
+    public StmtAST(){
+        this.type = 12;
+    }
+
+    public String getfString() {
+        return fString;
+    }
+
+    public ArrayList<ExpAST> getExpASTS() {
+        return expASTS;
     }
 
     public ExpAST getExpAST() {
