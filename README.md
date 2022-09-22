@@ -1,7 +1,8 @@
 # Ando-Compiler
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white)
-![](https://img.shields.io/github/languages/code-size/Ando233/Ando-Compiler)
 [![CodeFactor](https://www.codefactor.io/repository/github/ando233/ando-compiler/badge)](https://www.codefactor.io/repository/github/ando233/ando-compiler)
+![](https://img.shields.io/github/languages/code-size/Ando233/Ando-Compiler)
+![](https://img.shields.io/github/contributors/Ando233/Ando-Compiler)
+
 ## 使用方法
 
 在Compiler下与src同级的testfile.txt中编写要编译的sysY代码，运行Compiler，随后你将在output.txt中看到输出。
