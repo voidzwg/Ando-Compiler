@@ -1,6 +1,7 @@
 package Utils;
 
 import IR.IRModule;
+import IR.Type.ArrayType;
 import IR.Value.*;
 import IR.Value.Instructions.*;
 
@@ -20,14 +21,28 @@ public class IRDump {
         }
     }
 
-    public static void DumpGlobalVar(GlobalVar globalVar) throws IOException {
+    private static void DumpDimList(int now, ArrayList<Integer> dimList) throws IOException {
+        out.write("[");
+        out.write(dimList.get(now) + " x ");
+        if(now != dimList.size() - 1) {
+            DumpDimList(now + 1, dimList);
+        }
+        else out.write("i32");
+        out.write("]");
+    }
+
+    private static void DumpGlobalVar(GlobalVar globalVar) throws IOException {
         out.write(globalVar.getName() + " = global i32 ");
         out.write(globalVar.getValue().getName());
     }
 
-    public static void DumpModule(IRModule module) throws IOException {
+    private static void DumpLib() throws IOException {
         out.write("declare i32 @getint()\n");
+        out.write("declare void @memset(i32*, i32, i32)\n");
 
+    }
+    public static void DumpModule(IRModule module) throws IOException {
+        DumpLib();
         //  DumpGlobalVars
         ArrayList<GlobalVar> globalVars = module.getGlobalVars();
         for(GlobalVar globalVar : globalVars){
@@ -141,7 +156,18 @@ public class IRDump {
         }
 
         else if(inst instanceof AllocInst){
-            out.write(inst.getName() + " = alloc i32\n");
+            if(!inst.getType().isArrayType()) {
+                out.write(inst.getName() + " = alloca i32\n");
+            }
+            //  数组
+            else {
+                ArrayType arrayType = (ArrayType) inst.getType();
+                out.write(inst.getName() + " = alloca ");
+                ArrayList<Integer> dimList = arrayType.getEleDim();
+                DumpDimList(0, dimList);
+                out.write("\n");
+            }
+
         }
 
         else if(inst instanceof StoreInst){
@@ -204,6 +230,27 @@ public class IRDump {
             }
 
             out.write(")\n");
+        }
+
+        else if(inst instanceof GepInst){
+            GepInst gepInst = (GepInst) inst;
+
+            ArrayType arrayType = (ArrayType) gepInst.getType();
+            ArrayList<Integer> dimList = arrayType.getEleDim();
+
+            out.write(gepInst.getName() + " = getelementptr ");
+
+            DumpDimList(0, dimList);
+            out.write(" ");
+            DumpDimList(0, dimList);
+            out.write("* " + gepInst.getTarget().getName());
+
+            ArrayList<Integer> indexs = gepInst.getIndexs();
+            for(int index : indexs){
+                out.write(", i32 " + index);
+            }
+
+            out.write("\n");
         }
     }
 }

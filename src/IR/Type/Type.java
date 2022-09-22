@@ -13,4 +13,8 @@ public abstract class Type {
 
     public boolean isVoidTy() { return false; }
 
+    public boolean isArrayType() {
+        return false;
+    }
+
 }
