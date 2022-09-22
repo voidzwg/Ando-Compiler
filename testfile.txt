@@ -1,7 +1,6 @@
 const int one = 1;
-const int two = 2;
-int var = one + two;
 
 int main() {
-  return var + one;
+    int arr[2][one];
+    return one;
 }

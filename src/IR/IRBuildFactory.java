@@ -1,5 +1,6 @@
 package IR;
 
+import IR.Type.ArrayType;
 import IR.Type.IntegerType;
 import IR.Type.VoidType;
 import IR.Value.*;
@@ -55,10 +56,22 @@ public class IRBuildFactory {
         bb.addInst(storeInst);
     }
 
+    public AllocInst buildArray(String name, ArrayList<Integer> dimList, BasicBlock bb){
+        AllocInst allocInst = new AllocInst(name, new ArrayType(new IntegerType(32), dimList), bb);
+        bb.addInst(allocInst);
+        return allocInst;
+    }
+
     public AllocInst buildAllocInst(String name, BasicBlock bb){
         AllocInst allocInst = new AllocInst(name, new IntegerType(32), bb);
         bb.addInst(allocInst);
         return allocInst;
+    }
+
+    public GepInst buildGepInst(Value target, ArrayList<Integer> indexs, ArrayList<Integer>dimList ,BasicBlock bb){
+        GepInst gepInst = new GepInst(indexs, target, new ArrayType(new IntegerType(32) ,dimList) ,bb);
+        bb.addInst(gepInst);
+        return gepInst;
     }
 
     public RetInst buildRetInst(BasicBlock bb, Value value){

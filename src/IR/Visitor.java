@@ -4,8 +4,10 @@ import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 import IR.Type.IntegerType;
+import IR.Type.VoidType;
 import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
+import IR.Value.Instructions.GepInst;
 import IR.Value.Instructions.OP;
 
 import java.util.ArrayList;
@@ -522,27 +524,70 @@ public class Visitor {
     }
 
     private void visitVarDefAST(VarDefAST varDefAST, boolean isGlobal){
-        String ident = varDefAST.getIdent();
+        //  这里rawIdent指的是未加@，cnt之类的ident(纯用户命名的ident)
+        String rawIdent = varDefAST.getIdent();
+        int varDefType = varDefAST.getType();
 
-        int cnt = addSymCnt(ident);
+        int cnt = addSymCnt(rawIdent);
+        String ident = "%" + rawIdent + "_" + cnt;
 
         if(isGlobal){
-            if(varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
-            else CurValue = ConstInteger.constZero;
-            f.buildGlobalVar("@" + ident + "_" + cnt, false, CurValue ,globalVars);
-            pushSymbol(ident, CurValue);
-        }
-        else {
-
-            AllocInst allocInst = f.buildAllocInst("%" + ident + "_" + cnt, CurBasicBlock);
-            if(varDefAST.getType() == 2){
-                visitInitValAST(varDefAST.getInitValAST(), false);
-                f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
+            if(varDefType == 1 || varDefType == 2) {
+                if (varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
+                else CurValue = ConstInteger.constZero;
+                f.buildGlobalVar(ident, false, CurValue, globalVars);
+                pushSymbol(ident, CurValue);
             }
-            //  未赋初值的全局变量直接置为0
-            else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
+            //  全局数组
 
-            pushSymbol(ident, allocInst);
+        }
+
+        else {
+            if(varDefType == 1 || varDefType == 2) {
+                AllocInst allocInst = f.buildAllocInst(ident, CurBasicBlock);
+                if (varDefType == 2) {
+                    visitInitValAST(varDefAST.getInitValAST(), false);
+                    f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
+                }
+                //  未赋初值的全局变量直接置为0
+                else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
+
+                pushSymbol(ident, allocInst);
+            }
+            //  数组
+            else{
+                //  totDim用于记录将数组展成一维有多少个元素，便于后续算字节数，构建指令
+                int totDim = 1;
+                //  访问ConstExpAST的List得到CurValue(肯定是ConstInteger)
+                //  这些CurValue的值就是数组的维度，放进一个dimList里
+                ArrayList<Integer> dimList = new ArrayList<>();
+                ArrayList<ConstExpAST> constExpASTS = varDefAST.getConstExpASTS();
+
+                for(ConstExpAST constExpAST : constExpASTS){
+                    visitConstExpAST(constExpAST);
+                    int dim = Integer.parseInt(CurValue.getName());
+                    dimList.add(dim);
+                    totDim = totDim * dim;
+                }
+
+                AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock);
+                pushSymbol(ident, allocInst);
+
+                ArrayList<Integer> indexs = new ArrayList<>();
+                int dim = dimList.size();
+                for(int i = 0; i < dim + 1; i++){
+                    indexs.add(0);
+                }
+                GepInst pointer = f.buildGepInst(allocInst, indexs, dimList, CurBasicBlock);
+
+                //  构建memset指令
+                Function memsetFunc = new Function("@memset", new VoidType());
+                ArrayList<Value> rParams = new ArrayList<>();
+                rParams.add(pointer);
+                rParams.add(ConstInteger.constZero);
+                rParams.add(new ConstInteger(4 * totDim));
+                f.buildCallInst(CurBasicBlock, memsetFunc, rParams);
+            }
 
         }
     }
