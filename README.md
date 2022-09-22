@@ -1,6 +1,6 @@
 # Ando-Compiler
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white)
-https://img.shields.io/tokei/lines/github/Ando233/Ando-Compiler
+![](https://img.shields.io/github/languages/code-size/Ando233/Ando-Compiler)
 [![CodeFactor](https://www.codefactor.io/repository/github/ando233/ando-compiler/badge)](https://www.codefactor.io/repository/github/ando233/ando-compiler)
 ## 使用方法
 
