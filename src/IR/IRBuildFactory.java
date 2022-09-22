@@ -85,7 +85,7 @@ public class IRBuildFactory {
     }
 
     public Argument buildArgument(String name, String type, Function parentFunc){
-        Argument argument = null;
+        Argument argument;
         if(type.equals("int")){
             argument = new Argument(name, new IntegerType(32), parentFunc);
         }
@@ -95,9 +95,15 @@ public class IRBuildFactory {
         parentFunc.addArg(argument);
         return argument;
     }
+
+    public GlobalVar buildGlobalVar(String name, boolean isConst, Value initValue,ArrayList<GlobalVar> globalVars){
+        GlobalVar globalVar = new GlobalVar(name, isConst, initValue);
+        globalVars.add(globalVar);
+        return globalVar;
+    }
     public Function buildFunction(String name, String type, IRModule module){
 
-        Function function = null;
+        Function function;
         if(type.equals("int")){
             function = new Function(name, new IntegerType(32));
         }

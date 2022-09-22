@@ -59,8 +59,5 @@ public class MIPSDump {
             out.write("\t");
             out.write("ret\n");
         }
-        else if(inst instanceof BinaryInst){
-
-        }
     }
 }

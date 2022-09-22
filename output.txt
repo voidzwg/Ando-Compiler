@@ -1,31 +1,8 @@
-define i32 @gcd(i32 %m_0, i32 %n_0) {
-block1:
-	%1 = load i32, i32* %n_0
-	%2 = icmp eq %1 0 
-	%3 = icmp ne %2 0 
-	br i1 %3, label %block2, label %block3
-block2:
-	%4 = load i32, i32* %m_0
-	ret i32 %4
-	br label %block3
-block3:
-	%5 = load i32, i32* %n_0
-	%6 = load i32, i32* %m_0
-	%7 = load i32, i32* %n_0
-	%8 = mod i32 %6, %7
-	%9 = call i32 @gcd(i32 %5, i32 %8)
-	ret i32 %9
-}
-
+declare i32 @getint()
+@var_0 = global i32 3
 define i32 @main() {
-block4:
-	%a_0 = alloc i32
-	store i32 100, i32* %a_0
-	%b_0 = alloc i32
-	store i32 48, i32* %b_0
-	%10 = load i32, i32* %a_0
-	%11 = load i32, i32* %b_0
-	%12 = call i32 @gcd(i32 %10, i32 %11)
-	ret i32 %12
+block1:
+	%1 = add i32 3, 1
+	ret i32 %1
 }
 
