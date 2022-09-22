@@ -1,15 +1,15 @@
 package IR;
 
 import IR.Value.Function;
-import IR.Value.GlobalVars;
+import IR.Value.GlobalVar;
 
 import java.util.ArrayList;
 
 public class IRModule {
     private final ArrayList<Function> functions;
-    private final ArrayList<GlobalVars> globalVars;
+    private final ArrayList<GlobalVar> globalVars;
 
-    public IRModule(ArrayList<Function> functions, ArrayList<GlobalVars> globalVars){
+    public IRModule(ArrayList<Function> functions, ArrayList<GlobalVar> globalVars){
         this.functions = functions;
         this.globalVars = globalVars;
     }
@@ -18,7 +18,7 @@ public class IRModule {
         return functions;
     }
 
-    public ArrayList<GlobalVars> getGlobalVars() {
+    public ArrayList<GlobalVar> getGlobalVars() {
         return globalVars;
     }
 

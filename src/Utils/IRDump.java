@@ -20,10 +20,25 @@ public class IRDump {
         }
     }
 
+    public static void DumpGlobalVar(GlobalVar globalVar) throws IOException {
+        out.write(globalVar.getName() + " = global i32 ");
+        out.write(globalVar.getValue().getName());
+    }
+
     public static void DumpModule(IRModule module) throws IOException {
         out.write("declare i32 @getint()\n");
-        out.write("declare ");
 
+        //  DumpGlobalVars
+        ArrayList<GlobalVar> globalVars = module.getGlobalVars();
+        for(GlobalVar globalVar : globalVars){
+            if(!globalVar.isConst()){
+                DumpGlobalVar(globalVar);
+                out.write("\n");
+            }
+        }
+
+
+        //  DumpFunctions
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
             DumpFunction(function);

@@ -25,6 +25,8 @@ import java.util.HashMap;
 public class Visitor {
     private final IRBuildFactory f = IRBuildFactory.getInstance();
     private Function CurFunction;
+    //  将globalVars设成全局是为了方便所有visitDecl，visitDef向这里添加globalVars
+    private ArrayList<GlobalVar> globalVars = new ArrayList<>();
     private BasicBlock CurBasicBlock;
 
     private Value CurValue;
@@ -490,56 +492,68 @@ public class Visitor {
         visitConstExpAST(constInitValAST.getConstExpAST());
     }
 
-    private void visitConstDefAST(ConstDefAST constDefAST){
+    private void visitConstDefAST(ConstDefAST constDefAST, boolean isGlobal){
         String ident = constDefAST.getIdent();
 
         visitConstInitValAST(constDefAST.getConstInitValAST());
 
+        if(isGlobal) f.buildGlobalVar("@" + ident, true, CurValue, globalVars);
+
         pushSymbol(ident, CurValue);
     }
 
-    private void visitConstDeclAST(ConstDeclAST constDeclAST){
+    private void visitConstDeclAST(ConstDeclAST constDeclAST, boolean isGlobal){
         ArrayList<ConstDefAST> constDefASTS = constDeclAST.getConstDefASTS();
         for(ConstDefAST constDefAST : constDefASTS){
-            visitConstDefAST(constDefAST);
+            visitConstDefAST(constDefAST, isGlobal);
         }
     }
 
-    private void visitDeclAST(DeclAST declAST){
-        if(declAST.getType() == 1) visitConstDeclAST(declAST.getConstDeclAST());
-        else visitVarDeclAST(declAST.getVarDeclAST());
+    private void visitDeclAST(DeclAST declAST, boolean isGlobal){
+        if(declAST.getType() == 1) visitConstDeclAST(declAST.getConstDeclAST(), isGlobal);
+        else visitVarDeclAST(declAST.getVarDeclAST(), isGlobal);
     }
 
-    private void visitVarDeclAST(VarDeclAST varDeclAST){
+    private void visitVarDeclAST(VarDeclAST varDeclAST, boolean isGlobal){
         ArrayList<VarDefAST> varDefASTS = varDeclAST.getVarDefASTS();
         for(VarDefAST varDefAST : varDefASTS){
-            visitVarDefAST(varDefAST);
+            visitVarDefAST(varDefAST, isGlobal);
         }
     }
 
-    private void visitVarDefAST(VarDefAST varDefAST){
+    private void visitVarDefAST(VarDefAST varDefAST, boolean isGlobal){
         String ident = varDefAST.getIdent();
 
         int cnt = addSymCnt(ident);
 
-        AllocInst allocInst = f.buildAllocInst("%" + ident + "_" + cnt, CurBasicBlock);
-        if(varDefAST.getType() == 2){
-            visitInitValAST(varDefAST.getInitValAST());
-            f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
+        if(isGlobal){
+            if(varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
+            else CurValue = ConstInteger.constZero;
+            f.buildGlobalVar("@" + ident + "_" + cnt, false, CurValue ,globalVars);
+            pushSymbol(ident, CurValue);
         }
-        //  未赋初值的全局变量直接置为0
-        else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
+        else {
 
-        pushSymbol(ident, allocInst);
+            AllocInst allocInst = f.buildAllocInst("%" + ident + "_" + cnt, CurBasicBlock);
+            if(varDefAST.getType() == 2){
+                visitInitValAST(varDefAST.getInitValAST(), false);
+                f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
+            }
+            //  未赋初值的全局变量直接置为0
+            else f.buildStoreInst(CurBasicBlock, ConstInteger.constZero, allocInst);
+
+            pushSymbol(ident, allocInst);
+
+        }
     }
 
-    private void visitInitValAST(InitValAST initValAST){
-        visitExpAST(initValAST.getExpAST(), false);
+    private void visitInitValAST(InitValAST initValAST, boolean isCal){
+        visitExpAST(initValAST.getExpAST(), isCal);
     }
 
     private void visitBlockItemAST(BlockItemAST blockItemAST){
         if(blockItemAST.getType() == 1){
-            visitDeclAST(blockItemAST.getDeclAST());
+            visitDeclAST(blockItemAST.getDeclAST(), false);
         }
         else if(blockItemAST.getType() == 2){
             visitStmtAST(blockItemAST.getStmtAST());
@@ -589,11 +603,16 @@ public class Visitor {
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){
         ArrayList<Function> functions = new ArrayList<>();
-        ArrayList<GlobalVars> globalVars = new ArrayList<>();
 
         module = new IRModule(functions, globalVars);
         //  构建全局域
         pushSymTbl();
+
+        ArrayList<DeclAST> declASTS = compUnitAST.getDeclASTS();
+        for(DeclAST declAST : declASTS){
+            visitDeclAST(declAST, true);
+        }
+
 
         ArrayList<FuncDefAST> funcDefASTS = compUnitAST.getFuncDefASTS();
         for (FuncDefAST funcDefAST : funcDefASTS) {
