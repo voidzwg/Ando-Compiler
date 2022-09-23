@@ -1,8 +1,6 @@
 package IR;
 
-import IR.Type.ArrayType;
-import IR.Type.IntegerType;
-import IR.Type.VoidType;
+import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
 
@@ -15,6 +13,29 @@ public class IRBuildFactory {
 
     public static IRBuildFactory getInstance(){
         return f;
+    }
+
+    //  Utils方法，用于计算GepInst的Type
+    private Type calGepType(Value target, ArrayList<Integer> indexs){
+        Type tarType =  target.getType();
+        if(tarType instanceof PointerType) {
+            return new PointerType(new IntegerType(32));
+        }
+        else if(tarType instanceof ArrayType) {
+            ArrayType arrayType = (ArrayType) tarType;
+            ArrayList<Integer> dimList = arrayType.getEleDim();
+
+            int dimNum = dimList.size();
+            int idxNum = indexs.size();
+            if (idxNum == dimNum + 1) return new PointerType(new IntegerType(32));
+            else {
+                if (idxNum > 1) {
+                    dimList.subList(0, idxNum - 1).clear();
+                }
+                return new ArrayType(new IntegerType(32), dimList);
+            }
+        }
+        return null;
     }
 
     public BinaryInst buildBinaryInst(OP op, Value left, Value right,BasicBlock bb){
@@ -68,8 +89,8 @@ public class IRBuildFactory {
         return allocInst;
     }
 
-    public GepInst buildGepInst(Value target, ArrayList<Integer> indexs, ArrayList<Integer>dimList ,BasicBlock bb){
-        GepInst gepInst = new GepInst(indexs, target, new ArrayType(new IntegerType(32) ,dimList) ,bb);
+    public GepInst buildGepInst(Value target, ArrayList<Integer> indexs,BasicBlock bb){
+        GepInst gepInst = new GepInst(indexs, target, calGepType(target, indexs), bb);
         bb.addInst(gepInst);
         return gepInst;
     }

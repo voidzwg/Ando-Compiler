@@ -11,6 +11,10 @@ public class ArrayType extends Type{
         this.eleDim = eleDim;
     }
 
+    public ArrayType(){
+
+    }
+
 
     @Override
     public boolean isArrayType(){

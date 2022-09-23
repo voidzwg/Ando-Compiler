@@ -1,6 +1,6 @@
-const int one = 1;
+const int two = 2;
 
 int main() {
-    int arr[2][one];
-    return one;
+    int arr[two][two] = {two, 1, two, 1};
+    return two;
 }

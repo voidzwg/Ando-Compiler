@@ -10,6 +10,7 @@ import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.GepInst;
 import IR.Value.Instructions.OP;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,9 +31,11 @@ public class Visitor {
     //  将globalVars设成全局是为了方便所有visitDecl，visitDef向这里添加globalVars
     private ArrayList<GlobalVar> globalVars = new ArrayList<>();
     private BasicBlock CurBasicBlock;
-
     private Value CurValue;
-
+    //  用来填充数组初始值的时候记录已填充了多少个数
+    private int CurFill;
+    //  变量数组初始化时用
+    private ArrayList<Value> fillInitVal = new ArrayList<>();
     private IRModule module;
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
@@ -578,7 +581,7 @@ public class Visitor {
                 for(int i = 0; i < dim + 1; i++){
                     indexs.add(0);
                 }
-                GepInst pointer = f.buildGepInst(allocInst, indexs, dimList, CurBasicBlock);
+                GepInst pointer = f.buildGepInst(allocInst, indexs, CurBasicBlock);
 
                 //  构建memset指令
                 Function memsetFunc = new Function("@memset", new VoidType());
@@ -587,13 +590,43 @@ public class Visitor {
                 rParams.add(ConstInteger.constZero);
                 rParams.add(new ConstInteger(4 * totDim));
                 f.buildCallInst(CurBasicBlock, memsetFunc, rParams);
+
+                //  有初始值的数组
+                if(varDefType == 4){
+                    CurFill = 0;
+                    fillInitVal.clear();
+                    visitInitValAST(varDefAST.getInitValAST(), false);
+
+                    //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
+                    GepInst itPointer = pointer;
+                    for(int i = 0; i < fillInitVal.size(); i++){
+                        //  重新构建gep所需的indexs
+                        ArrayList<Integer> itIndexs = new ArrayList<>();
+                        itIndexs.add(i);
+                        if(i != 0){
+                            itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
+                        }
+
+                        f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
+                    }
+                }
             }
 
         }
     }
 
     private void visitInitValAST(InitValAST initValAST, boolean isCal){
-        visitExpAST(initValAST.getExpAST(), isCal);
+        if(initValAST.getType() == 1) {
+            visitExpAST(initValAST.getExpAST(), isCal);
+        }
+        //  数组初始化
+        else if (initValAST.getType() == 2){
+            ArrayList<InitValAST> initValASTS = initValAST.getInitValASTS();
+            for(InitValAST initValAST1 : initValASTS){
+                visitInitValAST(initValAST1, isCal);
+                fillInitVal.add(CurValue);
+            }
+        }
     }
 
     private void visitBlockItemAST(BlockItemAST blockItemAST){

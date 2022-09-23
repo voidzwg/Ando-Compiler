@@ -1,6 +1,0 @@
-int main(){
-    /*That's true
-   printf("zj is sb");
-   */
-   return 0;
-}

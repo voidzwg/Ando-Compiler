@@ -2,6 +2,8 @@ package Utils;
 
 import IR.IRModule;
 import IR.Type.ArrayType;
+import IR.Type.PointerType;
+import IR.Type.Type;
 import IR.Value.*;
 import IR.Value.Instructions.*;
 
@@ -234,16 +236,25 @@ public class IRDump {
 
         else if(inst instanceof GepInst){
             GepInst gepInst = (GepInst) inst;
+            Value target = gepInst.getTarget();
+            Type tarType = target.getType();
 
-            ArrayType arrayType = (ArrayType) gepInst.getType();
-            ArrayList<Integer> dimList = arrayType.getEleDim();
+            if(tarType instanceof ArrayType) {
+                ArrayType arrayType = (ArrayType) tarType;
+                ArrayList<Integer> dimList = arrayType.getEleDim();
 
-            out.write(gepInst.getName() + " = getelementptr ");
+                out.write(gepInst.getName() + " = getelementptr ");
 
-            DumpDimList(0, dimList);
-            out.write(" ");
-            DumpDimList(0, dimList);
-            out.write("* " + gepInst.getTarget().getName());
+                DumpDimList(0, dimList);
+                out.write(" ");
+                DumpDimList(0, dimList);
+                out.write("* " + target.getName());
+            }
+
+            else if(tarType instanceof PointerType){
+                out.write(gepInst.getName() + " = getelementptr i32 i32* ");
+                out.write(target.getName());
+            }
 
             ArrayList<Integer> indexs = gepInst.getIndexs();
             for(int index : indexs){
