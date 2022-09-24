@@ -77,14 +77,14 @@ public class IRBuildFactory {
         bb.addInst(storeInst);
     }
 
-    public AllocInst buildArray(String name, ArrayList<Integer> dimList, BasicBlock bb){
-        AllocInst allocInst = new AllocInst(name, new ArrayType(new IntegerType(32), dimList), bb);
+    public AllocInst buildArray(String name, ArrayList<Integer> dimList, BasicBlock bb, boolean isConst){
+        AllocInst allocInst = new AllocInst(name, new ArrayType(new IntegerType(32), dimList), bb, isConst);
         bb.addInst(allocInst);
         return allocInst;
     }
 
-    public AllocInst buildAllocInst(String name, BasicBlock bb){
-        AllocInst allocInst = new AllocInst(name, new IntegerType(32), bb);
+    public AllocInst buildAllocInst(String name, BasicBlock bb, boolean isConst){
+        AllocInst allocInst = new AllocInst(name, new IntegerType(32), bb, isConst);
         bb.addInst(allocInst);
         return allocInst;
     }

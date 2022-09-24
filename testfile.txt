@@ -1,6 +1,13 @@
-const int two = 2;
+int two = 2;
+int a = 3;
+void test(int b){
+    b = 3;
+}
 
 int main() {
-    int arr[two][two] = {two, 1, two, 1};
+    const int b = 1;
+    if(b == 2){
+        test();
+    }
     return two;
 }
