@@ -16,7 +16,7 @@ public class IRBuildFactory {
     }
 
     //  Utils方法，用于计算GepInst的Type
-    private Type calGepType(Value target, ArrayList<Integer> indexs){
+    private Type calGepType(Value target, ArrayList<Value> indexs){
         Type tarType =  target.getType();
         if(tarType instanceof PointerType) {
             return new PointerType(new IntegerType(32));
@@ -89,7 +89,7 @@ public class IRBuildFactory {
         return allocInst;
     }
 
-    public GepInst buildGepInst(Value target, ArrayList<Integer> indexs,BasicBlock bb){
+    public GepInst buildGepInst(Value target, ArrayList<Value> indexs,BasicBlock bb){
         GepInst gepInst = new GepInst(indexs, target, calGepType(target, indexs), bb);
         bb.addInst(gepInst);
         return gepInst;

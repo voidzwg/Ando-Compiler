@@ -156,12 +156,25 @@ public class Visitor {
     private void visitLValAST(LValAST lValAST){
         Value value = find(lValAST.getIdent());
 
-        if(value instanceof ConstInteger) {
-            ConstInteger constInteger = (ConstInteger) value;
-            CurValue = f.buildNumber(constInteger.getVal());
+        if(lValAST.getType() == 1) {
+            if (value instanceof ConstInteger) {
+                ConstInteger constInteger = (ConstInteger) value;
+                CurValue = f.buildNumber(constInteger.getVal());
+            } else CurValue = value;
         }
+        //  数组
+        else if(lValAST.getType() == 2){
+            ArrayList<Value> indexs = new ArrayList<>();
+            indexs.add(ConstInteger.constZero);
 
-        else CurValue = value;
+            ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
+            for(ExpAST expAST : expASTS){
+                visitExpAST(expAST, false);
+                indexs.add(CurValue);
+            }
+
+            CurValue = f.buildGepInst(value, indexs, CurBasicBlock);
+        }
     }
 
     private void visitPrimaryExpAST(PrimaryExpAST primaryExpAST, boolean isConstExp){
@@ -546,10 +559,10 @@ public class Visitor {
             else {
                 AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock, true);
 
-                ArrayList<Integer> indexs = new ArrayList<>();
+                ArrayList<Value> indexs = new ArrayList<>();
                 int dim = dimList.size();
                 for (int i = 0; i < dim + 1; i++) {
-                    indexs.add(0);
+                    indexs.add(ConstInteger.constZero);
                 }
                 GepInst pointer = f.buildGepInst(allocInst, indexs, CurBasicBlock);
 
@@ -567,8 +580,8 @@ public class Visitor {
                 GepInst itPointer = pointer;
                 for (int i = 0; i < fillInitVal.size(); i++) {
                     //  重新构建gep所需的indexs
-                    ArrayList<Integer> itIndexs = new ArrayList<>();
-                    itIndexs.add(i);
+                    ArrayList<Value> itIndexs = new ArrayList<>();
+                    itIndexs.add(new ConstInteger(i));
                     if (i != 0) {
                         itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
                     }
@@ -673,10 +686,10 @@ public class Visitor {
                 AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock, false);
                 pushSymbol(rawIdent, allocInst);
 
-                ArrayList<Integer> indexs = new ArrayList<>();
+                ArrayList<Value> indexs = new ArrayList<>();
                 int dim = dimList.size();
                 for(int i = 0; i < dim + 1; i++){
-                    indexs.add(0);
+                    indexs.add(ConstInteger.constZero);
                 }
                 GepInst pointer = f.buildGepInst(allocInst, indexs, CurBasicBlock);
 
@@ -697,8 +710,8 @@ public class Visitor {
                     GepInst itPointer = pointer;
                     for(int i = 0; i < fillInitVal.size(); i++){
                         //  重新构建gep所需的indexs
-                        ArrayList<Integer> itIndexs = new ArrayList<>();
-                        itIndexs.add(i);
+                        ArrayList<Value> itIndexs = new ArrayList<>();
+                        itIndexs.add(new ConstInteger(i));
                         if(i != 0){
                             itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
                         }

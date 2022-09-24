@@ -283,9 +283,9 @@ public class IRDump {
                 out.write(target.getName());
             }
 
-            ArrayList<Integer> indexs = gepInst.getIndexs();
-            for(int index : indexs){
-                out.write(", i32 " + index);
+            ArrayList<Value> indexs = gepInst.getIndexs();
+            for(Value index : indexs){
+                out.write(", i32 " + index.getName());
             }
 
             out.write("\n");
