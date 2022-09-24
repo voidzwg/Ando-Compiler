@@ -33,7 +33,7 @@ public class Visitor {
     private Value CurValue;
 
     //  变量数组初始化时用
-    private final ArrayList<Value> fillInitVal = new ArrayList<>();
+    private ArrayList<Value> fillInitVal;
     private IRModule module;
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
@@ -513,7 +513,7 @@ public class Visitor {
     private void visitConstDefAST(ConstDefAST constDefAST, boolean isGlobal){
         String rawIdent = constDefAST.getIdent();
         int cnt = addSymCnt(rawIdent);
-        String ident = "%" + rawIdent + "_" + cnt;
+        String ident = "@" + rawIdent + "_" + cnt;
 
         if(constDefAST.getType() == 1) {
             visitConstInitValAST(constDefAST.getConstInitValAST());
@@ -522,52 +522,60 @@ public class Visitor {
         }
         //  数组
         else if(constDefAST.getType() == 2){
-            //  Global
-
-            //  Not Global 基本同VarDef
+            //  构建dimList
             int totDim = 1;
             ArrayList<Integer> dimList = new ArrayList<>();
             ArrayList<ConstExpAST> constExpASTS = constDefAST.getConstExpASTS();
 
-            for(ConstExpAST constExpAST : constExpASTS){
+            for (ConstExpAST constExpAST : constExpASTS) {
                 visitConstExpAST(constExpAST);
                 int dim = Integer.parseInt(CurValue.getName());
                 dimList.add(dim);
                 totDim = totDim * dim;
             }
 
-            AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock, true);
-            pushSymbol(rawIdent, allocInst);
+            //  ConstDef一定有InitVal
+            fillInitVal = new ArrayList<>();
+            if(isGlobal){
+                //  构建InitValS
+                visitConstInitValAST(constDefAST.getConstInitValAST());
 
-            ArrayList<Integer> indexs = new ArrayList<>();
-            int dim = dimList.size();
-            for(int i = 0; i < dim + 1; i++){
-                indexs.add(0);
+                GlobalVar globalVar = f.buildGlobalVar(ident, dimList, fillInitVal, true, globalVars);
+                pushSymbol(rawIdent, globalVar);
             }
-            GepInst pointer = f.buildGepInst(allocInst, indexs, CurBasicBlock);
+            else {
+                AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock, true);
 
-            //  构建memset指令
-            Function memsetFunc = new Function("@memset", new VoidType());
-            ArrayList<Value> rParams = new ArrayList<>();
-            rParams.add(pointer);
-            rParams.add(ConstInteger.constZero);
-            rParams.add(new ConstInteger(4 * totDim));
-            f.buildCallInst(CurBasicBlock, memsetFunc, rParams);
-
-            fillInitVal.clear();
-            visitConstInitValAST(constDefAST.getConstInitValAST());
-
-            //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
-            GepInst itPointer = pointer;
-            for(int i = 0; i < fillInitVal.size(); i++){
-                //  重新构建gep所需的indexs
-                ArrayList<Integer> itIndexs = new ArrayList<>();
-                itIndexs.add(i);
-                if(i != 0){
-                    itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
+                ArrayList<Integer> indexs = new ArrayList<>();
+                int dim = dimList.size();
+                for (int i = 0; i < dim + 1; i++) {
+                    indexs.add(0);
                 }
+                GepInst pointer = f.buildGepInst(allocInst, indexs, CurBasicBlock);
 
-                f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
+                //  构建memset指令
+                Function memsetFunc = new Function("@memset", new VoidType());
+                ArrayList<Value> rParams = new ArrayList<>();
+                rParams.add(pointer);
+                rParams.add(ConstInteger.constZero);
+                rParams.add(new ConstInteger(4 * totDim));
+                f.buildCallInst(CurBasicBlock, memsetFunc, rParams);
+
+                visitConstInitValAST(constDefAST.getConstInitValAST());
+
+                //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
+                GepInst itPointer = pointer;
+                for (int i = 0; i < fillInitVal.size(); i++) {
+                    //  重新构建gep所需的indexs
+                    ArrayList<Integer> itIndexs = new ArrayList<>();
+                    itIndexs.add(i);
+                    if (i != 0) {
+                        itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
+                    }
+
+                    f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
+                }
+                pushSymbol(rawIdent, allocInst);
             }
         }
     }
@@ -597,7 +605,7 @@ public class Visitor {
         int varDefType = varDefAST.getType();
 
         int cnt = addSymCnt(rawIdent);
-        String ident = "%" + rawIdent + "_" + cnt;
+        String ident = "@" + rawIdent + "_" + cnt;
 
         if(isGlobal){
             if(varDefType == 1 || varDefType == 2) {
@@ -607,7 +615,31 @@ public class Visitor {
                 pushSymbol(rawIdent, CurValue);
             }
             //  全局数组
+            else {
+                //  totDim用于记录将数组展成一维有多少个元素，便于后续算字节数，构建指令
+                int totDim = 1;
+                //  访问ConstExpAST的List得到CurValue(肯定是ConstInteger)
+                //  这些CurValue的值就是数组的维度，放进一个dimList里
+                ArrayList<Integer> dimList = new ArrayList<>();
+                ArrayList<ConstExpAST> constExpASTS = varDefAST.getConstExpASTS();
 
+                for(ConstExpAST constExpAST : constExpASTS){
+                    visitConstExpAST(constExpAST);
+                    int dim = Integer.parseInt(CurValue.getName());
+                    dimList.add(dim);
+                    totDim = totDim * dim;
+                }
+                //构建InitValS
+                fillInitVal = new ArrayList<>();
+                GlobalVar globalVar;
+                if(varDefAST.getType() == 4){
+                    visitInitValAST(varDefAST.getInitValAST(), true);
+                    globalVar = f.buildGlobalVar(ident, dimList, fillInitVal, false,globalVars);
+                }
+                else globalVar = f.buildGlobalVar(ident, dimList, new ArrayList<>(), false,globalVars);
+
+                pushSymbol(rawIdent, globalVar);
+            }
         }
 
         else {
@@ -658,7 +690,7 @@ public class Visitor {
 
                 //  有初始值的数组
                 if(varDefType == 4){
-                    fillInitVal.clear();
+                    fillInitVal = new ArrayList<>();
                     visitInitValAST(varDefAST.getInitValAST(), false);
 
                     //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令

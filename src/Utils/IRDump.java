@@ -34,8 +34,35 @@ public class IRDump {
     }
 
     private static void DumpGlobalVar(GlobalVar globalVar) throws IOException {
-        out.write(globalVar.getName() + " = global i32 ");
-        out.write(globalVar.getValue().getName());
+        if(globalVar.getType().isArrayType()){
+            out.write(globalVar.getName());
+
+            if(globalVar.isConst()){
+                out.write(" = constant ");
+            }
+            else out.write(" = global ");
+
+            ArrayType arrayType = (ArrayType) globalVar.getType();
+            DumpDimList(0, arrayType.getEleDim());
+
+            //  输出初始值
+            ArrayList<Value> values = globalVar.getValues();
+            if(values.size() == 0){
+                out.write(" zeroinitializer\n");
+            }
+            else {
+                out.write(", {");
+                for(int i = 0; i < values.size(); i++){
+                    out.write(values.get(i).getName());
+                    if(i != values.size() - 1) out.write(", ");
+                }
+                out.write("}");
+            }
+        }
+        else {
+            out.write(globalVar.getName() + " = global i32 ");
+            out.write(globalVar.getValue().getName());
+        }
     }
 
     private static void DumpLib() throws IOException {
@@ -48,7 +75,7 @@ public class IRDump {
         //  DumpGlobalVars
         ArrayList<GlobalVar> globalVars = module.getGlobalVars();
         for(GlobalVar globalVar : globalVars){
-            if(!globalVar.isConst()){
+            if(!globalVar.isConst() || globalVar.getType().isArrayType()){
                 DumpGlobalVar(globalVar);
                 out.write("\n");
             }

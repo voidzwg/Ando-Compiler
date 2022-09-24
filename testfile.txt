@@ -1,13 +1,7 @@
-int two = 2;
-int a = 3;
-void test(int b){
-    b = 3;
-}
-
-int main() {
-    const int b = 1;
-    if(b == 2){
-        test();
-    }
-    return two;
+const int a[2] = {0, 1};
+int b[3]= {1, 2+3, 4};
+int main(){
+    int c[2] = {0, 1};
+    const int d[2] = {2,3-5};
+    return 0;
 }

@@ -130,6 +130,14 @@ public class IRBuildFactory {
         return argument;
     }
 
+    //  GlobalVar数组版
+    public GlobalVar buildGlobalVar(String name, ArrayList<Integer> dimList, ArrayList<Value> initValS ,boolean isConst, ArrayList<GlobalVar> globalVars){
+        ArrayType arrayType = new ArrayType(new IntegerType(32), dimList);
+        GlobalVar globalVar = new GlobalVar(name, arrayType, isConst, initValS);
+        globalVars.add(globalVar);
+        return globalVar;
+    }
+
     public GlobalVar buildGlobalVar(String name, boolean isConst, Value initValue,ArrayList<GlobalVar> globalVars){
         GlobalVar globalVar = new GlobalVar(name, isConst, initValue);
         globalVars.add(globalVar);
