@@ -1,10 +1,18 @@
 package IR.Type;
 
 public class PointerType extends Type{
-    Type ContentType;
+    Type EleType;
 
-    public PointerType(Type ContentType){
-        this.ContentType = ContentType;
+    public PointerType(Type EleType){
+        this.EleType = EleType;
     }
 
+    @Override
+    public boolean isPointerType() {
+        return true;
+    }
+
+    public Type getEleType(){
+        return EleType;
+    }
 }

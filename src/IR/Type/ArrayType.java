@@ -1,27 +1,22 @@
 package IR.Type;
 
+import java.awt.*;
 import java.util.ArrayList;
 
-public class ArrayType extends Type{
-    private Type eleType;
-    ArrayList<Integer> eleDim;
+public class ArrayType extends PointerType{
+    int eleDim;
 
-    public ArrayType(Type eleType, ArrayList<Integer> eleDim) {
-        this.eleType = eleType;
+    public ArrayType(Type eleType, int eleDim) {
+        super(eleType);
         this.eleDim = eleDim;
     }
-
-    public ArrayType(){
-
-    }
-
 
     @Override
     public boolean isArrayType(){
         return true;
     }
 
-    public ArrayList<Integer> getEleDim() {
+    public int getEleDim() {
         return eleDim;
     }
 }

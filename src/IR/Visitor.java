@@ -160,7 +160,9 @@ public class Visitor {
             if (value instanceof ConstInteger) {
                 ConstInteger constInteger = (ConstInteger) value;
                 CurValue = f.buildNumber(constInteger.getVal());
-            } else CurValue = value;
+            }
+
+            else CurValue = value;
         }
         //  数组
         else if(lValAST.getType() == 2){
@@ -657,7 +659,7 @@ public class Visitor {
 
         else {
             if(varDefType == 1 || varDefType == 2) {
-                AllocInst allocInst = f.buildAllocInst(ident, CurBasicBlock, false);
+                AllocInst allocInst = f.buildAllocInst(ident, new IntegerType(32), CurBasicBlock, false);
                 if (varDefType == 2) {
                     visitInitValAST(varDefAST.getInitValAST(), false);
                     f.buildStoreInst(CurBasicBlock, CurValue, allocInst);
@@ -727,13 +729,14 @@ public class Visitor {
     private void visitInitValAST(InitValAST initValAST, boolean isCal){
         if(initValAST.getType() == 1) {
             visitExpAST(initValAST.getExpAST(), isCal);
+            //  反正不是数组的时候也不影响 就放到这里了
+            fillInitVal.add(CurValue);
         }
         //  数组初始化
         else if (initValAST.getType() == 2){
             ArrayList<InitValAST> initValASTS = initValAST.getInitValASTS();
             for(InitValAST initValAST1 : initValASTS){
                 visitInitValAST(initValAST1, isCal);
-                fillInitVal.add(CurValue);
             }
         }
     }
@@ -777,13 +780,32 @@ public class Visitor {
             FuncFParamsAST funcFParamsAST = funcDefAST.getFuncFParamsAST();
             ArrayList<FuncFParamAST> funcFParamASTS = funcFParamsAST.getFuncFParamASTS();
             for(FuncFParamAST funcFParamAST : funcFParamASTS){
-                String identArg = funcFParamAST.getIdent();
+                //  平平无奇的起名环节
+                String rawIdentArg = funcFParamAST.getIdent();
                 String typeArg = funcFParamAST.getbType();
 
-                int cnt = addSymCnt(identArg);
+                int cnt = addSymCnt(rawIdentArg);
+                String identArg = "%" + rawIdentArg + "_" + cnt;
 
-                Argument argument = f.buildArgument("%" + identArg + "_" + cnt, typeArg, CurFunction);
-                tmpHashMap.put(identArg, argument);
+                //  平平无奇的普通参数环节
+                if(funcFParamAST.getType() == 1) {
+                    Argument argument = f.buildArgument(identArg, typeArg, CurFunction);
+                    tmpHashMap.put(rawIdentArg, argument);
+                }
+                //  相当有趣的数组参数环节
+                else if(funcFParamAST.getType() == 2){
+                    //  构建dimList
+                    ArrayList<Integer> dimList = new ArrayList<>();
+                    ArrayList<ConstExpAST> constExpASTS = funcFParamAST.getConstExpASTS();
+                    for(ConstExpAST constExpAST : constExpASTS){
+                        visitConstExpAST(constExpAST);
+                        dimList.add(Integer.parseInt(CurValue.getName()));
+                    }
+
+                    Argument argument = f.buildArgument(identArg, dimList, CurFunction);
+
+                    tmpHashMap.put(rawIdentArg, argument);
+                }
             }
         }
 

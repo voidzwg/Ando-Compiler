@@ -10,10 +10,14 @@ import IR.Value.Instructions.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Array;
 import java.util.ArrayList;
 
 public class IRDump {
     private static final BufferedWriter out;
+
+    //  用于辅助输出数组初始值的小变量qwq
+    private static int initArrayNow;
 
     static {
         try {
@@ -23,7 +27,56 @@ public class IRDump {
         }
     }
 
+    private static void DumpType(Type type) throws IOException {
+        if(type instanceof ArrayType){
+            ArrayType arrayType = (ArrayType) type;
+            Type eleType = arrayType.getEleType();
+            int len = arrayType.getEleDim();
+            if(!eleType.isArrayType()){
+                out.write("[" + len + " x i32]");
+            }
+            else{
+                out.write("[" + len + " x ");
+                DumpType(eleType);
+                out.write("]");
+            }
+        }
+        else if(type instanceof PointerType){
+            out.write("i32*");
+        }
+    }
+
+    private static void DumpInitArray(ArrayType arrayType, ArrayList<Value> values) throws IOException {
+        Type type = arrayType.getEleType();
+        DumpType(arrayType);
+        if(type.isArrayType()){
+            ArrayType sonType = (ArrayType) type;
+            int len = arrayType.getEleDim();
+            out.write("[");
+            for(int i = 0; i < len; i++){
+                DumpInitArray(sonType, values);
+                if(i != len - 1) out.write(", ");
+            }
+            out.write("]");
+        }
+        else if(type.isPointerType()){
+            out.write(" ");
+            out.write("[");
+            int len = arrayType.getEleDim();
+            for(int i = 0; i < len;i++){
+                out.write("i32 " + values.get(initArrayNow++).getName());
+                if(i != len - 1) out.write(", ");
+            }
+            out.write("]");
+        }
+    }
+
     private static void DumpDimList(int now, ArrayList<Integer> dimList) throws IOException {
+        if(dimList.size() == 0){
+            out.write("i32");
+            return;
+        }
+
         out.write("[");
         out.write(dimList.get(now) + " x ");
         if(now != dimList.size() - 1) {
@@ -43,20 +96,15 @@ public class IRDump {
             else out.write(" = global ");
 
             ArrayType arrayType = (ArrayType) globalVar.getType();
-            DumpDimList(0, arrayType.getEleDim());
-
             //  输出初始值
             ArrayList<Value> values = globalVar.getValues();
             if(values.size() == 0){
                 out.write(" zeroinitializer\n");
             }
             else {
-                out.write(", {");
-                for(int i = 0; i < values.size(); i++){
-                    out.write(values.get(i).getName());
-                    if(i != values.size() - 1) out.write(", ");
-                }
-                out.write("}");
+                //  初始化当前输出的位置
+                initArrayNow = 0;
+                DumpInitArray(arrayType, values);
             }
         }
         else {
@@ -81,7 +129,6 @@ public class IRDump {
             }
         }
 
-
         //  DumpFunctions
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
@@ -95,6 +142,11 @@ public class IRDump {
         if(argument.getType().isIntegerTy()){
             out.write("i32 ");
             out.write(argument.getName());
+        }
+        else if(argument.getType().isArrayType()){
+            ArrayType arrayType = (ArrayType) argument.getType();
+            DumpType(arrayType);
+            out.write("* " + argument.getName());
         }
     }
 
@@ -180,8 +232,18 @@ public class IRDump {
         }
 
         else if(inst instanceof LoadInst){
-            out.write(inst.getName() + " = load i32, i32* ");
-            out.write(((LoadInst) inst).getPointer().getName() + "\n");
+            LoadInst loadInst = (LoadInst) inst;
+            Value pointer = loadInst.getPointer();
+            if(pointer.getType().isArrayType()){
+                ArrayType arrayType = (ArrayType) pointer.getType();
+                out.write(inst.getName() + " = load ");
+                DumpType(arrayType.getEleType());
+                DumpType(arrayType);
+            }
+            else {
+                out.write(inst.getName() + " = load i32, i32* ");
+            }
+            out.write(pointer.getName() + "\n");
         }
 
         else if(inst instanceof AllocInst){
@@ -192,8 +254,7 @@ public class IRDump {
             else {
                 ArrayType arrayType = (ArrayType) inst.getType();
                 out.write(inst.getName() + " = alloca ");
-                ArrayList<Integer> dimList = arrayType.getEleDim();
-                DumpDimList(0, dimList);
+                DumpType(arrayType);
                 out.write("\n");
             }
 
@@ -264,17 +325,15 @@ public class IRDump {
         else if(inst instanceof GepInst){
             GepInst gepInst = (GepInst) inst;
             Value target = gepInst.getTarget();
+            Type gepType = gepInst.getType();
             Type tarType = target.getType();
 
             if(tarType instanceof ArrayType) {
                 ArrayType arrayType = (ArrayType) tarType;
-                ArrayList<Integer> dimList = arrayType.getEleDim();
-
                 out.write(gepInst.getName() + " = getelementptr ");
-
-                DumpDimList(0, dimList);
+                DumpType(arrayType);
                 out.write(" ");
-                DumpDimList(0, dimList);
+                DumpType(arrayType);
                 out.write("* " + target.getName());
             }
 

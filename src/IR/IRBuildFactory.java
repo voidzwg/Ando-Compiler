@@ -3,9 +3,13 @@ package IR;
 import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
+import com.sun.org.apache.xpath.internal.Arg;
 
+import java.awt.*;
 import java.util.ArrayList;
 
+//  PointerType 指 i32*
+//  ArrayType 特指指向数组的指针
 public class IRBuildFactory {
     private IRBuildFactory(){}
 
@@ -15,27 +19,36 @@ public class IRBuildFactory {
         return f;
     }
 
-    //  Utils方法，用于计算GepInst的Type
-    private Type calGepType(Value target, ArrayList<Value> indexs){
-        Type tarType =  target.getType();
-        if(tarType instanceof PointerType) {
+    //  根据dimList递归构建ArrayType
+    private Type buildArrayType(ArrayList<Integer> dimList){
+        if(dimList.size() == 0){
             return new PointerType(new IntegerType(32));
         }
-        else if(tarType instanceof ArrayType) {
-            ArrayType arrayType = (ArrayType) tarType;
-            ArrayList<Integer> dimList = arrayType.getEleDim();
+        ArrayList<Integer> tmpDimList = new ArrayList<>(dimList);
+        int eleDim = tmpDimList.get(0);
+        tmpDimList.remove(0);
+        return new ArrayType(buildArrayType(tmpDimList), eleDim);
+    }
 
-            int dimNum = dimList.size();
-            int idxNum = indexs.size();
-            if (idxNum == dimNum + 1) return new PointerType(new IntegerType(32));
-            else {
-                if (idxNum > 1) {
-                    dimList.subList(0, idxNum - 1).clear();
-                }
-                return new ArrayType(new IntegerType(32), dimList);
-            }
+    private Type calLowerType(ArrayList<Integer> dimList){
+        if(dimList.size() == 1){
+            return new PointerType(new IntegerType(32));
         }
-        return null;
+        dimList.remove(0);
+        return calLowerType(dimList);
+    }
+
+    //  Utils方法，用于计算GepInst的Type，保证target一定为一个指针
+    private Type calGepType(Type tarType, ArrayList<Value> indexs){
+        if(indexs.size() == 0) return tarType;
+        if(!tarType.isArrayType()){
+            return new IntegerType(32);
+        }
+        ArrayType arrayType = (ArrayType) tarType;
+        Type eleType = arrayType.getEleType();
+        ArrayList<Value> tmpIndexs = new ArrayList<>(indexs);
+        tmpIndexs.remove(0);
+        return calGepType(eleType, tmpIndexs);
     }
 
     public BinaryInst buildBinaryInst(OP op, Value left, Value right,BasicBlock bb){
@@ -66,8 +79,10 @@ public class IRBuildFactory {
         cur.setTerminal(true);
     }
 
-    public LoadInst buildLoadInst(Value pointer,BasicBlock bb){
-        LoadInst loadInst = new LoadInst(pointer, bb);
+    public LoadInst buildLoadInst(Value pointer, BasicBlock bb){
+        //  loadInst的pointer一定是一个指针
+        PointerType pointerType = (PointerType) pointer.getType();
+        LoadInst loadInst = new LoadInst(pointer, pointerType.getEleType(), bb);
         bb.addInst(loadInst);
         return loadInst;
     }
@@ -78,19 +93,23 @@ public class IRBuildFactory {
     }
 
     public AllocInst buildArray(String name, ArrayList<Integer> dimList, BasicBlock bb, boolean isConst){
-        AllocInst allocInst = new AllocInst(name, new ArrayType(new IntegerType(32), dimList), bb, isConst);
+        ArrayType arrayType = (ArrayType) buildArrayType(dimList);
+        AllocInst allocInst = new AllocInst(name, arrayType, bb, isConst);
         bb.addInst(allocInst);
         return allocInst;
     }
 
-    public AllocInst buildAllocInst(String name, BasicBlock bb, boolean isConst){
-        AllocInst allocInst = new AllocInst(name, new IntegerType(32), bb, isConst);
+    public AllocInst buildAllocInst(String name, Type type,BasicBlock bb, boolean isConst){
+        AllocInst allocInst = new AllocInst(name, new PointerType(type), bb, isConst);
         bb.addInst(allocInst);
         return allocInst;
     }
 
     public GepInst buildGepInst(Value target, ArrayList<Value> indexs,BasicBlock bb){
-        GepInst gepInst = new GepInst(indexs, target, calGepType(target, indexs), bb);
+        //  索引的第一个参数不会改变类型
+        ArrayList<Value> tmpIndexs = new ArrayList<>(indexs);
+        tmpIndexs.remove(0);
+        GepInst gepInst = new GepInst(indexs, target, calGepType(target.getType(), tmpIndexs), bb);
         bb.addInst(gepInst);
         return gepInst;
     }
@@ -118,21 +137,27 @@ public class IRBuildFactory {
         return bb;
     }
 
-    public Argument buildArgument(String name, String type, Function parentFunc){
+    //  数组参数
+    public Argument buildArgument(String name, ArrayList<Integer> dimList, Function parentFunc){
+        Type type;
+        if(dimList.size() == 0) type = new PointerType(new IntegerType(32));
+        else type = buildArrayType(dimList);
+        Argument argument = new Argument(name, type, parentFunc);
+        parentFunc.addArg(argument);
+        return argument;
+    }
+
+    public Argument buildArgument(String name, String typeStr, Function parentFunc){
         Argument argument;
-        if(type.equals("int")){
-            argument = new Argument(name, new IntegerType(32), parentFunc);
-        }
-        else {
-            argument = new Argument(name, new VoidType(), parentFunc);
-        }
+        if(typeStr.equals("int")) argument = new Argument(name, new IntegerType(32), parentFunc);
+        else argument = new Argument(name, new VoidType(), parentFunc);
         parentFunc.addArg(argument);
         return argument;
     }
 
     //  GlobalVar数组版
     public GlobalVar buildGlobalVar(String name, ArrayList<Integer> dimList, ArrayList<Value> initValS ,boolean isConst, ArrayList<GlobalVar> globalVars){
-        ArrayType arrayType = new ArrayType(new IntegerType(32), dimList);
+        ArrayType arrayType = (ArrayType) buildArrayType(dimList);
         GlobalVar globalVar = new GlobalVar(name, arrayType, isConst, initValS);
         globalVars.add(globalVar);
         return globalVar;

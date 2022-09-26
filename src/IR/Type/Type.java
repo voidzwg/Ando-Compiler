@@ -17,4 +17,8 @@ public abstract class Type {
         return false;
     }
 
+    public boolean isPointerType() {
+        return false;
+    }
+
 }
