@@ -1,4 +1,10 @@
-int main(){
+int a[2] = {0, 1};
 
+void solve(){
+    a[0] = a[0] + 1;
+}
+
+int main(){
+    solve();
     return 0;
 }

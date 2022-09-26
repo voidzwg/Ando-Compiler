@@ -228,6 +228,7 @@ public class Visitor {
                         break;
                 }
             }
+            //  Ident (FuncFParam)
             else if(unaryExpAST.getType() == 3){
                 String funcName = unaryExpAST.getIdent();
                 Function function = (Function) find(funcName);
@@ -238,7 +239,10 @@ public class Visitor {
                     visitExpAST(expAST, false);
                     values.add(CurValue);
                 }
+
+
                 CurValue = f.buildCallInst(CurBasicBlock, function, values);
+
             }
             else if(unaryExpAST.getType() == 4){
                 String funcName = unaryExpAST.getIdent();
