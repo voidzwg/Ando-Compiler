@@ -28,6 +28,24 @@ public class IRDump {
         }
     }
 
+    //  将rawFString转换成FString
+    private static String calFString(String rawFString){
+        String fString = rawFString.replace("\"", "").replace("\\n", "\\0A");
+
+        return fString + "\\00";
+    }
+
+    private static int calFStrLen(String fString){
+        int len = fString.length();
+        int realLen = len;
+        for(int i = 0; i < len; i++){
+            if(fString.charAt(i) == '\\'){
+                realLen-=2;
+            }
+        }
+        return realLen;
+    }
+
     private static void DumpType(Type type) throws IOException {
         if(type instanceof ArrayType){
             ArrayType arrayType = (ArrayType) type;
@@ -72,21 +90,6 @@ public class IRDump {
         }
     }
 
-    private static void DumpDimList(int now, ArrayList<Integer> dimList) throws IOException {
-        if(dimList.size() == 0){
-            out.write("i32");
-            return;
-        }
-
-        out.write("[");
-        out.write(dimList.get(now) + " x ");
-        if(now != dimList.size() - 1) {
-            DumpDimList(now + 1, dimList);
-        }
-        else out.write("i32");
-        out.write("]");
-    }
-
     private static void DumpGlobalVar(GlobalVar globalVar) throws IOException {
         if(globalVar.getType().isArrayType()){
             out.write(globalVar.getName());
@@ -112,18 +115,13 @@ public class IRDump {
         else if(globalVar.getType() instanceof StringType){
             String strName = globalVar.getName();
             StringType stringType = (StringType) globalVar.getType();
-            String fString = stringType.getVal();
-            int len = fString.length() - 1;
+            //  由于fString中可能由\n等字符，所以要先预处理一下
+            String fString = calFString(stringType.getVal());
+            int len = calFStrLen(fString);
 
             out.write(strName + " = constant ");
             out.write("[" + len + " x i8] c");
-
-            for(int i = 0; i < len; i++){
-                out.write(fString.charAt(i));
-            }
-            out.write("\\00\"");
-
-            out.write("\n");
+            out.write("\"" + fString + "\"");
         }
         else {
             out.write(globalVar.getName() + " = global i32 ");
@@ -297,8 +295,10 @@ public class IRDump {
             else if(op == OP.Lt) out.write("slt");
             else if(op == OP.Le) out.write("sle");
 
-            out.write(" " + cmpInst.getLeftVal().getName());
-            out.write(" " + cmpInst.getRightVal().getName() + " " + "\n");
+            Value left = cmpInst.getLeftVal();
+            Value right = cmpInst.getRightVal();
+            out.write(" " + left + ",");
+            out.write(" " + right + "\n");
         }
 
         else if(inst instanceof BrInst){
@@ -326,6 +326,11 @@ public class IRDump {
             if(callInst.getType().isVoidTy()) out.write("call void ");
             else if(callInst.getType().isIntegerTy()) out.write("call i32 ");
 
+            //  特殊的printf
+            if(FuncName.equals("@printf")){
+                out.write("(i8*, ...) ");
+            }
+
             out.write(FuncName);
             out.write("(");
 
@@ -336,21 +341,19 @@ public class IRDump {
                 Value strVal = values.get(0);
                 values.remove(0);
                 StringType stringType = (StringType) strVal.getType();
-                String fString = stringType.getVal();
-                int len = fString.length() - 1;
+                String fString = calFString(stringType.getVal());
+                int len = calFStrLen(fString);
 
-                out.write("i8* getelementptr ");
+                out.write("i8* getelementptr (");
                 out.write("[" + len + " x i8], ");
                 out.write("[" + len + " x i8]* ");
-                out.write(strVal.getName() + ", ");
+                out.write(strVal.getName() + ", i64 0, i64 0)");
             }
 
+            if(values.size() != 0) out.write(", ");
             for(int i = 0; i < values.size(); i++){
                 Value value = values.get(i);
-                if(value.getType().isIntegerTy()){
-                    out.write("i32 ");
-                }
-                out.write(value.getName());
+                out.write(value.toString());
                 if(i != values.size() - 1) out.write(", ");
             }
 

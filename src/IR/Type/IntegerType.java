@@ -11,4 +11,9 @@ public class IntegerType extends Type{
     public boolean isIntegerTy(){
         return true;
     }
+
+    @Override
+    public String toString(){
+        return "i" + bit;
+    }
 }

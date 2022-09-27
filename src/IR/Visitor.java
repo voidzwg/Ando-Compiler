@@ -650,7 +650,7 @@ public class Visitor {
         int varDefType = varDefAST.getType();
 
         int cnt = addSymCnt(rawIdent);
-        String ident = "@" + rawIdent + "_" + cnt;
+        String ident = "%" + rawIdent + "_" + cnt;
 
         if(isGlobal){
             if(varDefType == 1 || varDefType == 2) {

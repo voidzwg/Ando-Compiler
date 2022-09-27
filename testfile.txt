@@ -1,9 +1,8 @@
-int a[2][2] = {{0, 1}, {2, 3}};
-void solve(int a){
-    return;
-}
-
 int main(){
-    a[0][1];
+    int a = 0 + 1;
+    if(a >= 0){
+        printf("a >= 0\n");
+    }
+    else printf("a <= 0\n");
     return 0;
 }
