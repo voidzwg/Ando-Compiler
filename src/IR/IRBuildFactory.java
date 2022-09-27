@@ -171,8 +171,8 @@ public class IRBuildFactory {
         return globalVar;
     }
 
-    public GlobalVar buildGlobalVar(String name, boolean isConst, Value initValue,ArrayList<GlobalVar> globalVars){
-        GlobalVar globalVar = new GlobalVar(name, isConst, initValue);
+    public GlobalVar buildGlobalVar(String name,Type type, boolean isConst, Value initValue,ArrayList<GlobalVar> globalVars){
+        GlobalVar globalVar = new GlobalVar(name, type,isConst, initValue);
         globalVars.add(globalVar);
         return globalVar;
     }

@@ -10,7 +10,7 @@ public class Value {
     private Type type;
     private ArrayList<Use> useList;
     //  valNumber用于给value命名
-    public static int valNumber = 0;
+    public static int valNumber = -1;
 
     public Value(){}
 
@@ -21,7 +21,13 @@ public class Value {
     }
 
 
-
+    @Override
+    public String toString(){
+        if(this instanceof ConstInteger) return this.name;
+        else{
+            return this.type + " " + this.name;
+        }
+    }
 
     //  Getters and Setters
     public String getName() {

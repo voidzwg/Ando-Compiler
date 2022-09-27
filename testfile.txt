@@ -1,15 +1,8 @@
-int a[2] = {0, 1};
-
-void solve(int b){
-    a[0] = a[0] + 1;
-    return;
+int solve(int a[][2]){
+    return a[0][0];
 }
 
 int main(){
-    int a = 0, b = 1;
-    if(a < b){
-        solve(a);
-    }
-    else solve(b);
-    return 0;
+    int a[2][2] = {{0, 1}, {2, 3}};
+    return solve(a);
 }

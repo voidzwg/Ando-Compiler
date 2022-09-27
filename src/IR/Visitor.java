@@ -4,6 +4,7 @@ import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 import IR.Type.IntegerType;
+import IR.Type.StringType;
 import IR.Type.VoidType;
 import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
@@ -33,8 +34,11 @@ public class Visitor {
     private Value CurValue;
 
     //  变量数组初始化时用
-    private ArrayList<Value> fillInitVal;
+    private ArrayList<Value> fillInitVal = new ArrayList<>();
     private IRModule module;
+
+    //  用来记录printf语句出现的次数，从而为fString命名
+    private int strNum = 0;
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
@@ -51,6 +55,7 @@ public class Visitor {
 
     //  符号表
     private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
+    private int symTop = -1;
     //  tmpHashMap用于保存FuncFParams
     //  因为当你访问FuncFParams时，你还没有进入Block，而只有进入Block你才能push新的符号表
     //  所以为了把FuncFParams的声明也放进符号表，我们用tmpHashMap来保存
@@ -167,7 +172,10 @@ public class Visitor {
         //  数组
         else if(lValAST.getType() == 2){
             ArrayList<Value> indexs = new ArrayList<>();
-            indexs.add(ConstInteger.constZero);
+            //  参数传的数组会少一个维度，我们buildGep的时候就不需要多构建一个索引了
+            if(!(value instanceof Argument)){
+                indexs.add(ConstInteger.constZero);
+            }
 
             ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
             for(ExpAST expAST : expASTS){
@@ -511,7 +519,22 @@ public class Visitor {
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
         else if(stmtAST.getType() == 11){
-
+            Function printfFunc = new Function("@printf", new IntegerType(32));
+            ArrayList<Value> rParams = new ArrayList<>();
+            ArrayList<ExpAST> expASTS = stmtAST.getExpASTS();
+            String fString = stmtAST.getfString();
+            strNum++;
+            String strName = "@.str." + strNum;
+            //  这里新建了一个StringType，属于是为了完成printf而自己新建的
+            //  虽然不破坏整体的架构，但总感觉有点别扭(不过能跑就行x
+            Value fStrValue = new Value(strName, new StringType(fString));
+            f.buildGlobalVar(strName, fStrValue.getType(),false, null, globalVars);
+            rParams.add(fStrValue);
+            for(ExpAST expAST : expASTS){
+                visitExpAST(expAST, false);
+                rParams.add(CurValue);
+            }
+            f.buildCallInst(CurBasicBlock, printfFunc, rParams);
         }
         else if(stmtAST.getType() == 12){
             f.buildRetInst(CurBasicBlock);
@@ -542,7 +565,7 @@ public class Visitor {
 
         if(constDefAST.getType() == 1) {
             visitConstInitValAST(constDefAST.getConstInitValAST());
-            if (isGlobal) f.buildGlobalVar(ident, true, CurValue, globalVars);
+            if (isGlobal) f.buildGlobalVar(ident, new IntegerType(32),true, CurValue, globalVars);
             pushSymbol(rawIdent, CurValue);
         }
         //  数组
@@ -636,7 +659,7 @@ public class Visitor {
             if(varDefType == 1 || varDefType == 2) {
                 if (varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
                 else CurValue = ConstInteger.constZero;
-                f.buildGlobalVar(ident, false, CurValue, globalVars);
+                f.buildGlobalVar(ident, new IntegerType(32),false, CurValue, globalVars);
                 pushSymbol(rawIdent, CurValue);
             }
             //  全局数组
@@ -778,15 +801,17 @@ public class Visitor {
     private void visitFuncDefAST(FuncDefAST funcDefAST){
         String ident = funcDefAST.getIdent();
         String type = funcDefAST.getFuncType();
+
         CurFunction = f.buildFunction("@" + ident, type, module);
         CurBasicBlock = f.buildBasicBlock(CurFunction);
+        //  进入一个新函数后命名要重新开始
+        Value.valNumber = -1;
 
         pushSymbol(ident, CurFunction);
 
+        tmpHashMap.clear();
         //  Has FuncFParams
         if(funcDefAST.getType() == 2){
-            tmpHashMap.clear();
-
             FuncFParamsAST funcFParamsAST = funcDefAST.getFuncFParamsAST();
             ArrayList<FuncFParamAST> funcFParamASTS = funcFParamsAST.getFuncFParamASTS();
             for(FuncFParamAST funcFParamAST : funcFParamASTS){

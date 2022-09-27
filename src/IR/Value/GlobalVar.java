@@ -11,8 +11,8 @@ public class GlobalVar extends Value{
     //  代表全局数组的初始值
     private ArrayList<Value> values;
 
-    public GlobalVar(String name, boolean isConst, Value value){
-        super(name, new IntegerType(32));
+    public GlobalVar(String name, Type type, boolean isConst, Value value){
+        super(name, type);
         this.isConst = isConst;
         //  这个Value是他的初始值
         this.value = value;
