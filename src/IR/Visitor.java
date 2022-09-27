@@ -172,7 +172,10 @@ public class Visitor {
         //  数组
         else if(lValAST.getType() == 2){
             ArrayList<Value> indexs = new ArrayList<>();
-            indexs.add(ConstInteger.constZero);
+            //  参数传的数组会少一个维度，我们buildGep的时候就不需要多构建一个索引了
+            if(!(value instanceof Argument)){
+                indexs.add(ConstInteger.constZero);
+            }
 
             ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
             for(ExpAST expAST : expASTS){
@@ -650,7 +653,7 @@ public class Visitor {
         int varDefType = varDefAST.getType();
 
         int cnt = addSymCnt(rawIdent);
-        String ident = "%" + rawIdent + "_" + cnt;
+        String ident = "@" + rawIdent + "_" + cnt;
 
         if(isGlobal){
             if(varDefType == 1 || varDefType == 2) {
@@ -798,8 +801,11 @@ public class Visitor {
     private void visitFuncDefAST(FuncDefAST funcDefAST){
         String ident = funcDefAST.getIdent();
         String type = funcDefAST.getFuncType();
+
         CurFunction = f.buildFunction("@" + ident, type, module);
         CurBasicBlock = f.buildBasicBlock(CurFunction);
+        //  进入一个新函数后命名要重新开始
+        Value.valNumber = -1;
 
         pushSymbol(ident, CurFunction);
 

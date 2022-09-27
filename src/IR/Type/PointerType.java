@@ -15,4 +15,10 @@ public class PointerType extends Type{
     public Type getEleType(){
         return EleType;
     }
+
+    @Override
+    public String toString(){
+        String eleStr = EleType.toString();
+        return eleStr + "*";
+    }
 }

@@ -348,9 +348,10 @@ public class IRDump {
                 out.write("[" + len + " x i8], ");
                 out.write("[" + len + " x i8]* ");
                 out.write(strVal.getName() + ", i64 0, i64 0)");
+
+                if(values.size() != 0) out.write(", ");
             }
 
-            if(values.size() != 0) out.write(", ");
             for(int i = 0; i < values.size(); i++){
                 Value value = values.get(i);
                 out.write(value.toString());
@@ -369,8 +370,8 @@ public class IRDump {
             if(tarType instanceof ArrayType) {
                 ArrayType arrayType = (ArrayType) tarType;
                 out.write(gepInst.getName() + " = getelementptr ");
-                DumpType(gepType);
-                out.write(" ");
+                DumpType(arrayType);
+                out.write(", ");
                 DumpType(arrayType);
                 out.write("* " + target.getName());
             }
