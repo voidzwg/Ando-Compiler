@@ -114,6 +114,14 @@ public class IRBuildFactory {
         return gepInst;
     }
 
+    //  build ret void
+    public RetInst buildRetInst(BasicBlock bb){
+        Value voidValue = new Value("void", new VoidType());
+        RetInst retInst = new RetInst(bb, voidValue);
+        bb.addInst(retInst);
+        return retInst;
+    }
+
     public RetInst buildRetInst(BasicBlock bb, Value value){
         RetInst retInst = new RetInst(bb, value);
         bb.addInst(retInst);

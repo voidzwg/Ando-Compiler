@@ -1,10 +1,15 @@
 int a[2] = {0, 1};
 
-void solve(){
+void solve(int b){
     a[0] = a[0] + 1;
+    return;
 }
 
 int main(){
-    solve();
+    int a = 0, b = 1;
+    if(a < b){
+        solve(a);
+    }
+    else solve(b);
     return 0;
 }

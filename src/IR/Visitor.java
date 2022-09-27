@@ -510,6 +510,12 @@ public class Visitor {
             //  此时CurValue是LVal
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
+        else if(stmtAST.getType() == 11){
+
+        }
+        else if(stmtAST.getType() == 12){
+            f.buildRetInst(CurBasicBlock);
+        }
     }
 
     private void visitConstExpAST(ConstExpAST constExpAST){
