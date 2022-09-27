@@ -1,39 +1,25 @@
 declare i32 @getint()
 declare void @memset(i32*, i32, i32)
-@a_0 = global [2 x i32] [i32 0, i32 1]
-define void @solve(i32 %b_0) {
-block1:
-	%1 = getelementptr [2 x i32] [2 x i32]* @a_0, i32 0, i32 0
-	%2 = load i32, i32* %1
-	%3 = add i32 %2, 1
-	%4 = getelementptr [2 x i32] [2 x i32]* @a_0, i32 0, i32 0
-	store i32 %3, i32* %4
-	ret void
-}
+declare i32 @printf(i8*, ...)
+@.str.1 = constant [11 x i8] c"a[0] = 0\n\00"
 
 define i32 @main() {
+block1:
+	@a_0 = alloca [2 x i32]
+	%1 = getelementptr [2 x i32] [2 x i32]* @a_0, i32 0, i32 0
+	call void @memset(%1, i32 0, i32 8)
+	store i32 0, i32* %1
+	%2 = getelementptr i32 i32* %1, i32 1
+	store i32 1, i32* %2
+	%3 = getelementptr [2 x i32] [2 x i32]* @a_0, i32 0, i32 0
+	%4 = load i32, i32* %3
+	%5 = icmp eq %4 0 
+	%6 = icmp ne %5 0 
+	br i1 %6, label %block2, label %block3
 block2:
-	@a_1 = alloca i32
-	store i32 0, i32* @a_1
-	@b_1 = alloca i32
-	store i32 1, i32* @b_1
-	%5 = load i32, i32* @a_1
-	%6 = load i32, i32* @b_1
-	%7 = icmp slt %5 %6 
-	%8 = icmp sle %5 %7 
-	%9 = icmp sgt %5 %8 
-	%10 = icmp sge %5 %9 
-	%11 = icmp ne %10 0 
-	br i1 %11, label %block3, label %block4
+	%7 = call i32 @printf(i8* getelementptr [11 x i8], [11 x i8]* @.str.1, )
+	br label %block3
 block3:
-	%12 = load i32, i32* @a_1
-	call void @solve(i32 %12)
-	br label %block5
-block4:
-	%13 = load i32, i32* @b_1
-	call void @solve(i32 %13)
-	br label %block5
-block5:
 	ret i32 0
 }
 

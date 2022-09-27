@@ -3,6 +3,7 @@ package Utils;
 import IR.IRModule;
 import IR.Type.ArrayType;
 import IR.Type.PointerType;
+import IR.Type.StringType;
 import IR.Type.Type;
 import IR.Value.*;
 import IR.Value.Instructions.*;
@@ -107,6 +108,23 @@ public class IRDump {
                 DumpInitArray(arrayType, values);
             }
         }
+        //  为printf贴心设计
+        else if(globalVar.getType() instanceof StringType){
+            String strName = globalVar.getName();
+            StringType stringType = (StringType) globalVar.getType();
+            String fString = stringType.getVal();
+            int len = fString.length() - 1;
+
+            out.write(strName + " = constant ");
+            out.write("[" + len + " x i8] c");
+
+            for(int i = 0; i < len; i++){
+                out.write(fString.charAt(i));
+            }
+            out.write("\\00\"");
+
+            out.write("\n");
+        }
         else {
             out.write(globalVar.getName() + " = global i32 ");
             out.write(globalVar.getValue().getName());
@@ -116,6 +134,7 @@ public class IRDump {
     private static void DumpLib() throws IOException {
         out.write("declare i32 @getint()\n");
         out.write("declare void @memset(i32*, i32, i32)\n");
+        out.write("declare i32 @printf(i8*, ...)\n");
 
     }
     public static void DumpModule(IRModule module) throws IOException {
@@ -299,6 +318,7 @@ public class IRDump {
 
         else if(inst instanceof CallInst){
             CallInst callInst = (CallInst) inst;
+            String FuncName = callInst.getCallFunc().getName();
             if(!callInst.getType().isVoidTy()){
                 out.write(callInst.getName() + " = ");
             }
@@ -306,10 +326,25 @@ public class IRDump {
             if(callInst.getType().isVoidTy()) out.write("call void ");
             else if(callInst.getType().isIntegerTy()) out.write("call i32 ");
 
-            out.write(callInst.getCallFunc().getName());
+            out.write(FuncName);
             out.write("(");
 
             ArrayList<Value> values = callInst.getValues();
+
+            //  插播一段对printf的特殊报告
+            if(FuncName.equals("@printf")) {
+                Value strVal = values.get(0);
+                values.remove(0);
+                StringType stringType = (StringType) strVal.getType();
+                String fString = stringType.getVal();
+                int len = fString.length() - 1;
+
+                out.write("i8* getelementptr ");
+                out.write("[" + len + " x i8], ");
+                out.write("[" + len + " x i8]* ");
+                out.write(strVal.getName() + ", ");
+            }
+
             for(int i = 0; i < values.size(); i++){
                 Value value = values.get(i);
                 if(value.getType().isIntegerTy()){

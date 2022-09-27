@@ -4,6 +4,7 @@ import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 import IR.Type.IntegerType;
+import IR.Type.StringType;
 import IR.Type.VoidType;
 import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
@@ -33,8 +34,11 @@ public class Visitor {
     private Value CurValue;
 
     //  变量数组初始化时用
-    private ArrayList<Value> fillInitVal;
+    private ArrayList<Value> fillInitVal = new ArrayList<>();
     private IRModule module;
+
+    //  用来记录printf语句出现的次数，从而为fString命名
+    private int strNum = 0;
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
@@ -511,7 +515,22 @@ public class Visitor {
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
         else if(stmtAST.getType() == 11){
-
+            Function printfFunc = new Function("@printf", new IntegerType(32));
+            ArrayList<Value> rParams = new ArrayList<>();
+            ArrayList<ExpAST> expASTS = stmtAST.getExpASTS();
+            String fString = stmtAST.getfString();
+            strNum++;
+            String strName = "@.str." + strNum;
+            //  这里新建了一个StringType，属于是为了完成printf而自己新建的
+            //  虽然不破坏整体的架构，但总感觉有点别扭(不过能跑就行x
+            Value fStrValue = new Value(strName, new StringType(fString));
+            f.buildGlobalVar(strName, fStrValue.getType(),false, null, globalVars);
+            rParams.add(fStrValue);
+            for(ExpAST expAST : expASTS){
+                visitExpAST(expAST, false);
+                rParams.add(CurValue);
+            }
+            f.buildCallInst(CurBasicBlock, printfFunc, rParams);
         }
         else if(stmtAST.getType() == 12){
             f.buildRetInst(CurBasicBlock);
@@ -542,7 +561,7 @@ public class Visitor {
 
         if(constDefAST.getType() == 1) {
             visitConstInitValAST(constDefAST.getConstInitValAST());
-            if (isGlobal) f.buildGlobalVar(ident, true, CurValue, globalVars);
+            if (isGlobal) f.buildGlobalVar(ident, new IntegerType(32),true, CurValue, globalVars);
             pushSymbol(rawIdent, CurValue);
         }
         //  数组
@@ -636,7 +655,7 @@ public class Visitor {
             if(varDefType == 1 || varDefType == 2) {
                 if (varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
                 else CurValue = ConstInteger.constZero;
-                f.buildGlobalVar(ident, false, CurValue, globalVars);
+                f.buildGlobalVar(ident, new IntegerType(32),false, CurValue, globalVars);
                 pushSymbol(rawIdent, CurValue);
             }
             //  全局数组
