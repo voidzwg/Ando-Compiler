@@ -55,6 +55,7 @@ public class Visitor {
 
     //  符号表
     private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
+    private int symTop = -1;
     //  tmpHashMap用于保存FuncFParams
     //  因为当你访问FuncFParams时，你还没有进入Block，而只有进入Block你才能push新的符号表
     //  所以为了把FuncFParams的声明也放进符号表，我们用tmpHashMap来保存
@@ -802,10 +803,9 @@ public class Visitor {
 
         pushSymbol(ident, CurFunction);
 
+        tmpHashMap.clear();
         //  Has FuncFParams
         if(funcDefAST.getType() == 2){
-            tmpHashMap.clear();
-
             FuncFParamsAST funcFParamsAST = funcDefAST.getFuncFParamsAST();
             ArrayList<FuncFParamAST> funcFParamASTS = funcFParamsAST.getFuncFParamASTS();
             for(FuncFParamAST funcFParamAST : funcFParamASTS){

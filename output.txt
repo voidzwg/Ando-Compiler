@@ -1,25 +1,16 @@
 declare i32 @getint()
 declare void @memset(i32*, i32, i32)
 declare i32 @printf(i8*, ...)
-@.str.1 = constant [11 x i8] c"a[0] = 0\n\00"
+@a_0 = global [2 x [2 x i32]][[2 x i32] [i32 0, i32 1], [2 x i32] [i32 2, i32 3]]
+define void @solve(i32 %a_1) {
+block1:
+	ret void
+}
 
 define i32 @main() {
-block1:
-	@a_0 = alloca [2 x i32]
-	%1 = getelementptr [2 x i32] [2 x i32]* @a_0, i32 0, i32 0
-	call void @memset(%1, i32 0, i32 8)
-	store i32 0, i32* %1
-	%2 = getelementptr i32 i32* %1, i32 1
-	store i32 1, i32* %2
-	%3 = getelementptr [2 x i32] [2 x i32]* @a_0, i32 0, i32 0
-	%4 = load i32, i32* %3
-	%5 = icmp eq %4 0 
-	%6 = icmp ne %5 0 
-	br i1 %6, label %block2, label %block3
 block2:
-	%7 = call i32 @printf(i8* getelementptr [11 x i8], [11 x i8]* @.str.1, )
-	br label %block3
-block3:
+	%1 = getelementptr i32* [2 x [2 x i32]]* @a_0, i32 0, i32 0, i32 1
+	%2 = load i32, i32* %1
 	ret i32 0
 }
 

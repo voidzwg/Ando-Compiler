@@ -366,7 +366,7 @@ public class IRDump {
             if(tarType instanceof ArrayType) {
                 ArrayType arrayType = (ArrayType) tarType;
                 out.write(gepInst.getName() + " = getelementptr ");
-                DumpType(arrayType);
+                DumpType(gepType);
                 out.write(" ");
                 DumpType(arrayType);
                 out.write("* " + target.getName());
