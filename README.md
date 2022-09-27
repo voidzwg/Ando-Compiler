@@ -19,7 +19,9 @@ Tips：如果要看到语法分析结果，将Compiler.java中ASTDump下面的�
 
 这阶段看着简单也挺折磨的，好多次写完程序之后提交发现不符合文法要求，然后还要再一句一句对文法 :(
 
-### lab0: 词法分析
+### lab0: 词法分析&语法分析
+
+体力活
 
 ### lab1: main与注释
 
@@ -55,9 +57,15 @@ Tips：如果要看到语法分析结果，将Compiler.java中ASTDump下面的�
 
 #### lab5-1: 处理if/else
 
+if/else是第一次需要涉及多个基本块的情况，这里需要先理清基本块跳转的关系，以及确定好CurBasicBlock, TrueBlock, FalseBlock的概念，再去敲代码(不然就会像我一样白白浪费一天时间)
+
 #### lab5-2: 短路求值
 
+其实短路求值这里以及后面的while continue break等地方都是如此，先缕清这个lab所需逻辑下BasicBlock之间跳转的关系就比较好写了
+
 ## lab6: while语句
+
+这个lab同上，缕清跳转顺序后就是纯纯体力活
 
 #### lab6-1: 处理while
 

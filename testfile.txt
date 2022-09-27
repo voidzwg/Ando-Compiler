@@ -1,6 +1,15 @@
-const int one = 1;
+int a[2] = {0, 1};
 
-int main() {
-    int arr[2][one];
-    return one;
+void solve(int b){
+    a[0] = a[0] + 1;
+    return;
+}
+
+int main(){
+    int a = 0, b = 1;
+    if(a < b){
+        solve(a);
+    }
+    else solve(b);
+    return 0;
 }
