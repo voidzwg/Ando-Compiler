@@ -3,9 +3,7 @@ package IR;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
-import IR.Type.IntegerType;
-import IR.Type.StringType;
-import IR.Type.VoidType;
+import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.AllocInst;
 import IR.Value.Instructions.GepInst;
@@ -37,6 +35,9 @@ public class Visitor {
     private ArrayList<Value> fillInitVal = new ArrayList<>();
     private IRModule module;
 
+    //  isFuncFParam表示当前是否为访问FuncFParam的模式
+    //  之所以不用boolean是因为FuncFParam可能会有嵌套，我们通过加减来实现栈的效果
+    private int isFuncFParam = 0;
     //  用来记录printf语句出现的次数，从而为fString命名
     private int strNum = 0;
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
@@ -160,16 +161,37 @@ public class Visitor {
 
     private void visitLValAST(LValAST lValAST){
         Value value = find(lValAST.getIdent());
+        Type valueType = value.getType();
+        //  判断是否需要构造load指令
+        boolean isBuildLoad = true;
 
+        //  注意:即使只有一个ident也有可能为数组！
         if(lValAST.getType() == 1) {
-            if (value instanceof ConstInteger) {
-                ConstInteger constInteger = (ConstInteger) value;
-                CurValue = f.buildNumber(constInteger.getVal());
-            }
+            //  数组名
+            if(isFuncFParam != 0 && valueType instanceof ArrayType){
+                //  构建indexs
+                ArrayList<Value> indexs = new ArrayList<>();
 
-            else CurValue = value;
+                //  数组参数FuncFParam降一个维度，indexs里放俩0就行
+                for(int i = 0; i < 2; i++) {
+                    indexs.add(ConstInteger.constZero);
+                }
+                GepInst gepInst = f.buildGepInst(value, indexs, CurBasicBlock);
+                CurValue = gepInst;
+                isBuildLoad = false;
+            }
+            //  int变量或常量
+            else {
+                //  常量
+                if (value instanceof ConstInteger) {
+                    ConstInteger constInteger = (ConstInteger) value;
+                    CurValue = f.buildNumber(constInteger.getVal());
+                }
+                //  变量
+                else CurValue = value;
+            }
         }
-        //  数组
+        //  妥妥的数组
         else if(lValAST.getType() == 2){
             ArrayList<Value> indexs = new ArrayList<>();
             //  参数传的数组会少一个维度，我们buildGep的时候就不需要多构建一个索引了
@@ -185,6 +207,11 @@ public class Visitor {
 
             CurValue = f.buildGepInst(value, indexs, CurBasicBlock);
         }
+
+        //  判断LVal是常量还是变量
+        if(isBuildLoad && !(CurValue instanceof ConstInteger)) {
+            CurValue = f.buildLoadInst(CurValue, CurBasicBlock);
+        }
     }
 
     private void visitPrimaryExpAST(PrimaryExpAST primaryExpAST, boolean isConstExp){
@@ -196,10 +223,6 @@ public class Visitor {
             }
             else if(primaryExpAST.getType() == 3){
                 visitLValAST(primaryExpAST.getlValAST());
-                //  判断LVal是常量还是变量
-                if(!(CurValue instanceof ConstInteger)) {
-                    CurValue = f.buildLoadInst(CurValue, CurBasicBlock);
-                }
             }
         }
         else{
@@ -236,17 +259,20 @@ public class Visitor {
                         break;
                 }
             }
-            //  Ident (FuncFParam)
+            //  Ident (FuncFParam)  !!很关键(处理数组参数)
             else if(unaryExpAST.getType() == 3){
                 String funcName = unaryExpAST.getIdent();
                 Function function = (Function) find(funcName);
 
+                //  开始处理FuncFParam
                 ArrayList<Value> values = new ArrayList<>();
                 ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
+                isFuncFParam++;
                 for(ExpAST expAST : expASTS){
                     visitExpAST(expAST, false);
                     values.add(CurValue);
                 }
+                isFuncFParam--;
 
 
                 CurValue = f.buildCallInst(CurBasicBlock, function, values);

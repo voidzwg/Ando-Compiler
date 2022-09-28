@@ -23,10 +23,11 @@ public class Value {
 
     @Override
     public String toString(){
-        if(this instanceof ConstInteger) return this.name;
-        else{
-            return this.type + " " + this.name;
-        }
+//        if(this instanceof ConstInteger) return this.name;
+//        else{
+//            return this.type + " " + this.name;
+//        }
+        return this.type + " " + this.name;
     }
 
     //  Getters and Setters

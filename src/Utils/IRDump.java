@@ -130,7 +130,7 @@ public class IRDump {
     }
 
     private static void DumpLib() throws IOException {
-        out.write("declare i32 @getint()\n");
+        out.write("declare i32 @getint(...)\n");
         out.write("declare void @memset(i32*, i32, i32)\n");
         out.write("declare i32 @printf(i8*, ...)\n");
 
@@ -241,7 +241,7 @@ public class IRDump {
                 out.write(inst.getName() + " = div i32 ");
             }
             else if(op == OP.Mod){
-                out.write(inst.getName() + " = mod i32 ");
+                out.write(inst.getName() + " = srem i32 ");
             }
 
             out.write(left.getName() + ", ");
@@ -377,7 +377,7 @@ public class IRDump {
             }
 
             else if(tarType instanceof PointerType){
-                out.write(gepInst.getName() + " = getelementptr i32 i32* ");
+                out.write(gepInst.getName() + " = getelementptr i32, i32* ");
                 out.write(target.getName());
             }
 
