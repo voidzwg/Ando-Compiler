@@ -156,15 +156,7 @@ public class IRDump {
     }
 
     private static void DumpArgument(Argument argument) throws IOException {
-        if(argument.getType().isIntegerTy()){
-            out.write("i32 ");
-            out.write(argument.getName());
-        }
-        else if(argument.getType().isArrayType()){
-            ArrayType arrayType = (ArrayType) argument.getType();
-            DumpType(arrayType);
-            out.write("* " + argument.getName());
-        }
+        out.write(argument.toString());
     }
 
     private static void DumpFunction(Function function) throws IOException {
@@ -254,8 +246,8 @@ public class IRDump {
             if(pointer.getType().isArrayType()){
                 ArrayType arrayType = (ArrayType) pointer.getType();
                 out.write(inst.getName() + " = load ");
-                DumpType(arrayType.getEleType());
-                DumpType(arrayType);
+                out.write(arrayType.getEleType() + ", ");
+                out.write(arrayType + " ");
             }
             else {
                 out.write(inst.getName() + " = load i32, i32* ");

@@ -66,6 +66,7 @@ public class Visitor {
     private final HashMap<String, Integer>symCnt = new HashMap<>();
 
     //  Utils方法
+
     private int addSymCnt(String ident){
         int cnt = 0;
         if(symCnt.get(ident) == null){
@@ -159,6 +160,20 @@ public class Visitor {
         CurValue = f.buildNumber(numberAST.getIntConst());
     }
 
+    //  LVal这里比较复杂，我们来缕清一下思路：
+    //  对于一个变量，无论是int变量还是数组，我们都要通过alloc来建立，因此我们find找到的其实是一个指针
+    //  我们注意到如果是int变量，那么我们只需要load指令，就能从i32*中取出i32
+    //  而对于数组变量，我们则需要使用getelementptr指令来取出相应的指针
+    //  因为数组的LVal值有多种可能:
+    //  1. a[1] = 1这种常规操作:
+    //  对于这种我们正常构建gep指令获取a[1]指针i32*就可以了
+    //  2. solve(a), solve(a[0])这种数组传参:
+    //  对于这种情况我们会发现数组会降一个维度
+    //  而且按照我的架构，当传如a[0]这种i32非指针类型的时候，应当先gep出i32*再load而不是降维
+    //  所以要么正常gep+load，要么降维gep,要么正常load
+    //  综上我们采用：
+    //  isBuildLoad来表示是否构建load
+    //  isFuncFParam(全局)表示是否为降维gep
     private void visitLValAST(LValAST lValAST){
         Value value = find(lValAST.getIdent());
         Type valueType = value.getType();
@@ -167,24 +182,30 @@ public class Visitor {
 
         //  注意:即使只有一个ident也有可能为数组！
         if(lValAST.getType() == 1) {
-            //  数组名
-            if(isFuncFParam != 0 && valueType instanceof ArrayType){
-                //  构建indexs
-                ArrayList<Value> indexs = new ArrayList<>();
+            //  正在访问FuncFParam
+            if(isFuncFParam != 0){
+                if(valueType instanceof ArrayType) {
+                    //  构建indexs
+                    ArrayList<Value> indexs = new ArrayList<>();
 
-                //  数组参数FuncFParam降一个维度，indexs里放俩0就行
-                for(int i = 0; i < 2; i++) {
-                    indexs.add(ConstInteger.constZero);
+                    //  数组参数FuncFParam降一个维度，indexs里放俩0就行
+                    for (int i = 0; i < 2; i++) {
+                        indexs.add(ConstInteger.constZero);
+                    }
+                    GepInst gepInst = f.buildGepInst(value, indexs, CurBasicBlock);
+                    CurValue = gepInst;
+                    isBuildLoad = false;
                 }
-                GepInst gepInst = f.buildGepInst(value, indexs, CurBasicBlock);
-                CurValue = gepInst;
-                isBuildLoad = false;
+                else if(valueType.isIntegerTy()){
+                    CurValue = value;
+                    isBuildLoad = false;
+                }
             }
-            //  int变量或常量
             else {
                 //  常量
                 if (value instanceof ConstInteger) {
                     ConstInteger constInteger = (ConstInteger) value;
+                    isBuildLoad = false;
                     CurValue = f.buildNumber(constInteger.getVal());
                 }
                 //  变量
@@ -194,7 +215,8 @@ public class Visitor {
         //  妥妥的数组
         else if(lValAST.getType() == 2){
             ArrayList<Value> indexs = new ArrayList<>();
-            //  参数传的数组会少一个维度，我们buildGep的时候就不需要多构建一个索引了
+            //  FuncRParam参数传的数组会少一个维度，我们buildGep的时候就不需要多构建一个索引了
+            //  这里不要弄混，这个指的是FuncRParam，即void solve(a[][2])这种
             if(!(value instanceof Argument)){
                 indexs.add(ConstInteger.constZero);
             }
@@ -205,11 +227,26 @@ public class Visitor {
                 indexs.add(CurValue);
             }
 
+            //  对于FuncFParam，我们要先计算出是正常gep+load还是降维gep
+            //  其实就是计算出FuncFParam是部分数组传参还是传了一个i32
+            //  ,我们用的是指针位置和上个构建的一样，但大小要小一维(不知道能不能理解
+            //  因为FuncFParam的类型要和FuncRParam匹配，而FuncRParam降了一维，所以我们FuncFParam也要小一维
+            //  同时为了保证我们的指针传递的值是正确的，我们前面和正常的数组处理是一样的，只是这里多加一个索引来降维
+            if(isFuncFParam != 0){
+                GepInst judGep = f.getGepInst(value, indexs, CurBasicBlock);
+                //  不属于ArrayType说明是i32*, 是正常gep+load
+                //  属于ArrayType说明是降维gep
+                if((judGep.getType() instanceof ArrayType)){
+                    indexs.add(ConstInteger.constZero);
+                    isBuildLoad = false;
+                }
+            }
+
             CurValue = f.buildGepInst(value, indexs, CurBasicBlock);
         }
 
         //  判断LVal是常量还是变量
-        if(isBuildLoad && !(CurValue instanceof ConstInteger)) {
+        if(isBuildLoad) {
             CurValue = f.buildLoadInst(CurValue, CurBasicBlock);
         }
     }

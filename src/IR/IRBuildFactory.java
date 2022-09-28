@@ -105,6 +105,14 @@ public class IRBuildFactory {
         return allocInst;
     }
 
+    public GepInst getGepInst(Value target, ArrayList<Value> indexs,BasicBlock bb){
+        //  索引的第一个参数不会改变类型
+        ArrayList<Value> tmpIndexs = new ArrayList<>(indexs);
+        tmpIndexs.remove(0);
+        Value.valNumber--;
+        return new GepInst(indexs, target, calGepType(target.getType(), tmpIndexs), bb);
+    }
+
     public GepInst buildGepInst(Value target, ArrayList<Value> indexs,BasicBlock bb){
         //  索引的第一个参数不会改变类型
         ArrayList<Value> tmpIndexs = new ArrayList<>(indexs);

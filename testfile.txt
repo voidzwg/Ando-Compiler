@@ -1,10 +1,10 @@
-void solve(int a[]){
-    printf("%d\n",a[1]);
+void solve(int a){
+    a = 1;
     return ;
 }
 
 int main(){
-    int a[2][2] = {{0, 1}, {2, 3}};
+    int a[2]= {0, 1};
     solve(a[0]);
     return 0;
 }
