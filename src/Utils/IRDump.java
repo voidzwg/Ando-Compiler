@@ -256,24 +256,26 @@ public class IRDump {
         }
 
         else if(inst instanceof AllocInst){
-            if(!inst.getType().isArrayType()) {
-                out.write(inst.getName() + " = alloca i32\n");
+            out.write(inst.getName());
+            out.write(" = alloca ");
+            Type type = inst.getType();
+            if(type.isArrayType()){
+                ArrayType arrayType = (ArrayType) type;
+                String arrStr = arrayType.toString();
+                out.write(arrStr.replace("*", "") + "\n");
             }
-            //  数组
             else {
-                ArrayType arrayType = (ArrayType) inst.getType();
-                out.write(inst.getName() + " = alloca ");
-                DumpType(arrayType);
-                out.write("\n");
+                PointerType pointerType = (PointerType) inst.getType();
+                Type eleType = pointerType.getEleType();
+                out.write(eleType + "\n");
             }
-
         }
 
         else if(inst instanceof StoreInst){
             StoreInst storeInst = (StoreInst) inst;
-            out.write("store i32 ");
-            out.write(storeInst.getValue().getName() + ", i32* ");
-            out.write(storeInst.getPointer().getName() + "\n");
+            out.write("store ");
+            out.write(storeInst.getValue() + " ");
+            out.write(storeInst.getPointer() + "\n");
         }
 
         else if(inst instanceof CmpInst){

@@ -6,8 +6,6 @@ import IR.Value.BasicBlock;
 import IR.Value.Instruction;
 import IR.Value.Value;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 
 public class AllocInst extends Instruction {
     boolean isConst;
