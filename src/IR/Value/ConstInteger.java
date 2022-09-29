@@ -15,4 +15,5 @@ public class ConstInteger extends Constant{
     public int getVal() {
         return val;
     }
+
 }

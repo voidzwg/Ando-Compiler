@@ -3,13 +3,9 @@ package IR;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
-import IR.Type.IntegerType;
-import IR.Type.StringType;
-import IR.Type.VoidType;
+import IR.Type.*;
 import IR.Value.*;
-import IR.Value.Instructions.AllocInst;
-import IR.Value.Instructions.GepInst;
-import IR.Value.Instructions.OP;
+import IR.Value.Instructions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +33,26 @@ public class Visitor {
     private ArrayList<Value> fillInitVal = new ArrayList<>();
     private IRModule module;
 
+    //  isFuncRParam表示当前是否为访问FuncRParam的模式
+    //  之所以不用boolean是因为FuncRParam可能会有嵌套，我们通过加减来实现栈的效果
+    private int isFuncRParam = 0;
     //  用来记录printf语句出现的次数，从而为fString命名
     private int strNum = 0;
+
+    //  LVal有取出值的情况，fetchVal函数获取一个指针,返回其中的值
+    private Value fetchVal(Value value){
+        Type type = value.getType();
+
+        if(type.isArrayType()){
+            ArrayList<Value> indexs = new ArrayList<>();
+            for(int i = 0; i < 2; i++) {
+                indexs.add(ConstInteger.constZero);
+            }
+            return f.buildGepInst(value, indexs, CurBasicBlock);
+        }
+        else return f.buildLoadInst(value, CurBasicBlock);
+    }
+
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
@@ -55,7 +69,6 @@ public class Visitor {
 
     //  符号表
     private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
-    private int symTop = -1;
     //  tmpHashMap用于保存FuncFParams
     //  因为当你访问FuncFParams时，你还没有进入Block，而只有进入Block你才能push新的符号表
     //  所以为了把FuncFParams的声明也放进符号表，我们用tmpHashMap来保存
@@ -65,6 +78,7 @@ public class Visitor {
     private final HashMap<String, Integer>symCnt = new HashMap<>();
 
     //  Utils方法
+
     private int addSymCnt(String ident){
         int cnt = 0;
         if(symCnt.get(ident) == null){
@@ -158,32 +172,75 @@ public class Visitor {
         CurValue = f.buildNumber(numberAST.getIntConst());
     }
 
-    private void visitLValAST(LValAST lValAST){
+
+    //  mode为1表示令CurValue = value
+    //  mode为2表示令CurValue = pointer
+    //  其实就是mod为1要多加一下load/gep指令
+    private void visitLValAST(LValAST lValAST, int mode){
         Value value = find(lValAST.getIdent());
-
-        if(lValAST.getType() == 1) {
-            if (value instanceof ConstInteger) {
-                ConstInteger constInteger = (ConstInteger) value;
-                CurValue = f.buildNumber(constInteger.getVal());
+        Type valueType = value.getType();
+        if(lValAST.getType() == 1){
+            //  lVal为FuncRParam
+            if(isFuncRParam != 0 && valueType.isArrayType()){
+                if(mode == 1) {
+                    CurValue = fetchVal(value);
+                }
+                else CurValue = value;
             }
-
-            else CurValue = value;
+            //  lVal为常量或变量
+            else{
+                //  常量只有value
+                if (value instanceof ConstInteger) {
+                    ConstInteger constInteger = (ConstInteger) value;
+                    CurValue = f.buildNumber(constInteger.getVal());
+                }
+                else {
+                    CurValue = value;
+                    if(mode == 1) {
+                        CurValue = fetchVal(CurValue);
+                    }
+                }
+            }
         }
-        //  数组
+        //  在数组的情况下 有个问题就是要考虑lVal为参数的情况
+        //  比如void solve(int a[][2])
+        //  我们存的a的类型并不是[2 x [2 x i32]]*
+        //  因为我们不知道a的第一维长度，所以我们存的是等价的[2 x i32]**
+        //  这会导致我们改变构建gep的方式：
+        //  这种情况下，我们采取先load出[2 x i32]*，在构建没有第一个0的gep指令
         else if(lValAST.getType() == 2){
             ArrayList<Value> indexs = new ArrayList<>();
-            //  参数传的数组会少一个维度，我们buildGep的时候就不需要多构建一个索引了
-            if(!(value instanceof Argument)){
+
+            //  判断是否为一个数组**或i32**
+            boolean isFuncLParam = false;
+            if(!valueType.isArrayType() && valueType.isPointerType()){
+                PointerType pointerType = (PointerType) valueType;
+                Type elementType = pointerType.getEleType();
+                if(elementType.isPointerType()){
+                    isFuncLParam = true;
+                }
+            }
+
+            //  FuncLParam采用load， 正常数组gep多建一个0
+            if(isFuncLParam){
+                value = f.buildLoadInst(value, CurBasicBlock);
+            }
+            else {
                 indexs.add(ConstInteger.constZero);
             }
 
+            //  到这无论是FuncFParam还是正常定义的数组应该都是正常的ArrayType
             ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
             for(ExpAST expAST : expASTS){
                 visitExpAST(expAST, false);
                 indexs.add(CurValue);
             }
 
-            CurValue = f.buildGepInst(value, indexs, CurBasicBlock);
+            GepInst gepInst = f.buildGepInst(value, indexs, CurBasicBlock);
+            CurValue = gepInst;
+            if(mode == 1){
+                CurValue = fetchVal(gepInst);
+            }
         }
     }
 
@@ -195,11 +252,7 @@ public class Visitor {
                 visitNumberAST(primaryExpAST.getNumberAST());
             }
             else if(primaryExpAST.getType() == 3){
-                visitLValAST(primaryExpAST.getlValAST());
-                //  判断LVal是常量还是变量
-                if(!(CurValue instanceof ConstInteger)) {
-                    CurValue = f.buildLoadInst(CurValue, CurBasicBlock);
-                }
+                visitLValAST(primaryExpAST.getlValAST(), 1);
             }
         }
         else{
@@ -212,7 +265,7 @@ public class Visitor {
                 CurValue = f.buildNumber(numberAST.getIntConst());
             }
             else if(primaryExpAST.getType() == 3){
-                visitLValAST(primaryExpAST.getlValAST());
+                visitLValAST(primaryExpAST.getlValAST(), 1);
             }
         }
     }
@@ -236,17 +289,20 @@ public class Visitor {
                         break;
                 }
             }
-            //  Ident (FuncFParam)
+            //  Ident (FuncRParam)  !!很关键(处理数组参数)
             else if(unaryExpAST.getType() == 3){
                 String funcName = unaryExpAST.getIdent();
                 Function function = (Function) find(funcName);
 
+                //  开始处理FuncRParam
                 ArrayList<Value> values = new ArrayList<>();
                 ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
+                isFuncRParam++;
                 for(ExpAST expAST : expASTS){
                     visitExpAST(expAST, false);
                     values.add(CurValue);
                 }
+                isFuncRParam--;
 
 
                 CurValue = f.buildCallInst(CurBasicBlock, function, values);
@@ -309,12 +365,15 @@ public class Visitor {
                 switch (mulExpAST.getOp()) {
                     case "*" :{
                         CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
+                        break;
                     }
                     case "/" :{
                         CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
+                        break;
                     }
                     case "%" :{
                         CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
+                        break;
                     }
                 }
             }
@@ -358,15 +417,19 @@ public class Visitor {
             switch (op) {
                 case "<" :{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
+                    break;
                 }
                 case "<=" :{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
+                    break;
                 }
                 case ">" :{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Gt, CurBasicBlock);
+                    break;
                 }
                 case ">=" :{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ge, CurBasicBlock);
+                    break;
                 }
             }
         }
@@ -416,12 +479,12 @@ public class Visitor {
             //  此时的CurVal为Exp的结果
             Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getLValAST());
+            visitLValAST(stmtAST.getLValAST(), 2);
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
         //  Block
         else if(stmtAST.getType() == 3){
-            visitBlockAST(stmtAST.getBlockAST());
+            visitBlockAST(stmtAST.getBlockAST(), false);
         }
         //  [Exp] ;
         else if(stmtAST.getType() == 4){
@@ -514,7 +577,7 @@ public class Visitor {
 
             Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getLValAST());
+            visitLValAST(stmtAST.getLValAST(), 2);
             //  此时CurValue是LVal
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
@@ -783,11 +846,19 @@ public class Visitor {
         }
     }
 
-    private void visitBlockAST(BlockAST blockAST){
+    private void visitBlockAST(BlockAST blockAST, boolean isEntry){
         pushSymTbl();
-        //  先把tmpHashMap中保存的identArg放进该函数的HashMap中
-        for(String identArg : tmpHashMap.keySet()){
-            pushSymbol(identArg, tmpHashMap.get(identArg));
+        //  当基本块是入口基本块时 构建Alloc指令
+        //  再把Alloc的Value放到该函数的HashMap中
+        //  为了保证这些参数表示的值和普通的值一样
+        if(isEntry) {
+            for (String identArg : tmpHashMap.keySet()) {
+                Value argument = tmpHashMap.get(identArg);
+
+                AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
+                f.buildStoreInst(CurBasicBlock, argument, allocInst);
+                pushSymbol(identArg, allocInst);
+            }
         }
 
         ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();
@@ -844,7 +915,7 @@ public class Visitor {
             }
         }
 
-        visitBlockAST(funcDefAST.getBlockAST());
+        visitBlockAST(funcDefAST.getBlockAST(), true);
     }
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){
