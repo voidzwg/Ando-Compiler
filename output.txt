@@ -9,80 +9,88 @@ block1:
 	%1 = alloca i32
 	store i32 %len_0, i32* %1
 	%2 = alloca i32
-	%3 = load i32*, i32** %0
-	%4 = getelementptr i32, i32* %3, i32 0
-	%5 = load i32, i32* %4
-	store i32 %5, i32* %2
-	%6 = alloca i32
-	store i32 0, i32* %6
+	store i32 10, i32* %2
+	%3 = alloca i32
+	store i32 0, i32* %3
 	br label %block2
 block2:
-	%7 = load i32, i32* %6
-	%8 = load i32, i32* %1
-	%9 = icmp slt i32 %7, %8
-	%10 = icmp ne i1 %9, 0
-	br i1 %10, label %block3, label %block4
+	%4 = load i32, i32* %3
+	%5 = load i32, i32* %1
+	%6 = icmp slt i32 %4, %5
+	%7 = icmp ne i1 %6, 0
+	br i1 %7, label %block3, label %block4
 block3:
-	%11 = alloca i32*
-	store i32* %a_0, i32** %11
-	%12 = alloca i32
-	store i32 %len_0, i32* %12
-	%13 = load i32*, i32** %11
-	%14 = load i32, i32* %6
-	%15 = getelementptr i32, i32* %13, i32 %14
-	%16 = load i32, i32* %15
-	%17 = load i32, i32* %2
-	%18 = icmp slt i32 %16, %17
-	%19 = icmp ne i1 %18, 0
-	br i1 %19, label %block5, label %block6
+	%8 = load i32*, i32** %0
+	%9 = load i32, i32* %3
+	%10 = getelementptr i32, i32* %8, i32 %9
+	%11 = load i32, i32* %10
+	%12 = load i32, i32* %2
+	%13 = icmp slt i32 %11, %12
+	%14 = icmp ne i1 %13, 0
+	br i1 %14, label %block5, label %block6
 block5:
-	%20 = alloca i32*
-	store i32* %a_0, i32** %20
-	%21 = alloca i32
-	store i32 %len_0, i32* %21
-	%22 = load i32*, i32** %20
-	%23 = load i32, i32* %6
-	%24 = getelementptr i32, i32* %22, i32 %23
-	%25 = load i32, i32* %24
-	store i32 %25, i32* %2
+	%15 = load i32*, i32** %0
+	%16 = load i32, i32* %3
+	%17 = getelementptr i32, i32* %15, i32 %16
+	%18 = load i32, i32* %17
+	store i32 %18, i32* %2
 	br label %block6
 block6:
-	%26 = load i32, i32* %6
-	%27 = add i32 %26, 1
-	store i32 %27, i32* %6
+	%19 = load i32, i32* %3
+	%20 = add i32 %19, 1
+	store i32 %20, i32* %3
 	br label %block2
 block4:
-	%28 = load i32, i32* %2
-	ret i32 %28
+	%21 = load i32, i32* %2
+	ret i32 %21
 }
 
 define i32 @main() {
 block7:
-	%0 = alloca [10 x i32]
-	%1 = getelementptr [10 x i32], [10 x i32]* %0, i32 0, i32 0
-	call void @memset(i32* %1, i32 0, i32 40)
+	%0 = alloca [10 x [10 x i32]]
+	%1 = getelementptr [10 x [10 x i32]], [10 x [10 x i32]]* %0, i32 0, i32 0, i32 0
+	call void @memset(i32* %1, i32 0, i32 400)
 	%2 = alloca i32
 	store i32 0, i32* %2
+	%3 = alloca i32
+	store i32 0, i32* %3
 	br label %block8
 block8:
-	%3 = load i32, i32* %2
-	%4 = icmp slt i32 %3, 10
-	%5 = icmp ne i1 %4, 0
-	br i1 %5, label %block9, label %block10
+	%4 = load i32, i32* %2
+	%5 = icmp slt i32 %4, 10
+	%6 = icmp ne i1 %5, 0
+	br i1 %6, label %block9, label %block10
 block9:
-	%6 = load i32, i32* %2
-	%7 = sub i32 10, %6
-	%8 = load i32, i32* %2
-	%9 = getelementptr [10 x i32], [10 x i32]* %0, i32 0, i32 %8
-	store i32 %7, i32* %9
+	store i32 0, i32* %3
+	br label %block11
+block11:
+	%7 = load i32, i32* %3
+	%8 = icmp slt i32 %7, 10
+	%9 = icmp ne i1 %8, 0
+	br i1 %9, label %block12, label %block13
+block12:
 	%10 = load i32, i32* %2
-	%11 = add i32 %10, 1
-	store i32 %11, i32* %2
+	%11 = load i32, i32* %3
+	%12 = sub i32 %10, %11
+	%13 = sub i32 100, %12
+	%14 = load i32, i32* %2
+	%15 = load i32, i32* %3
+	%16 = getelementptr [10 x [10 x i32]], [10 x [10 x i32]]* %0, i32 0, i32 %14, i32 %15
+	store i32 %13, i32* %16
+	%17 = load i32, i32* %3
+	%18 = add i32 %17, 1
+	store i32 %18, i32* %3
+	br label %block11
+block13:
+	%19 = load i32, i32* %2
+	%20 = add i32 %19, 1
+	store i32 %20, i32* %2
 	br label %block8
 block10:
-	%12 = getelementptr [10 x i32], [10 x i32]* %0, i32 0, i32 0
-	%13 = call i32 @find_min(i32* %12, i32 10)
-	%14 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @.str.1, i64 0, i64 0), i32 %13)
+	%21 = getelementptr [10 x [10 x i32]], [10 x [10 x i32]]* %0, i32 0, i32 1
+	%22 = getelementptr [10 x i32], [10 x i32]* %21, i32 0, i32 0
+	%23 = call i32 @find_min(i32* %22, i32 10)
+	%24 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @.str.1, i64 0, i64 0), i32 %23)
 	ret i32 0
 }
 

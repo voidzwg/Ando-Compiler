@@ -7,7 +7,6 @@ import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
 
-import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -70,7 +69,6 @@ public class Visitor {
 
     //  符号表
     private final ArrayList<HashMap<String, Value>> symTbls = new ArrayList<>();
-    private int symTop = -1;
     //  tmpHashMap用于保存FuncFParams
     //  因为当你访问FuncFParams时，你还没有进入Block，而只有进入Block你才能push新的符号表
     //  所以为了把FuncFParams的声明也放进符号表，我们用tmpHashMap来保存
@@ -255,10 +253,6 @@ public class Visitor {
             }
             else if(primaryExpAST.getType() == 3){
                 visitLValAST(primaryExpAST.getlValAST(), 1);
-//                //  判断LVal是常量还是变量
-//                if(!(CurValue instanceof ConstInteger)) {
-//                    CurValue = f.buildLoadInst(CurValue, CurBasicBlock);
-//                }
             }
         }
         else{
@@ -490,7 +484,7 @@ public class Visitor {
         }
         //  Block
         else if(stmtAST.getType() == 3){
-            visitBlockAST(stmtAST.getBlockAST());
+            visitBlockAST(stmtAST.getBlockAST(), false);
         }
         //  [Exp] ;
         else if(stmtAST.getType() == 4){
@@ -852,17 +846,19 @@ public class Visitor {
         }
     }
 
-    private void visitBlockAST(BlockAST blockAST){
+    private void visitBlockAST(BlockAST blockAST, boolean isEntry){
         pushSymTbl();
-        //  构建Alloc指令
+        //  当基本块是入口基本块时 构建Alloc指令
         //  再把Alloc的Value放到该函数的HashMap中
         //  为了保证这些参数表示的值和普通的值一样
-        for(String identArg : tmpHashMap.keySet()){
-            Value argument = tmpHashMap.get(identArg);
+        if(isEntry) {
+            for (String identArg : tmpHashMap.keySet()) {
+                Value argument = tmpHashMap.get(identArg);
 
-            AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
-            f.buildStoreInst(CurBasicBlock, argument, allocInst);
-            pushSymbol(identArg, allocInst);
+                AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
+                f.buildStoreInst(CurBasicBlock, argument, allocInst);
+                pushSymbol(identArg, allocInst);
+            }
         }
 
         ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();
@@ -919,7 +915,7 @@ public class Visitor {
             }
         }
 
-        visitBlockAST(funcDefAST.getBlockAST());
+        visitBlockAST(funcDefAST.getBlockAST(), true);
     }
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){

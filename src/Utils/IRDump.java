@@ -19,8 +19,8 @@ public class IRDump {
     //  用于辅助输出数组初始值的小变量qwq
     private static int initArrayNow;
 
-    //  标记当前访问的名字
-    private static int nowName = 0;
+    private static int nowNum = 0;
+
 
     static {
         try {
@@ -28,6 +28,17 @@ public class IRDump {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String getFirstName(BasicBlock basicBlock){
+        ArrayList<Instruction> instructions = basicBlock.getInsts();
+        for(Instruction instruction : instructions){
+            String instName = instruction.getName();
+            if(instName.length() != 0 && instName.charAt(0) == '%'){
+                return instName;
+            }
+        }
+        return "";
     }
 
     //  将rawFString转换成FString
@@ -151,7 +162,7 @@ public class IRDump {
         //  DumpFunctions
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
-            nowName = 0;
+            nowNum = 0;
             DumpFunction(function);
             out.write("\n");
         }
@@ -182,15 +193,24 @@ public class IRDump {
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
 
         int len = basicBlocks.size();
-        while (len != 0){
-            for(BasicBlock basicBlock : basicBlocks){
-                Value judInst = basicBlock.getInsts().get(0);
-                if(judInst.getName().equals("%" + nowName)){
-                    DumpBasicBlock(basicBlock);
-                    break;
+        ArrayList<Boolean> vis = new ArrayList<>();
+        for(int i = 0; i < len; i++){
+            vis.add(false);
+        }
+
+        int tmpLen = len;
+        while (tmpLen != 0) {
+            for (int i = 0; i < len; i++) {
+                if(!vis.get(i)) {
+                    BasicBlock basicBlock = basicBlocks.get(i);
+                    String judName = getFirstName(basicBlock);
+                    if (judName.equals("") || judName.equals("%" + nowNum)) {
+                        vis.set(i, true);
+                        DumpBasicBlock(basicBlock);
+                    }
                 }
             }
-            len--;
+            tmpLen--;
         }
 
         out.write("}\n");
@@ -206,6 +226,11 @@ public class IRDump {
     }
 
     private static void DumpInstruction(Instruction inst) throws IOException {
+        String instName = inst.getName();
+        if(instName.length() != 0 && instName.charAt(0) == '%'){
+            nowNum++;
+        }
+
         if(inst instanceof RetInst){
             RetInst retInst = (RetInst) inst;
             out.write("ret ");
@@ -250,8 +275,6 @@ public class IRDump {
 
             out.write(left.getName() + ", ");
             out.write(right.getName() + "\n");
-
-            nowName++;
         }
 
         else if(inst instanceof LoadInst){
@@ -261,8 +284,6 @@ public class IRDump {
             PointerType pointerType = (PointerType) pointer.getType();
             out.write(pointerType.getEleType() + ", ");
             out.write(pointer + "\n");
-
-            nowName++;
         }
 
         else if(inst instanceof AllocInst){
@@ -279,8 +300,6 @@ public class IRDump {
                 Type eleType = pointerType.getEleType();
                 out.write(eleType + "\n");
             }
-
-            nowName++;
         }
 
         else if(inst instanceof StoreInst){
@@ -305,8 +324,6 @@ public class IRDump {
             Value right = cmpInst.getRightVal();
             out.write(" " + left + ",");
             out.write(" " + right.getName() + "\n");
-
-            nowName++;
         }
 
         else if(inst instanceof BrInst){
@@ -329,7 +346,6 @@ public class IRDump {
             String FuncName = callInst.getCallFunc().getName();
             if(!callInst.getType().isVoidTy()){
                 out.write(callInst.getName() + " = ");
-                nowName++;
             }
 
             if(callInst.getType().isVoidTy()) out.write("call void ");
@@ -396,8 +412,6 @@ public class IRDump {
             }
 
             out.write("\n");
-
-            nowName++;
         }
     }
 }
