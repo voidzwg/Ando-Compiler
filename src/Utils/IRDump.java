@@ -11,7 +11,6 @@ import IR.Value.Instructions.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
 
 public class IRDump {
@@ -19,6 +18,9 @@ public class IRDump {
 
     //  用于辅助输出数组初始值的小变量qwq
     private static int initArrayNow;
+
+    //  标记当前访问的名字
+    private static int nowName = 0;
 
     static {
         try {
@@ -149,6 +151,7 @@ public class IRDump {
         //  DumpFunctions
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
+            nowName = 0;
             DumpFunction(function);
             out.write("\n");
         }
@@ -177,8 +180,17 @@ public class IRDump {
         out.write(") {\n");
 
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
-        for(BasicBlock block : basicBlocks){
-            DumpBasicBlock(block);
+
+        int len = basicBlocks.size();
+        while (len != 0){
+            for(BasicBlock basicBlock : basicBlocks){
+                Value judInst = basicBlock.getInsts().get(0);
+                if(judInst.getName().equals("%" + nowName)){
+                    DumpBasicBlock(basicBlock);
+                    break;
+                }
+            }
+            len--;
         }
 
         out.write("}\n");
@@ -238,21 +250,19 @@ public class IRDump {
 
             out.write(left.getName() + ", ");
             out.write(right.getName() + "\n");
+
+            nowName++;
         }
 
         else if(inst instanceof LoadInst){
             LoadInst loadInst = (LoadInst) inst;
             Value pointer = loadInst.getPointer();
-            if(pointer.getType().isArrayType()){
-                ArrayType arrayType = (ArrayType) pointer.getType();
-                out.write(inst.getName() + " = load ");
-                out.write(arrayType.getEleType() + ", ");
-                out.write(arrayType + " ");
-            }
-            else {
-                out.write(inst.getName() + " = load i32, i32* ");
-            }
-            out.write(pointer.getName() + "\n");
+            out.write(inst.getName() + " = load ");
+            PointerType pointerType = (PointerType) pointer.getType();
+            out.write(pointerType.getEleType() + ", ");
+            out.write(pointer + "\n");
+
+            nowName++;
         }
 
         else if(inst instanceof AllocInst){
@@ -269,12 +279,14 @@ public class IRDump {
                 Type eleType = pointerType.getEleType();
                 out.write(eleType + "\n");
             }
+
+            nowName++;
         }
 
         else if(inst instanceof StoreInst){
             StoreInst storeInst = (StoreInst) inst;
             out.write("store ");
-            out.write(storeInst.getValue() + " ");
+            out.write(storeInst.getValue() + ", ");
             out.write(storeInst.getPointer() + "\n");
         }
 
@@ -292,7 +304,9 @@ public class IRDump {
             Value left = cmpInst.getLeftVal();
             Value right = cmpInst.getRightVal();
             out.write(" " + left + ",");
-            out.write(" " + right + "\n");
+            out.write(" " + right.getName() + "\n");
+
+            nowName++;
         }
 
         else if(inst instanceof BrInst){
@@ -315,6 +329,7 @@ public class IRDump {
             String FuncName = callInst.getCallFunc().getName();
             if(!callInst.getType().isVoidTy()){
                 out.write(callInst.getName() + " = ");
+                nowName++;
             }
 
             if(callInst.getType().isVoidTy()) out.write("call void ");
@@ -381,6 +396,8 @@ public class IRDump {
             }
 
             out.write("\n");
+
+            nowName++;
         }
     }
 }
