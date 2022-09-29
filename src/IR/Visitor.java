@@ -28,6 +28,23 @@ public class Visitor {
     private final ArrayList<GlobalVar> globalVars = new ArrayList<>();
     private BasicBlock CurBasicBlock;
     private Value CurValue;
+    private OP CurOP;
+
+    private OP StrToOP(String str){
+        switch (str) {
+            case "+":
+                return OP.Add;
+            case "-":
+                return OP.Sub;
+            case "*":
+                return OP.Mul;
+            case "/":
+                return OP.Div;
+            case "%":
+                return OP.Mod;
+        }
+        return null;
+    }
 
     //  变量数组初始化时用
     private ArrayList<Value> fillInitVal = new ArrayList<>();
@@ -134,17 +151,17 @@ public class Visitor {
     }
 
 
-    private ConstInteger calValue(int left, String op, int right){
+    private ConstInteger calValue(int left, OP op, int right){
         switch (op) {
-            case "+":
+            case Add:
                 return new ConstInteger(left + right);
-            case "-":
+            case Sub:
                 return new ConstInteger(left - right);
-            case "*":
+            case Mul:
                 return new ConstInteger(left * right);
-            case "/":
+            case Div:
                 return new ConstInteger(left / right);
-            case "%":
+            case Mod:
                 return new ConstInteger(left % right);
             default:
                 return null;
@@ -321,71 +338,78 @@ public class Visitor {
             else if(unaryExpAST.getType() == 2){
                 visitUnaryExpAST(unaryExpAST.getUnaryExpAST(), true);
                 ConstInteger constInteger = (ConstInteger) CurValue;
-                CurValue = calValue(0, unaryExpAST.getUnaryOP(), constInteger.getVal());
-
+                CurValue = calValue(0, StrToOP(unaryExpAST.getUnaryOP()), constInteger.getVal());
             }
         }
     }
 
     private void visitExpAST(ExpAST expAST, boolean isConst){
+        CurValue = null;
+        CurOP = null;
         visitAddExpAST(expAST.getAddExpAST(), isConst);
     }
 
     private void visitAddExpAST(AddExpAST addExpAST, boolean isConstExp){
         if(!isConstExp) {
+            Value TmpValue = CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitMulExpAST(addExpAST.getMulExpAST(), false);
+            if(TmpValue != null){
+                CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
+            }
             if (addExpAST.getType() != 1) {
-                Value TmpValue = CurValue;
+                CurOP = StrToOP(addExpAST.getOp());
                 visitAddExpAST(addExpAST.getAddExpAST(), false);
-                if (addExpAST.getOp().equals("+")) {
-                    CurValue = f.buildBinaryInst(OP.Add, TmpValue, CurValue, CurBasicBlock);
-                } else if (addExpAST.getOp().equals("-")) {
-                    CurValue = f.buildBinaryInst(OP.Sub, TmpValue, CurValue, CurBasicBlock);
-                }
             }
         }
         else{
+            ConstInteger left = (ConstInteger) CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitMulExpAST(addExpAST.getMulExpAST(), true);
+            ConstInteger right = (ConstInteger) CurValue;
+
+            if(left != null){
+                CurValue = calValue(left.getVal(), TmpOP, right.getVal());
+            }
             if(addExpAST.getType() == 2){
-                ConstInteger left = (ConstInteger) CurValue;
+                CurOP = StrToOP(addExpAST.getOp());
                 visitAddExpAST(addExpAST.getAddExpAST(), true);
-                ConstInteger right = (ConstInteger) CurValue;
-                CurValue = calValue(left.getVal(), addExpAST.getOp(), right.getVal());
             }
         }
     }
 
     private void visitMulExpAST(MulExpAST mulExpAST, boolean isConstExp){
         if(!isConstExp) {
+            Value TmpValue = CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitUnaryExpAST(mulExpAST.getUnaryExpAST(), false);
-
-            if (mulExpAST.getType() != 1) {
-                Value TmpValue = CurValue;
+            if(TmpValue != null){
+                CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
+            }
+            if (mulExpAST.getType() == 2) {
+                CurOP = StrToOP(mulExpAST.getOp());
                 visitMulExpAST(mulExpAST.getMulExpAST(), false);
-                switch (mulExpAST.getOp()) {
-                    case "*" :{
-                        CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
-                        break;
-                    }
-                    case "/" :{
-                        CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
-                        break;
-                    }
-                    case "%" :{
-                        CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
-                        break;
-                    }
-                }
             }
         }
         else{
+            ConstInteger left = (ConstInteger) CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitUnaryExpAST(mulExpAST.getUnaryExpAST(), true);
+            ConstInteger right = (ConstInteger) CurValue;
+            if(left != null){
+                CurValue = calValue(left.getVal(), TmpOP, right.getVal());
+            }
             if(mulExpAST.getType() == 2) {
-                ConstInteger left = (ConstInteger) CurValue;
+                CurOP = StrToOP(mulExpAST.getOp());
                 visitMulExpAST(mulExpAST.getMulExpAST(), true);
-                ConstInteger right = (ConstInteger) CurValue;
-
-                CurValue = calValue(left.getVal(), mulExpAST.getOp(), right.getVal());
             }
         }
     }
