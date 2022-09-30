@@ -3,9 +3,6 @@ package IR;
 import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
-import com.sun.org.apache.xpath.internal.Arg;
-
-import java.awt.*;
 import java.util.ArrayList;
 
 //  PointerType 指 i32*
@@ -28,14 +25,6 @@ public class IRBuildFactory {
         int eleDim = tmpDimList.get(0);
         tmpDimList.remove(0);
         return new ArrayType(buildArrayType(tmpDimList), eleDim);
-    }
-
-    private Type calLowerType(ArrayList<Integer> dimList){
-        if(dimList.size() == 1){
-            return new PointerType(new IntegerType(32));
-        }
-        dimList.remove(0);
-        return calLowerType(dimList);
     }
 
     //  Utils方法，用于计算GepInst的Type，保证target一定为一个指针

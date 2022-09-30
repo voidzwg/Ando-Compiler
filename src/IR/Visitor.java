@@ -433,6 +433,8 @@ public class Visitor {
     }
 
     private void visitRelExpAST(RelExpAST relExpAST){
+        CurValue = null;
+        CurOP = null;
         visitAddExpAST(relExpAST.getAddExpAST(), false);
         if(relExpAST.getType() == 2){
             Value TmpValue = CurValue;
@@ -488,6 +490,8 @@ public class Visitor {
 
 
     private void visitCondAST(CondAST condAST, BasicBlock TrueBlock, BasicBlock FalseBlock){
+        CurValue = null;
+        CurOP = null;
         visitLOrExpAST(condAST.getLOrExpAST(), TrueBlock, FalseBlock);
     }
 
@@ -629,6 +633,8 @@ public class Visitor {
     }
 
     private void visitConstExpAST(ConstExpAST constExpAST){
+        CurValue = null;
+        CurOP = null;
         visitAddExpAST(constExpAST.getAddExpAST(),true);
     }
 

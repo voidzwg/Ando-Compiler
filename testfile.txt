@@ -1,6 +1,8 @@
-const int b = 4 - 3 - 1;
+const int b = 3;
+int a[b] = {0, 1, 2};
 int main(){
-    int a = 10 - b * 5 - b - 4;
-    printf("%d\n",a);
+    if(2 + 3 <= 5){
+        printf("Ando\n");
+    }
     return 0;
 }
