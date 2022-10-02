@@ -70,6 +70,42 @@ public class Visitor {
         else return f.buildLoadInst(value, CurBasicBlock);
     }
 
+    //  判断一个lVal是否为const
+    private void dealConstLVal(LValAST lValAST){
+        Value value = find(lValAST.getIdent());
+
+        if (value instanceof ConstInteger) {
+            ConstInteger constInteger = (ConstInteger) value;
+            CurValue = f.buildNumber(constInteger.getVal());
+        }
+        //  常量数组
+        else {
+            value = find(lValAST.getIdent() + ";const");
+            ConstArray constArray = (ConstArray) value;
+            ArrayList<Integer> dimList = constArray.getDimList();
+            ArrayList<Integer> arrayValues = constArray.getArrayValues();
+
+            int dimLen = dimList.size();
+            //  这里tmpMulDim用于辅助计算是arrayValues第?个元素
+            int idx = 0;
+            int[] tmpMulDim = new int[dimLen];
+            for(int i = dimLen - 1; i >= 0; i--){
+                if(i == dimLen - 1) tmpMulDim[i] = 1;
+                else tmpMulDim[i] = dimList.get(i + 1) * tmpMulDim[i + 1];
+            }
+
+            ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
+            int expLen = expASTS.size();
+            for(int i = 0; i < expLen; i++){
+                ExpAST expAST = expASTS.get(i);
+                visitExpAST(expAST, true);
+                int num = Integer.parseInt(CurValue.getName());
+                idx += num * tmpMulDim[i];
+            }
+
+            CurValue = f.buildNumber(arrayValues.get(idx));
+        }
+    }
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
@@ -193,9 +229,16 @@ public class Visitor {
     //  mode为1表示令CurValue = value
     //  mode为2表示令CurValue = pointer
     //  其实就是mod为1要多加一下load/gep指令
-    private void visitLValAST(LValAST lValAST, int mode){
+    private void visitLValAST(LValAST lValAST, int mode, boolean isConst){
+        //  特殊处理一下isConstExp
         Value value = find(lValAST.getIdent());
         Type valueType = value.getType();
+
+        if(isConst) {
+            dealConstLVal(lValAST);
+            return;
+        }
+
         if(lValAST.getType() == 1){
             //  lVal为FuncRParam
             if(isFuncRParam != 0 && valueType.isArrayType()){
@@ -204,16 +247,18 @@ public class Visitor {
                 }
                 else CurValue = value;
             }
-            //  lVal为常量或变量
+            //  lVal为变量或常量
+            //  为什么这里lVal还有可能是常量呢？
+            //  是因为对于一些Exp如i*const_a，我们传进来的isConst是false
+            //  但是const_a显然我们应该直接带入值，因此这里也有可能出现常量
             else{
-                //  常量只有value
                 if (value instanceof ConstInteger) {
                     ConstInteger constInteger = (ConstInteger) value;
                     CurValue = f.buildNumber(constInteger.getVal());
                 }
                 else {
                     CurValue = value;
-                    if(mode == 1) {
+                    if (mode == 1) {
                         CurValue = fetchVal(CurValue);
                     }
                 }
@@ -269,7 +314,7 @@ public class Visitor {
                 visitNumberAST(primaryExpAST.getNumberAST());
             }
             else if(primaryExpAST.getType() == 3){
-                visitLValAST(primaryExpAST.getlValAST(), 1);
+                visitLValAST(primaryExpAST.getlValAST(), 1, false);
             }
         }
         else{
@@ -282,7 +327,7 @@ public class Visitor {
                 CurValue = f.buildNumber(numberAST.getIntConst());
             }
             else if(primaryExpAST.getType() == 3){
-                visitLValAST(primaryExpAST.getlValAST(), 1);
+                visitLValAST(primaryExpAST.getlValAST(), 1, true);
             }
         }
     }
@@ -507,7 +552,7 @@ public class Visitor {
             //  此时的CurVal为Exp的结果
             Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getLValAST(), 2);
+            visitLValAST(stmtAST.getLValAST(), 2, false);
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
         //  Block
@@ -605,7 +650,7 @@ public class Visitor {
 
             Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getLValAST(), 2);
+            visitLValAST(stmtAST.getLValAST(), 2, false);
             //  此时CurValue是LVal
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
@@ -677,16 +722,26 @@ public class Visitor {
 
             //  ConstDef一定有InitVal
             fillInitVal = new ArrayList<>();
-            if(isGlobal){
-                //  构建InitValS
-                visitConstInitValAST(constDefAST.getConstInitValAST());
+            //  构建InitValS
 
+            //  ConstArray用于ConstExp查值
+            visitConstInitValAST(constDefAST.getConstInitValAST());
+            ArrayList<Integer> arrayValue = new ArrayList<>();
+            for(Value value : fillInitVal){
+                arrayValue.add(Integer.parseInt(value.getName()));
+            }
+
+            ConstArray constArray = new ConstArray(ident, dimList, arrayValue);
+            //  添加;const来保证不会与ident重合，同时存下数组的初始值一遍直接解出初始值
+            pushSymbol(rawIdent + ";const", constArray);
+
+            //  buildArray用于constArray[某变量i]时构建gep等指令
+            if(isGlobal){
                 GlobalVar globalVar = f.buildGlobalVar(ident, dimList, fillInitVal, true, globalVars);
                 pushSymbol(rawIdent, globalVar);
             }
-            else {
+            else{
                 AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock, true);
-
                 ArrayList<Value> indexs = new ArrayList<>();
                 int dim = dimList.size();
                 for (int i = 0; i < dim + 1; i++) {
@@ -705,19 +760,24 @@ public class Visitor {
                 visitConstInitValAST(constDefAST.getConstInitValAST());
 
                 //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
-                GepInst itPointer = pointer;
-                for (int i = 0; i < fillInitVal.size(); i++) {
-                    //  重新构建gep所需的indexs
-                    ArrayList<Value> itIndexs = new ArrayList<>();
-                    itIndexs.add(new ConstInteger(i));
-                    if (i != 0) {
-                        itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
-                    }
-
-                    f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
-                }
+                storeArrayInit(pointer);
                 pushSymbol(rawIdent, allocInst);
             }
+
+        }
+    }
+
+    private void storeArrayInit(GepInst pointer) {
+        GepInst itPointer = pointer;
+        for (int i = 0; i < fillInitVal.size(); i++) {
+            //  重新构建gep所需的indexs
+            ArrayList<Value> itIndexs = new ArrayList<>();
+            itIndexs.add(new ConstInteger(i));
+            if (i != 0) {
+                itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
+            }
+
+            f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
         }
     }
 
@@ -835,17 +895,7 @@ public class Visitor {
                     visitInitValAST(varDefAST.getInitValAST(), false);
 
                     //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
-                    GepInst itPointer = pointer;
-                    for(int i = 0; i < fillInitVal.size(); i++){
-                        //  重新构建gep所需的indexs
-                        ArrayList<Value> itIndexs = new ArrayList<>();
-                        itIndexs.add(new ConstInteger(i));
-                        if(i != 0){
-                            itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
-                        }
-
-                        f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
-                    }
+                    storeArrayInit(pointer);
                 }
             }
 
