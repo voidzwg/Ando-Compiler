@@ -3,6 +3,7 @@ package Frontend;
 import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
+import Utils.ErrDump;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -109,7 +110,11 @@ public class Parser {
 
         else if(judTok.getVal().equals("printf")){
             getTok();   //  Consume '('
-            String fString = getTok().getVal();
+            Token fStringTok = getTok();
+            String fString = fStringTok.getVal();
+
+            //  错误处理a:
+            ErrDump.error_a(fStringTok);
 
             ArrayList<ExpAST> expASTS = new ArrayList<>();
             while (true){

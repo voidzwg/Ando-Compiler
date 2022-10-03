@@ -1,4 +1,5 @@
 import Utils.ASTDump;
+import Utils.ErrDump;
 import Utils.MIPSDump;
 import Frontend.AST.CompUnitAST;
 import Frontend.Parser;
@@ -18,7 +19,10 @@ public class Compiler {
 
         Visitor visitor = new Visitor();
         IRModule module = visitor.VisitCompUnit(compUnitAST);
-        IRDump.DumpModule(module);
+
+        ErrDump.errDump();
+
+//        IRDump.DumpModule(module);
 
 //        MIPSDump.DumpMips(module);
     }

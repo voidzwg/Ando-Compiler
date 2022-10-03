@@ -698,6 +698,7 @@ public class Visitor {
 
     private void visitConstDefAST(ConstDefAST constDefAST, boolean isGlobal){
         String rawIdent = constDefAST.getIdent();
+
         int cnt = addSymCnt(rawIdent);
         String ident = "@" + rawIdent + "_" + cnt;
 
