@@ -295,11 +295,12 @@ public class Parser {
 
     private UnaryExpAST parseUnaryExpAST() throws IOException {
         Token judTok = getTok();
+        int line = judTok.getLine();
 
         //  UnaryOP UnaryExp的情况
         if(judTok.getVal().equals("+") || judTok.getVal().equals("-") || judTok.getVal().equals("!")){
             UnaryExpAST unaryExpAST = parseUnaryExpAST();
-            return new UnaryExpAST(judTok.getVal(), unaryExpAST);
+            return new UnaryExpAST(judTok.getVal(), unaryExpAST, line);
         }
         else if(judTok.getType() == Tokens.IDENFR){
             judTok = getTok();
@@ -313,21 +314,21 @@ public class Parser {
                     backTok(1);
                     FuncRParamsAST funcRParamsAST = parseFuncRParamsAST();
                     getTok();   //  Consume ')'
-                    return new UnaryExpAST(ident, funcRParamsAST);
+                    return new UnaryExpAST(ident, funcRParamsAST, line);
                 }
-                else return new UnaryExpAST(ident);
+                else return new UnaryExpAST(ident, line);
             }
             else {
                 backTok(2);
                 PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
-                return new UnaryExpAST(primaryExpAST);
+                return new UnaryExpAST(primaryExpAST, line);
             }
         }
         //  不是ident肯定是PrimaryExp的情况
         else {
             backTok(1);
             PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
-            return new UnaryExpAST(primaryExpAST);
+            return new UnaryExpAST(primaryExpAST, line);
         }
     }
 
@@ -358,7 +359,9 @@ public class Parser {
     }
 
     private LValAST parseLValAST() throws IOException {
-        String ident = getTok().getVal();
+        Token identTok = getTok();
+        String ident = identTok.getVal();
+        int line = identTok.getLine();
         boolean isArray = false;
 
         ArrayList<ExpAST> expASTS = new ArrayList<>();
@@ -376,8 +379,8 @@ public class Parser {
             }
         }
 
-        if(isArray) return new LValAST(ident, expASTS);
-        return new LValAST(ident);
+        if(isArray) return new LValAST(ident, expASTS, line);
+        return new LValAST(ident, line);
     }
 
     private BlockAST parseBlockAST() throws IOException {

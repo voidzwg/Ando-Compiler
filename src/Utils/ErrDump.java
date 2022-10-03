@@ -1,6 +1,7 @@
 package Utils;
 
 import Frontend.Token;
+import IR.Value.Function;
 import IR.Value.Value;
 import javafx.util.Pair;
 
@@ -52,12 +53,23 @@ public class ErrDump {
         }
     }
 
-    public static void error_b(String ident, HashMap<String, Value> symTblNow, int len){
+    public static void error_b(String ident, HashMap<String, Value> symTblNow, int line){
         if(symTblNow.containsKey(ident)){
-            errors.add(new Pair<>(len, 'b'));
+            errors.add(new Pair<>(line, 'b'));
         }
     }
 
+    //  由于error_c的确在visitor里处理更方便，因此error_c就在visitor里处理了
+    public static void error_c(int line){
+        errors.add(new Pair<>(line, 'c'));
+    }
+
+    public static void error_d(Function target, int funcRParamNum, int line){
+        int funcFParamNum = target.getArgs().size();
+        if(funcFParamNum != funcRParamNum){
+            errors.add(new Pair<>(line, 'd'));
+        }
+    }
 
     public static void errDump() throws IOException {
         for (Pair<Integer, Character> pair : errors) {

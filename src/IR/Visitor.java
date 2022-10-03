@@ -238,6 +238,13 @@ public class Visitor {
     private void visitLValAST(LValAST lValAST, int mode, boolean isConst){
         //  特殊处理一下isConstExp
         Value value = find(lValAST.getIdent());
+        if(value == null){
+            ErrDump.error_c(lValAST.getLine());
+            //  遇事不决放个0
+            CurValue = f.buildNumber(0);
+            return;
+        }
+
         Type valueType = value.getType();
 
         if(isConst) {
@@ -339,6 +346,7 @@ public class Visitor {
     }
 
     private void visitUnaryExpAST(UnaryExpAST unaryExpAST, boolean isConstExp){
+        int line = unaryExpAST.getLine();
         if(!isConstExp) {
             if (unaryExpAST.getType() == 1) {
                 visitPrimaryExpAST(unaryExpAST.getPrimaryExpAST(),false);
@@ -358,28 +366,37 @@ public class Visitor {
                 }
             }
             //  Ident (FuncRParam)  !!很关键(处理数组参数)
-            else if(unaryExpAST.getType() == 3){
+            else if(unaryExpAST.getType() == 3 || unaryExpAST.getType() == 4){
                 String funcName = unaryExpAST.getIdent();
-                Function function = (Function) find(funcName);
-
-                //  开始处理FuncRParam
-                ArrayList<Value> values = new ArrayList<>();
-                ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
-                isFuncRParam++;
-                for(ExpAST expAST : expASTS){
-                    visitExpAST(expAST, false);
-                    values.add(CurValue);
+                Value findFunc = find(funcName);
+                if(findFunc == null){
+                    ErrDump.error_c(line);
+                    //  遇事不决放个0
+                    CurValue = f.buildNumber(0);
+                    return;
                 }
-                isFuncRParam--;
+                Function function = (Function) findFunc;
+
+                if(unaryExpAST.getType() == 3) {
+                    //  开始处理FuncRParam
+                    ArrayList<Value> values = new ArrayList<>();
+                    ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
+                    ErrDump.error_d(function, expASTS.size(), line);
+
+                    isFuncRParam++;
+                    for (ExpAST expAST : expASTS) {
+                        visitExpAST(expAST, false);
+                        values.add(CurValue);
+                    }
+                    isFuncRParam--;
 
 
-                CurValue = f.buildCallInst(CurBasicBlock, function, values);
-
-            }
-            else if(unaryExpAST.getType() == 4){
-                String funcName = unaryExpAST.getIdent();
-                Function function = (Function) find(funcName);
-                CurValue = f.buildCallInst(CurBasicBlock, function);
+                    CurValue = f.buildCallInst(CurBasicBlock, function, values);
+                }
+                else {
+                    ErrDump.error_d(function, 0, line);
+                    CurValue = f.buildCallInst(CurBasicBlock, function);
+                }
             }
         }
         else {
