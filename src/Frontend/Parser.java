@@ -442,7 +442,9 @@ public class Parser {
     }
 
     private VarDefAST parseVarDefAST() throws IOException {
-        String ident = getTok().getVal();
+        Token identTok = getTok();
+        String ident = identTok.getVal();
+        int line = identTok.getLine();
         //  这里isArray标记是否为数组的定义
         boolean isArray = false;
         Token judTok = getTok();
@@ -462,17 +464,17 @@ public class Parser {
         if(judTok.getVal().equals("=")){
             InitValAST initValAST = parseInitValAST();
             if(isArray){
-                return new VarDefAST(ident, initValAST, constExpASTS);
+                return new VarDefAST(ident, initValAST, constExpASTS, line);
             }
-            else return new VarDefAST(ident, initValAST);
+            else return new VarDefAST(ident, initValAST, line);
         }
 
         backTok(1);
 
         if(isArray){
-            return new VarDefAST(ident, constExpASTS);
+            return new VarDefAST(ident, constExpASTS, line);
         }
-        else return new VarDefAST(ident);
+        else return new VarDefAST(ident, line);
     }
 
     private InitValAST parseInitValAST() throws IOException {
@@ -527,7 +529,9 @@ public class Parser {
     }
 
     private ConstDefAST parseConstDefAST() throws IOException {
-        String ident = getTok().getVal();
+        Token identTok = getTok();
+        String ident = identTok.getVal();
+        int len = identTok.getLine();
         ArrayList<ConstExpAST> constExpASTS = new ArrayList<>();
 
         Token judTok = getTok();
@@ -552,8 +556,8 @@ public class Parser {
 
         ConstInitValAST constInitValAST = parseConstInitValAST();
 
-        if(constExpASTS.size() != 0) return new ConstDefAST(ident, constExpASTS, constInitValAST);
-        else return new ConstDefAST(ident, constInitValAST);
+        if(constExpASTS.size() != 0) return new ConstDefAST(ident, constExpASTS, constInitValAST, len);
+        else return new ConstDefAST(ident, constInitValAST, len);
     }
 
     private ConstExpAST parseConstExpAST() throws IOException {

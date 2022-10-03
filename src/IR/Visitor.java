@@ -6,6 +6,7 @@ import Frontend.AST.ExpAST.*;
 import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
+import Utils.ErrDump;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -179,6 +180,11 @@ public class Visitor {
     private void popSymTbl(){
         int len = symTbls.size();
         symTbls.remove(len - 1);
+    }
+
+    private HashMap<String, Value> getNowSymTbl(){
+        int len = symTbls.size();
+        return symTbls.get(len - 1);
     }
 
     private void pushSymbol(String ident, Value value){
@@ -698,6 +704,7 @@ public class Visitor {
 
     private void visitConstDefAST(ConstDefAST constDefAST, boolean isGlobal){
         String rawIdent = constDefAST.getIdent();
+        ErrDump.error_b(rawIdent, getNowSymTbl(), constDefAST.getLen());
 
         int cnt = addSymCnt(rawIdent);
         String ident = "@" + rawIdent + "_" + cnt;
@@ -804,7 +811,11 @@ public class Visitor {
     private void visitVarDefAST(VarDefAST varDefAST, boolean isGlobal){
         //  这里rawIdent指的是未加@，cnt之类的ident(纯用户命名的ident)
         String rawIdent = varDefAST.getIdent();
+        ErrDump.error_b(rawIdent, getNowSymTbl(), varDefAST.getLine());
+
         int varDefType = varDefAST.getType();
+
+
 
         int cnt = addSymCnt(rawIdent);
         String ident = "@" + rawIdent + "_" + cnt;

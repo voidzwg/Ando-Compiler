@@ -1,12 +1,14 @@
 package Utils;
 
 import Frontend.Token;
+import IR.Value.Value;
 import javafx.util.Pair;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ErrDump {
     private static ArrayList<Pair<Integer, Character>> errors = new ArrayList<>();
@@ -50,6 +52,11 @@ public class ErrDump {
         }
     }
 
+    public static void error_b(String ident, HashMap<String, Value> symTblNow, int len){
+        if(symTblNow.containsKey(ident)){
+            errors.add(new Pair<>(len, 'b'));
+        }
+    }
 
 
     public static void errDump() throws IOException {
