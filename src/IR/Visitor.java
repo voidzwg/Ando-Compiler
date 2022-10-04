@@ -236,7 +236,6 @@ public class Visitor {
     //  mode为2表示令CurValue = pointer
     //  其实就是mod为1要多加一下load/gep指令
     private void visitLValAST(LValAST lValAST, int mode, boolean isConst){
-        //  特殊处理一下isConstExp
         Value value = find(lValAST.getIdent());
         if(value == null){
             ErrDump.error_c(lValAST.getLine());
@@ -244,9 +243,14 @@ public class Visitor {
             CurValue = f.buildNumber(0);
             return;
         }
+        //  对常量赋值的错误处理
+        if(mode == 2){
+            ErrDump.error_h(value, lValAST.getLine());
+        }
 
         Type valueType = value.getType();
 
+        //  特殊处理一下isConstExp
         if(isConst) {
             dealConstLVal(lValAST);
             return;
@@ -390,6 +394,7 @@ public class Visitor {
                     }
                     isFuncRParam--;
 
+                    ErrDump.error_e(function, values, line);
 
                     CurValue = f.buildCallInst(CurBasicBlock, function, values);
                 }
@@ -656,12 +661,16 @@ public class Visitor {
         }
         //  continue;
         else if(stmtAST.getType() == 8){
+            if(whileEntryBLocks.size() == 0) return;
+
             BasicBlock whileEntryBlock = getWhileEntry();
             f.buildBrInst(whileEntryBlock, CurBasicBlock);
             CurBasicBlock = f.buildBasicBlock(CurFunction);
         }
         //  break;
         else if(stmtAST.getType() == 9){
+            if(whileOutBlocks.size() == 0) return;
+
             BasicBlock whileOutBlock = getWhileOut();
             f.buildBrInst(whileOutBlock, CurBasicBlock);
             CurBasicBlock = f.buildBasicBlock(CurFunction);
@@ -677,6 +686,7 @@ public class Visitor {
             //  此时CurValue是LVal
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
+        //  printf
         else if(stmtAST.getType() == 11){
             Function printfFunc = new Function("@printf", new IntegerType(32));
             ArrayList<Value> rParams = new ArrayList<>();
@@ -695,6 +705,7 @@ public class Visitor {
             }
             f.buildCallInst(CurBasicBlock, printfFunc, rParams);
         }
+        //  return ;
         else if(stmtAST.getType() == 12){
             f.buildRetInst(CurBasicBlock);
         }
@@ -829,11 +840,7 @@ public class Visitor {
         //  这里rawIdent指的是未加@，cnt之类的ident(纯用户命名的ident)
         String rawIdent = varDefAST.getIdent();
         ErrDump.error_b(rawIdent, getNowSymTbl(), varDefAST.getLine());
-
         int varDefType = varDefAST.getType();
-
-
-
         int cnt = addSymCnt(rawIdent);
         String ident = "@" + rawIdent + "_" + cnt;
 
@@ -841,7 +848,8 @@ public class Visitor {
             if(varDefType == 1 || varDefType == 2) {
                 if (varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
                 else CurValue = ConstInteger.constZero;
-                f.buildGlobalVar(ident, new IntegerType(32),false, CurValue, globalVars);
+                f.buildGlobalVar(ident, new PointerType(new IntegerType(32)),false, CurValue, globalVars);
+                CurValue = f.getAllocInst(ident, new IntegerType(32), CurBasicBlock);
                 pushSymbol(rawIdent, CurValue);
             }
             //  全局数组
@@ -966,6 +974,9 @@ public class Visitor {
 
                 AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
                 f.buildStoreInst(CurBasicBlock, argument, allocInst);
+
+
+
                 pushSymbol(identArg, allocInst);
             }
         }
@@ -980,7 +991,10 @@ public class Visitor {
 
     private void visitFuncDefAST(FuncDefAST funcDefAST){
         String ident = funcDefAST.getIdent();
+        ErrDump.error_b(ident, getNowSymTbl(), funcDefAST.getLine());
+
         String type = funcDefAST.getFuncType();
+        int line = funcDefAST.getLine();
 
         CurFunction = f.buildFunction("@" + ident, type, module);
         CurBasicBlock = f.buildBasicBlock(CurFunction);
@@ -997,6 +1011,8 @@ public class Visitor {
             for(FuncFParamAST funcFParamAST : funcFParamASTS){
                 //  平平无奇的起名环节
                 String rawIdentArg = funcFParamAST.getIdent();
+                ErrDump.error_b(rawIdentArg, tmpHashMap, line);
+
                 String typeArg = funcFParamAST.getbType();
 
                 int cnt = addSymCnt(rawIdentArg);

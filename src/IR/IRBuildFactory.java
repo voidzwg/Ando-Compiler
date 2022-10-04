@@ -88,8 +88,12 @@ public class IRBuildFactory {
         return allocInst;
     }
 
+    public AllocInst getAllocInst(String name, Type type, BasicBlock bb){
+        return new AllocInst(name, new PointerType(type), bb, false);
+    }
+
     public AllocInst buildAllocInst(String name, Type type,BasicBlock bb, boolean isConst){
-        AllocInst allocInst = new AllocInst(name, new PointerType(type), bb, isConst);
+        AllocInst allocInst = new AllocInst(new PointerType(type), bb, isConst);
         bb.addInst(allocInst);
         return allocInst;
     }

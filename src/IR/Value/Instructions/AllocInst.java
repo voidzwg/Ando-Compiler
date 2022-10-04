@@ -10,10 +10,18 @@ import IR.Value.Value;
 public class AllocInst extends Instruction {
     boolean isConst;
     //  AllocInst的type记录申请的type
-    public AllocInst(String name, Type type, BasicBlock bb, boolean isConst){
+    public AllocInst(Type type, BasicBlock bb, boolean isConst){
         super("%" + (++Value.valNumber), type, OP.Alloca, bb);
         this.isConst = isConst;
     }
 
+    //  为全局变量的alloc需要知道name，我们不能用num来命名了
+    public AllocInst(String name, Type type, BasicBlock basicBlock, boolean isConst){
+        super(name, type, OP.Alloca, basicBlock);
+        this.isConst = isConst;
+    }
 
+    public boolean isConst() {
+        return isConst;
+    }
 }
