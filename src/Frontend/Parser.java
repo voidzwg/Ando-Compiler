@@ -4,7 +4,6 @@ import Frontend.AST.*;
 import Frontend.AST.DeclAST.*;
 import Frontend.AST.ExpAST.*;
 import Utils.ErrDump;
-import jdk.nashorn.internal.ir.Block;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,9 +23,11 @@ public class Parser {
     private final Lexer lexer;
     //  用来记录while层数，来判断break和continue
     private int whileLv = 0;
+    private int CurLine = 0;
 
     private boolean isExpFirst(Token token){
-        return token.getType() == Tokens.IDENFR || token.getType() == Tokens.LPARENT || token.getType() == Tokens.INTCON;
+        Tokens type = token.getType();
+        return type == Tokens.IDENFR || type == Tokens.LPARENT || type == Tokens.INTCON || type == Tokens.NOT || type == Tokens.PLUS || type == Tokens.MINU;
     }
 
     private Token getTok() throws IOException {
@@ -34,11 +35,15 @@ public class Parser {
             CurTok.add(lexer.getTok());
         }
         cTop++;
-        return CurTok.get(cTop);
+        //  读取token同时读取line
+        Token nowTok = CurTok.get(cTop);
+        if(nowTok != null) CurLine = nowTok.getLine();
+        return nowTok;
     }
 
     private void backTok(int index){
         cTop-=index;
+        if(cTop >= 0) CurLine = CurTok.get(cTop).getLine();
     }
 
     //  Constructor
@@ -60,23 +65,27 @@ public class Parser {
         int line = judTok.getLine();
         //  "return" Exp ";"
         if(judTok.getVal().equals("return")) {
+            line = judTok.getLine();
             judTok = getTok();
+
             if(judTok.getVal().equals(";")){
                 return new StmtAST(line);
             }
             else backTok(1);
 
+            //  单个return缺少分号
             if(!isExpFirst(judTok)){
-                ErrDump.error_i(line);
+                ErrDump.error_i(CurLine);
                 return new StmtAST(line);
             }
 
             ExpAST expAST = parseExpAST();
 
             judTok = getTok();    //  Consume ';'
+            //  return Exp缺少分号
             if(!judTok.getVal().equals(";")){
                 backTok(1);
-                ErrDump.error_i(line);
+                ErrDump.error_i(CurLine);
             }
 
             return new StmtAST(expAST, line);
@@ -95,8 +104,8 @@ public class Parser {
 
             judTok = getTok();   //  Consume ')'
             if(!judTok.getVal().equals(")")){
-                ErrDump.error_j(line);
                 backTok(1);
+                ErrDump.error_j(CurLine);
             }
 
             StmtAST ifStmtAST = parseStmtAST();
@@ -121,8 +130,8 @@ public class Parser {
 
             judTok = getTok();   //  Consume ')'
             if(!judTok.getVal().equals(")")){
-                ErrDump.error_j(line);
                 backTok(1);
+                ErrDump.error_j(CurLine);
             }
 
             StmtAST loopStmt = parseStmtAST();
@@ -137,7 +146,7 @@ public class Parser {
             judTok = getTok();   //  Consume ';'
             if(!judTok.getVal().equals(";")){
                 backTok(1);
-                ErrDump.error_i(line);
+                ErrDump.error_i(CurLine);
             }
 
             ContinueAST continueAST = new ContinueAST();
@@ -150,7 +159,7 @@ public class Parser {
             judTok = getTok();   //  Consume ';'
             if(!judTok.getVal().equals(";")){
                 backTok(1);
-                ErrDump.error_i(line);
+                ErrDump.error_i(CurLine);
             }
 
             BreakAST breakAST = new BreakAST();
@@ -174,7 +183,7 @@ public class Parser {
 
                 if(judTok.getType() != Tokens.COMMA && !isExpFirst(judTok)){
                     backTok(1);
-                    ErrDump.error_j(line);
+                    ErrDump.error_j(CurLine);
                     break;
                 }
 
@@ -187,7 +196,7 @@ public class Parser {
             judTok = getTok();   //  Consume ';'
             if(!judTok.getVal().equals(";")){
                 backTok(1);
-                ErrDump.error_i(line);
+                ErrDump.error_i(CurLine);
             }
 
             return new StmtAST(fString, expASTS);
@@ -209,13 +218,13 @@ public class Parser {
                     judTok = getTok();   //  Consume ')'
                     if(!judTok.getVal().equals(")")){
                         backTok(1);
-                        ErrDump.error_j(line);
+                        ErrDump.error_j(CurLine);
                     }
 
                     judTok = getTok();   //  Consume ';'
                     if(!judTok.getVal().equals(";")){
                         backTok(1);
-                        ErrDump.error_i(line);
+                        ErrDump.error_i(CurLine);
                     }
 
                     return new StmtAST(lValAST, line);
@@ -226,7 +235,7 @@ public class Parser {
                     judTok = getTok();   //  Consume ';'
                     if(!judTok.getVal().equals(";")){
                         backTok(1);
-                        ErrDump.error_i(line);
+                        ErrDump.error_i(CurLine);
                     }
 
                     return new StmtAST(lValAST, expAST, line);
@@ -246,7 +255,7 @@ public class Parser {
             judTok = getTok();   //  Consume ';'
             if(!judTok.getVal().equals(";")){
                 backTok(1);
-                ErrDump.error_i(line);
+                ErrDump.error_i(CurLine);
             }
 
             return new StmtAST(expAST, true);
@@ -382,14 +391,14 @@ public class Parser {
 
     private UnaryExpAST parseUnaryExpAST() throws IOException {
         Token judTok = getTok();
-        int line = judTok.getLine();
 
         //  UnaryOP UnaryExp的情况
         if(judTok.getVal().equals("+") || judTok.getVal().equals("-") || judTok.getVal().equals("!")){
             UnaryExpAST unaryExpAST = parseUnaryExpAST();
-            return new UnaryExpAST(judTok.getVal(), unaryExpAST, line);
+            return new UnaryExpAST(judTok.getVal(), unaryExpAST, unaryExpAST.getLine());
         }
         else if(judTok.getType() == Tokens.IDENFR){
+            int line = judTok.getLine();
             judTok = getTok();
             if(judTok.getVal().equals("(")){
                 backTok(2);
@@ -401,7 +410,7 @@ public class Parser {
                     backTok(1);
                     //  判断一下无参数同时还缺右括号的情况
                     if(!isExpFirst(judTok)){
-                        ErrDump.error_j(line);
+                        ErrDump.error_j(CurLine);
                         return new UnaryExpAST(ident, line);
                     }
 
@@ -411,7 +420,7 @@ public class Parser {
                     judTok = getTok();   //  Consume ')'
                     if(!judTok.getVal().equals(")")){
                         backTok(1);
-                        ErrDump.error_j(line);
+                        ErrDump.error_j(CurLine);
                     }
 
                     return new UnaryExpAST(ident, funcRParamsAST, line);
@@ -428,7 +437,7 @@ public class Parser {
         else {
             backTok(1);
             PrimaryExpAST primaryExpAST = parsePrimaryExpAST();
-            return new UnaryExpAST(primaryExpAST, line);
+            return new UnaryExpAST(primaryExpAST, primaryExpAST.getLine());
         }
     }
 
@@ -475,7 +484,7 @@ public class Parser {
                 judTok = getTok();   //  Consume ']'
                 if(!judTok.getVal().equals("]")){
                     backTok(1);
-                    ErrDump.error_k(line);
+                    ErrDump.error_k(CurLine);
                 }
 
             }
@@ -550,7 +559,7 @@ public class Parser {
             //  错误处理i
             if(!judTok.getVal().equals(",")){
                 backTok(1);
-                ErrDump.error_i(intTok.getLine());
+                ErrDump.error_i(CurLine);
                 break;
             }
 
@@ -578,7 +587,7 @@ public class Parser {
 
                 judTok = getTok();   //  Consume ']'
                 if(!judTok.getVal().equals("]")){
-                    ErrDump.error_k(line);
+                    ErrDump.error_k(CurLine);
                     backTok(1);
                 }
 
@@ -649,7 +658,7 @@ public class Parser {
             //  错误处理i
             if(!judTok.getVal().equals(",")){
                 backTok(1);
-                ErrDump.error_i(constTok.getLine());
+                ErrDump.error_i(CurLine);
                 break;
             }
             //  这里不用backTok的原因是如果不是';', 那就一定是','. 而','我们也应去除。
@@ -675,7 +684,7 @@ public class Parser {
                 judTok = getTok();   //  Consume ']'
                 if(!judTok.getVal().equals("]")){
                     backTok(1);
-                    ErrDump.error_k(line);
+                    ErrDump.error_k(CurLine);
                 }
 
 
@@ -734,7 +743,7 @@ public class Parser {
             judTok = getTok();   //  Consume ']'
             if(!judTok.getVal().equals("]")){
                 backTok(1);
-                ErrDump.error_k(line);
+                ErrDump.error_k(CurLine);
             }
 
             ArrayList<ConstExpAST> constExpASTS = new ArrayList<>();
@@ -748,7 +757,7 @@ public class Parser {
                     judTok = getTok();   //  Consume ']'
                     if(!judTok.getVal().equals("]")){
                         backTok(1);
-                        ErrDump.error_k(line);
+                        ErrDump.error_k(CurLine);
                     }
                 }
                 else {
@@ -805,7 +814,7 @@ public class Parser {
 
             //  先判断一下是不是没有参数同时缺右括号的错误处理
             if(judTok.getType() != Tokens.INTTK){
-                ErrDump.error_j(line);
+                ErrDump.error_j(CurLine);
                 blockAST = parseBlockAST();
                 funcDefAST = new FuncDefAST(funcType, ident, blockAST, line);
             }
@@ -815,7 +824,7 @@ public class Parser {
                 judTok = getTok();   //  Consume ')'
                 if (!judTok.getVal().equals(")")) {
                     backTok(1);
-                    ErrDump.error_j(line);
+                    ErrDump.error_j(CurLine);
                 }
 
                 blockAST = parseBlockAST();

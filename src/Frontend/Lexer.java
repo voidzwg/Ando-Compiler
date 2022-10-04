@@ -100,11 +100,13 @@ public class Lexer {
             while (c != '\n'){
                 readChar();
             }
+            line++;
         }
         else if(c == '*'){
             readChar();
             while (true){
                 if(readIn == -1) return;
+                if(c == '\n') line++;
                 if(c == '*'){
                     if(readChar() == '/') return;
                     else {

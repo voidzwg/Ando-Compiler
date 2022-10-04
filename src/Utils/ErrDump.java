@@ -92,7 +92,7 @@ public class ErrDump {
     //  void有return Exp;
     public static void error_f(BlockAST blockAST){
         boolean ok = true;
-        int line = -1;
+        int line = blockAST.getLine();
         ArrayList<BlockItemAST> blockItems = blockAST.getBlockItems();
         int len = blockItems.size();
         if(len != 0) {
@@ -100,11 +100,11 @@ public class ErrDump {
 
             if (blockItemAST.getType() == 2) {
                 StmtAST stmtAST = blockItemAST.getStmtAST();
-                if (stmtAST.getType() != 12) {
+                if (stmtAST.getType() == 1) {
                     line = stmtAST.getLine();
                     ok = false;
                 }
-            } else ok = false;
+            }
         }
 
         if(!ok){
@@ -115,6 +115,7 @@ public class ErrDump {
     //  非void无return;
     public static void error_g(BlockAST blockAST){
         boolean ok = true;
+        //  BlockAST的line存储的就是'}'所在的行数
         int line = blockAST.getLine();
         ArrayList<BlockItemAST> blockItems = blockAST.getBlockItems();
         int len = blockItems.size();
