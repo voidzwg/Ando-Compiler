@@ -1,5 +1,13 @@
-	.text
-	.globl main
-main:
-	li a0 6
-	ret
+declare void @memset(i32*, i32, i32)
+declare i32 @printf(i8*, ...)
+declare i32 @__isoc99_scanf(i8*, ...)
+
+@.str.1 = constant [10 x i8] c"19241091\0A\00"
+@.str.2 = constant [50 x i8] c"==================testfile4 end==================\00"
+define i32 @main() {
+block1:
+	%0 = call i32 (i8*, ...) @printf(i8* getelementptr ([10 x i8], [10 x i8]* @.str.1, i64 0, i64 0))
+	%1 = call i32 (i8*, ...) @printf(i8* getelementptr ([50 x i8], [50 x i8]* @.str.2, i64 0, i64 0))
+	ret i32 0
+}
+

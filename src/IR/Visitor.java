@@ -54,7 +54,7 @@ public class Visitor {
     //  isFuncRParam表示当前是否为访问FuncRParam的模式
     //  之所以不用boolean是因为FuncRParam可能会有嵌套，我们通过加减来实现栈的效果
     private int isFuncRParam = 0;
-    //  用来记录printf语句出现的次数，从而为fString命名
+    //  用来记录printf/scanf语句出现的次数，从而为fString命名
     private int strNum = 0;
 
     //  LVal有取出值的情况，fetchVal函数获取一个指针,返回其中的值
@@ -677,14 +677,21 @@ public class Visitor {
         }
         //  LVal = getint();
         else if(stmtAST.getType() == 10){
-            Function function = new Function("@getint", new IntegerType(32));
-            CurValue = f.buildCallInst(CurBasicBlock, function);
+            Function scanfFunc = new Function("@__isoc99_scanf", new IntegerType(32));
+            ArrayList<Value> rParams = new ArrayList<>();
+            String fString = "%d\\00";
+            strNum++;
+            String strName = "@.str." + strNum;
+            Value fStrValue = new Value(strName, new StringType(fString, 1));
+            f.buildGlobalVar(strName, fStrValue.getType(),false, null, globalVars);
+            rParams.add(fStrValue);
 
-            Value value = CurValue;
             //  LVal获得变量的Value
             visitLValAST(stmtAST.getLValAST(), 2, false);
+            rParams.add(CurValue);
             //  此时CurValue是LVal
-            f.buildStoreInst(CurBasicBlock, value, CurValue);
+
+            f.buildCallInst(CurBasicBlock, scanfFunc, rParams);
         }
         //  printf
         else if(stmtAST.getType() == 11){
@@ -696,7 +703,7 @@ public class Visitor {
             String strName = "@.str." + strNum;
             //  这里新建了一个StringType，属于是为了完成printf而自己新建的
             //  虽然不破坏整体的架构，但总感觉有点别扭(不过能跑就行x
-            Value fStrValue = new Value(strName, new StringType(fString));
+            Value fStrValue = new Value(strName, new StringType(fString, 0));
             f.buildGlobalVar(strName, fStrValue.getType(),false, null, globalVars);
             rParams.add(fStrValue);
             for(ExpAST expAST : expASTS){

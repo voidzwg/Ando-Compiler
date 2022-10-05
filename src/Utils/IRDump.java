@@ -128,9 +128,17 @@ public class IRDump {
         else if(globalVar.getType() instanceof StringType){
             String strName = globalVar.getName();
             StringType stringType = (StringType) globalVar.getType();
-            //  由于fString中可能由\n等字符，所以要先预处理一下
-            String fString = calFString(stringType.getVal());
-            int len = calFStrLen(fString);
+            //  由于printf的fString中可能由\n等字符，所以要先预处理一下
+            String fString;
+            int len;
+            if(stringType.getMode() == 0) {
+                fString = calFString(stringType.getVal());
+                len = calFStrLen(fString);
+            }
+            else {
+                fString = "%d\\00";
+                len = 3;
+            }
 
             out.write(strName + " = constant ");
             out.write("[" + len + " x i8] c");
@@ -143,10 +151,10 @@ public class IRDump {
     }
 
     private static void DumpLib() throws IOException {
-        out.write("declare i32 @getint()\n");
+//        out.write("declare i32 @getint()\n");
         out.write("declare void @memset(i32*, i32, i32)\n");
         out.write("declare i32 @printf(i8*, ...)\n");
-
+        out.write("declare i32 @__isoc99_scanf(i8*, ...)\n\n");
     }
     public static void DumpModule(IRModule module) throws IOException {
         DumpLib();
@@ -348,8 +356,8 @@ public class IRDump {
             if(callInst.getType().isVoidTy()) out.write("call void ");
             else if(callInst.getType().isIntegerTy()) out.write("call i32 ");
 
-            //  特殊的printf
-            if(FuncName.equals("@printf")){
+            //  特殊的printf/scanf
+            if(FuncName.equals("@printf") || FuncName.equals("@__isoc99_scanf")){
                 out.write("(i8*, ...) ");
             }
 
@@ -358,13 +366,21 @@ public class IRDump {
 
             ArrayList<Value> values = callInst.getValues();
 
-            //  插播一段对printf的特殊报告
-            if(FuncName.equals("@printf")) {
+            //  插播一段对printf/scanf的特殊报告
+            if(FuncName.equals("@printf") || FuncName.equals("@__isoc99_scanf")) {
                 Value strVal = values.get(0);
                 values.remove(0);
                 StringType stringType = (StringType) strVal.getType();
-                String fString = calFString(stringType.getVal());
-                int len = calFStrLen(fString);
+
+                String fString;
+                int len;
+                if(stringType.getMode() == 0) {
+                    fString = calFString(stringType.getVal());
+                    len = calFStrLen(fString);
+                }
+                else {
+                    len = 3;
+                }
 
                 out.write("i8* getelementptr (");
                 out.write("[" + len + " x i8], ");

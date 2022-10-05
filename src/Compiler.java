@@ -3,6 +3,8 @@ import Frontend.AST.CompUnitAST;
 import Frontend.Parser;
 import IR.IRModule;
 import IR.Visitor;
+import Utils.ErrDump;
+import Utils.IRDump;
 import Utils.MIPSDump;
 
 import java.io.*;
@@ -21,12 +23,12 @@ public class Compiler {
         IRModule module = visitor.VisitCompUnit(compUnitAST);
 
 //        ErrDump.errDump();
-//        IRDump.DumpModule(module);
+        IRDump.DumpModule(module);
 
         //  后端
-        MCModule mcModule = new MCModule();
-        mcModule.genMips(module);
-
-        MIPSDump.DumpMCModule(mcModule);
+//        MCModule mcModule = new MCModule();
+//        mcModule.genMips(module);
+//
+//        MIPSDump.DumpMCModule(mcModule);
     }
 }
