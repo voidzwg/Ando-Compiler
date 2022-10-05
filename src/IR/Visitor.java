@@ -89,7 +89,7 @@ public class Visitor {
             int dimLen = dimList.size();
             //  这里tmpMulDim用于辅助计算是arrayValues第?个元素
             int idx = 0;
-            int[] tmpMulDim = new int[dimLen];
+             int[] tmpMulDim = new int[dimLen];
             for(int i = dimLen - 1; i >= 0; i--){
                 if(i == dimLen - 1) tmpMulDim[i] = 1;
                 else tmpMulDim[i] = dimList.get(i + 1) * tmpMulDim[i + 1];
@@ -365,7 +365,7 @@ public class Visitor {
                         CurValue = f.buildBinaryInst(OP.Sub, ConstInteger.constZero, CurValue, CurBasicBlock);
                         break;
                     case "!":
-                        CurValue = f.buildBinaryInst(OP.Eq, ConstInteger.constZero, CurValue, CurBasicBlock);
+                        CurValue = f.buildCmpInst(ConstInteger.constZero, CurValue, OP.Eq, CurBasicBlock);
                         break;
                 }
             }
@@ -1041,6 +1041,7 @@ public class Visitor {
         }
 
         visitBlockAST(funcDefAST.getBlockAST(), true);
+
     }
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){

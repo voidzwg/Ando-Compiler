@@ -260,14 +260,11 @@ public class IRDump {
             else if(op == OP.Sub){
                 out.write(inst.getName() + " = sub i32 ");
             }
-            else if(op == OP.Eq){
-                out.write(inst.getName() + " = eq i32 ");
-            }
             else if(op == OP.Mul){
                 out.write(inst.getName() + " = mul i32 ");
             }
             else if(op == OP.Div){
-                out.write(inst.getName() + " = div i32 ");
+                out.write(inst.getName() + " = sdiv i32 ");
             }
             else if(op == OP.Mod){
                 out.write(inst.getName() + " = srem i32 ");

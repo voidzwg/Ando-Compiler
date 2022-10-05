@@ -103,6 +103,10 @@ public class ErrDump {
                 if (stmtAST.getType() == 1) {
                     line = stmtAST.getLine();
                     ok = false;
+                    blockAST.rmBlockItem(len - 1);
+                }
+                if (stmtAST.getType() != 12){
+                    blockAST.addBlockItem(new BlockItemAST(new StmtAST(-1)));
                 }
             }
         }

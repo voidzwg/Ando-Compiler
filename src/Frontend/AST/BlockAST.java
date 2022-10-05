@@ -1,5 +1,7 @@
 package Frontend.AST;
 
+import jdk.nashorn.internal.ir.Block;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
@@ -22,5 +24,9 @@ public class BlockAST {
 
     public int getLine() {
         return line;
+    }
+
+    public void rmBlockItem(int index){
+        BlockItems.remove(index);
     }
 }

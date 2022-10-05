@@ -7,7 +7,6 @@ import Frontend.AST.ExpAST.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ASTDump {

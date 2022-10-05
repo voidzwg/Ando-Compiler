@@ -513,6 +513,9 @@ public class Parser {
             BlockItemAST blockItemAST = parseBlockItemAST();
             blockItemASTS.add(blockItemAST);
         }
+
+
+
         return new BlockAST(blockItemASTS, line);
     }
 

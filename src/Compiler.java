@@ -21,8 +21,8 @@ public class Compiler {
         IRModule module = visitor.VisitCompUnit(compUnitAST);
 
         ErrDump.errDump();
-//
-//        IRDump.DumpModule(module);
+
+        IRDump.DumpModule(module);
 
 //        MIPSDump.DumpMips(module);
     }
