@@ -16,6 +16,7 @@ public class RetInst extends Instruction {
         this.addOperand(value);
     }
 
+
     public Value getValue(){
         return this.getOperandList().get(0).getValue();
     }
