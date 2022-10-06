@@ -8,7 +8,7 @@ import IR.Value.Value;
 public class BinaryInst extends Instruction {
 
     public BinaryInst(OP op, Value left, Value right,BasicBlock basicBlock) {
-        super("%" + (++Value.valNumber), new IntegerType(32), op, basicBlock);
+        super("%" + (++Value.valNumber), new IntegerType(32), op, basicBlock, true);
         this.addOperand(left);
         this.addOperand(right);
     }

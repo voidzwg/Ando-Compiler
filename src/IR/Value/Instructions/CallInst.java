@@ -9,10 +9,11 @@ import java.util.ArrayList;
 public class CallInst extends Instruction {
     private ArrayList<Value> values = new ArrayList<>();
     public CallInst(BasicBlock basicBlock, Function function, ArrayList<Value> values) {
-        super("", function.getType(), OP.Call, basicBlock);
+        super("", function.getType(), OP.Call, basicBlock, false);
         this.values = values;
         if(function.getType().isIntegerTy()){
             this.setName("%" + (++Value.valNumber));
+            this.setHasName(true);
         }
         this.addOperand(function);
         for (Value value : values) {
@@ -21,9 +22,10 @@ public class CallInst extends Instruction {
     }
 
     public CallInst(BasicBlock basicBlock, Function function) {
-        super("", function.getType(), OP.Call, basicBlock);
+        super("", function.getType(), OP.Call, basicBlock, false);
         if(function.getType().isIntegerTy()){
             this.setName("%" + (++Value.valNumber));
+            this.setHasName(true);
         }
         this.addOperand(function);
     }

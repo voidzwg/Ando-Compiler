@@ -9,7 +9,7 @@ public class BrInst extends Instruction {
     private int type;
 
     public BrInst(Value judVal, BasicBlock left, BasicBlock right, BasicBlock basicBlock) {
-        super("", new VoidType(), OP.Br, basicBlock);
+        super("", new VoidType(), OP.Br, basicBlock, false);
         this.addOperand(judVal);
         this.addOperand(left);
         this.addOperand(right);
@@ -17,7 +17,7 @@ public class BrInst extends Instruction {
     }
 
     public BrInst(BasicBlock jumpBb, BasicBlock basicBlock){
-        super("", new VoidType(), OP.Br, basicBlock);
+        super("", new VoidType(), OP.Br, basicBlock, false);
         this.addOperand(jumpBb);
         this.type = 2;
     }

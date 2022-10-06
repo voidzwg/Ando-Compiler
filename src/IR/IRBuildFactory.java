@@ -98,6 +98,12 @@ public class IRBuildFactory {
         return allocInst;
     }
 
+    public ConversionInst buildConversionInst(OP op, Value src, BasicBlock bb){
+        ConversionInst conversionInst = new ConversionInst(op, src, bb);
+        bb.addInst(conversionInst);
+        return conversionInst;
+    }
+
     public GepInst getGepInst(Value target, ArrayList<Value> indexs,BasicBlock bb){
         //  索引的第一个参数不会改变类型
         ArrayList<Value> tmpIndexs = new ArrayList<>(indexs);

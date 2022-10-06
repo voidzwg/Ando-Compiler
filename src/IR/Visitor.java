@@ -57,6 +57,18 @@ public class Visitor {
     //  用来记录printf/scanf语句出现的次数，从而为fString命名
     private int strNum = 0;
 
+    //  用于cmp指令前的检查，将目标Value转换为i32
+    private Value checkType(Value value){
+        if(value.getType().isIntegerTy()){
+            IntegerType integerType = (IntegerType) value.getType();
+            int bit = integerType.getBit();
+            if(bit == 1){
+                return f.buildConversionInst(OP.Zext, value, CurBasicBlock);
+            }
+        }
+        return value;
+    }
+
     //  LVal有取出值的情况，fetchVal函数获取一个指针,返回其中的值
     private Value fetchVal(Value value){
         Type type = value.getType();
@@ -513,12 +525,25 @@ public class Visitor {
             Value TmpValue = CurValue;
             visitRelExpAST(relExpAST.getRelExpAST());
             String op = relExpAST.getOp();
+
+            //  构建cmp指令之前先检查类型
+            IntegerType tmpType = (IntegerType) TmpValue.getType();
+            IntegerType curType = (IntegerType) CurValue.getType();
+            if(tmpType.getBit() != curType.getBit()){
+                if(tmpType.getBit() == 1){
+                    TmpValue = checkType(TmpValue);
+                }
+                if(curType.getBit() == 1){
+                    CurValue = checkType(CurValue);
+                }
+            }
+
             switch (op) {
                 case "<" :{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
                     break;
                 }
-                case "<=" :{
+                case "<=":{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
                     break;
                 }
@@ -540,6 +565,18 @@ public class Visitor {
         if(eqExpAST.getType() == 2){
             Value TmpValue = CurValue;
             visitEqExpAST(eqExpAST.getEqExpAST());
+
+            //  构建Eq表达式之前先checkType
+            IntegerType tmpType = (IntegerType) TmpValue.getType();
+            IntegerType curType = (IntegerType) CurValue.getType();
+            if(tmpType.getBit() != curType.getBit()){
+                if(tmpType.getBit() == 1){
+                    TmpValue = checkType(TmpValue);
+                }
+                if(curType.getBit() == 1){
+                    CurValue = checkType(CurValue);
+                }
+            }
             if(eqExpAST.getOp().equals("==")){
                 CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Eq, CurBasicBlock);
             }
@@ -553,6 +590,7 @@ public class Visitor {
 
         if(lAndExpAST.getType() == 2){
             BasicBlock NxtLAndBlock = f.buildBasicBlock(CurFunction);
+
             CurValue = f.buildCmpInst(CurValue, ConstInteger.constZero, OP.Ne, CurBasicBlock);
             f.buildBrInst(CurValue, NxtLAndBlock, FalseBlock, CurBasicBlock);
 
@@ -1048,6 +1086,35 @@ public class Visitor {
         }
 
         visitBlockAST(funcDefAST.getBlockAST(), true);
+
+        //  visitBlock之后，我们要检查一下每个block是否只有一条跳转指令
+        //  不然sb llvm编译过不了(震怒x
+        ArrayList<BasicBlock> bbs = CurFunction.getBbs();
+        for(BasicBlock bb : bbs){
+            boolean isTerminal = false;
+            ArrayList<Instruction> insts = bb.getInsts();
+            int len = insts.size();
+            for(int i = 0; i < len; i++){
+                Instruction inst = insts.get(i);
+                if(isTerminal){
+                    bb.removeInst(inst);
+                    //  之所以这么做是因为对bb中insts的操作会同步到inst里面
+                    //  而如果我们不改变len和i的值，凭空让insts少了一条指令
+                    //  一定会引起后面i超出范围，从而get方法报错
+                    len--; i--;
+                }
+                else{
+                    if(inst instanceof RetInst || inst instanceof BrInst){
+                        isTerminal = true;
+                    }
+                }
+            }
+
+            //  如果没有ret语句，构建一个ret void
+            if(!isTerminal){
+                f.buildRetInst(CurBasicBlock);
+            }
+        }
 
     }
 
