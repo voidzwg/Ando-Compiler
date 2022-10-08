@@ -9,7 +9,7 @@ import IR.Value.Value;
 public class CmpInst extends Instruction {
 
     public CmpInst(Value left, Value right, OP op, BasicBlock basicBlock) {
-        super("%" + (++Value.valNumber), new IntegerType(1), op, basicBlock);
+        super("%" + (++Value.valNumber), new IntegerType(1), op, basicBlock, true);
         this.addOperand(left);
         this.addOperand(right);
     }

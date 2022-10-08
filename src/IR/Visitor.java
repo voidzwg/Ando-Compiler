@@ -6,6 +6,7 @@ import Frontend.AST.ExpAST.*;
 import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
+import Utils.ErrDump;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,23 @@ public class Visitor {
     private final ArrayList<GlobalVar> globalVars = new ArrayList<>();
     private BasicBlock CurBasicBlock;
     private Value CurValue;
+    private OP CurOP;
+
+    private OP StrToOP(String str){
+        switch (str) {
+            case "+":
+                return OP.Add;
+            case "-":
+                return OP.Sub;
+            case "*":
+                return OP.Mul;
+            case "/":
+                return OP.Div;
+            case "%":
+                return OP.Mod;
+        }
+        return null;
+    }
 
     //  变量数组初始化时用
     private ArrayList<Value> fillInitVal = new ArrayList<>();
@@ -36,8 +54,38 @@ public class Visitor {
     //  isFuncRParam表示当前是否为访问FuncRParam的模式
     //  之所以不用boolean是因为FuncRParam可能会有嵌套，我们通过加减来实现栈的效果
     private int isFuncRParam = 0;
-    //  用来记录printf语句出现的次数，从而为fString命名
+    //  用来记录printf/scanf语句出现的次数，从而为fString命名
     private int strNum = 0;
+
+    //  用于cmp指令前的检查，将目标Value转换为i32,被用在compType中
+    private Value checkType(Value value){
+        if(value.getType().isIntegerTy()){
+            IntegerType integerType = (IntegerType) value.getType();
+            int bit = integerType.getBit();
+            if(bit == 1){
+                return f.buildConversionInst(OP.Zext, value, CurBasicBlock);
+            }
+        }
+        return value;
+    }
+
+    //  由于compType全是在CurValue和TmpValue之间使用
+    //  因此我们就返回一个Value作为TmpValue的新值
+    //  CurValue在函数内就可以改变
+    private Value compType(Value tmp){
+        //  构建cmp指令之前先检查类型
+        //  构建cmp指令之前先检查类型
+        IntegerType tmpType = (IntegerType) tmp.getType();
+        IntegerType curType = (IntegerType) CurValue.getType();
+        if(tmpType.getBit() != curType.getBit()){
+            if(curType.getBit() == 1){
+                CurValue = checkType(CurValue);
+                return tmp;
+            }
+            else return checkType(tmp);
+        }
+        return tmp;
+    }
 
     //  LVal有取出值的情况，fetchVal函数获取一个指针,返回其中的值
     private Value fetchVal(Value value){
@@ -53,6 +101,42 @@ public class Visitor {
         else return f.buildLoadInst(value, CurBasicBlock);
     }
 
+    //  判断一个lVal是否为const
+    private void dealConstLVal(LValAST lValAST){
+        Value value = find(lValAST.getIdent());
+
+        if (value instanceof ConstInteger) {
+            ConstInteger constInteger = (ConstInteger) value;
+            CurValue = f.buildNumber(constInteger.getVal());
+        }
+        //  常量数组
+        else {
+            value = find(lValAST.getIdent() + ";const");
+            ConstArray constArray = (ConstArray) value;
+            ArrayList<Integer> dimList = constArray.getDimList();
+            ArrayList<Integer> arrayValues = constArray.getArrayValues();
+
+            int dimLen = dimList.size();
+            //  这里tmpMulDim用于辅助计算是arrayValues第?个元素
+            int idx = 0;
+             int[] tmpMulDim = new int[dimLen];
+            for(int i = dimLen - 1; i >= 0; i--){
+                if(i == dimLen - 1) tmpMulDim[i] = 1;
+                else tmpMulDim[i] = dimList.get(i + 1) * tmpMulDim[i + 1];
+            }
+
+            ArrayList<ExpAST> expASTS = lValAST.getExpASTS();
+            int expLen = expASTS.size();
+            for(int i = 0; i < expLen; i++){
+                ExpAST expAST = expASTS.get(i);
+                visitExpAST(expAST, true);
+                int num = Integer.parseInt(CurValue.getName());
+                idx += num * tmpMulDim[i];
+            }
+
+            CurValue = f.buildNumber(arrayValues.get(idx));
+        }
+    }
     //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
@@ -128,23 +212,28 @@ public class Visitor {
         symTbls.remove(len - 1);
     }
 
+    private HashMap<String, Value> getNowSymTbl(){
+        int len = symTbls.size();
+        return symTbls.get(len - 1);
+    }
+
     private void pushSymbol(String ident, Value value){
         int len = symTbls.size();
         symTbls.get(len - 1).put(ident, value);
     }
 
 
-    private ConstInteger calValue(int left, String op, int right){
+    private ConstInteger calValue(int left, OP op, int right){
         switch (op) {
-            case "+":
+            case Add:
                 return new ConstInteger(left + right);
-            case "-":
+            case Sub:
                 return new ConstInteger(left - right);
-            case "*":
+            case Mul:
                 return new ConstInteger(left * right);
-            case "/":
+            case Div:
                 return new ConstInteger(left / right);
-            case "%":
+            case Mod:
                 return new ConstInteger(left % right);
             default:
                 return null;
@@ -176,9 +265,27 @@ public class Visitor {
     //  mode为1表示令CurValue = value
     //  mode为2表示令CurValue = pointer
     //  其实就是mod为1要多加一下load/gep指令
-    private void visitLValAST(LValAST lValAST, int mode){
+    private void visitLValAST(LValAST lValAST, int mode, boolean isConst){
         Value value = find(lValAST.getIdent());
+        if(value == null){
+            ErrDump.error_c(lValAST.getLine());
+            //  遇事不决放个0
+            CurValue = f.buildNumber(0);
+            return;
+        }
+        //  对常量赋值的错误处理
+        if(mode == 2){
+            ErrDump.error_h(value, lValAST.getLine());
+        }
+
         Type valueType = value.getType();
+
+        //  特殊处理一下isConstExp
+        if(isConst) {
+            dealConstLVal(lValAST);
+            return;
+        }
+
         if(lValAST.getType() == 1){
             //  lVal为FuncRParam
             if(isFuncRParam != 0 && valueType.isArrayType()){
@@ -187,16 +294,18 @@ public class Visitor {
                 }
                 else CurValue = value;
             }
-            //  lVal为常量或变量
+            //  lVal为变量或常量
+            //  为什么这里lVal还有可能是常量呢？
+            //  是因为对于一些Exp如i*const_a，我们传进来的isConst是false
+            //  但是const_a显然我们应该直接带入值，因此这里也有可能出现常量
             else{
-                //  常量只有value
                 if (value instanceof ConstInteger) {
                     ConstInteger constInteger = (ConstInteger) value;
                     CurValue = f.buildNumber(constInteger.getVal());
                 }
                 else {
                     CurValue = value;
-                    if(mode == 1) {
+                    if (mode == 1) {
                         CurValue = fetchVal(CurValue);
                     }
                 }
@@ -252,7 +361,7 @@ public class Visitor {
                 visitNumberAST(primaryExpAST.getNumberAST());
             }
             else if(primaryExpAST.getType() == 3){
-                visitLValAST(primaryExpAST.getlValAST(), 1);
+                visitLValAST(primaryExpAST.getlValAST(), 1, false);
             }
         }
         else{
@@ -265,12 +374,13 @@ public class Visitor {
                 CurValue = f.buildNumber(numberAST.getIntConst());
             }
             else if(primaryExpAST.getType() == 3){
-                visitLValAST(primaryExpAST.getlValAST(), 1);
+                visitLValAST(primaryExpAST.getlValAST(), 1, true);
             }
         }
     }
 
     private void visitUnaryExpAST(UnaryExpAST unaryExpAST, boolean isConstExp){
+        int line = unaryExpAST.getLine();
         if(!isConstExp) {
             if (unaryExpAST.getType() == 1) {
                 visitPrimaryExpAST(unaryExpAST.getPrimaryExpAST(),false);
@@ -285,33 +395,43 @@ public class Visitor {
                         CurValue = f.buildBinaryInst(OP.Sub, ConstInteger.constZero, CurValue, CurBasicBlock);
                         break;
                     case "!":
-                        CurValue = f.buildBinaryInst(OP.Eq, ConstInteger.constZero, CurValue, CurBasicBlock);
+                        CurValue = f.buildCmpInst(ConstInteger.constZero, CurValue, OP.Eq, CurBasicBlock);
                         break;
                 }
             }
             //  Ident (FuncRParam)  !!很关键(处理数组参数)
-            else if(unaryExpAST.getType() == 3){
+            else if(unaryExpAST.getType() == 3 || unaryExpAST.getType() == 4){
                 String funcName = unaryExpAST.getIdent();
-                Function function = (Function) find(funcName);
-
-                //  开始处理FuncRParam
-                ArrayList<Value> values = new ArrayList<>();
-                ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
-                isFuncRParam++;
-                for(ExpAST expAST : expASTS){
-                    visitExpAST(expAST, false);
-                    values.add(CurValue);
+                Value findFunc = find(funcName);
+                if(findFunc == null){
+                    ErrDump.error_c(line);
+                    //  遇事不决放个0
+                    CurValue = f.buildNumber(0);
+                    return;
                 }
-                isFuncRParam--;
+                Function function = (Function) findFunc;
 
+                if(unaryExpAST.getType() == 3) {
+                    //  开始处理FuncRParam
+                    ArrayList<Value> values = new ArrayList<>();
+                    ArrayList<ExpAST> expASTS = unaryExpAST.getFuncRParamsAST().getExpASTS();
+                    ErrDump.error_d(function, expASTS.size(), line);
 
-                CurValue = f.buildCallInst(CurBasicBlock, function, values);
+                    isFuncRParam++;
+                    for (ExpAST expAST : expASTS) {
+                        visitExpAST(expAST, false);
+                        values.add(CurValue);
+                    }
+                    isFuncRParam--;
 
-            }
-            else if(unaryExpAST.getType() == 4){
-                String funcName = unaryExpAST.getIdent();
-                Function function = (Function) find(funcName);
-                CurValue = f.buildCallInst(CurBasicBlock, function);
+                    ErrDump.error_e(function, values, line);
+
+                    CurValue = f.buildCallInst(CurBasicBlock, function, values);
+                }
+                else {
+                    ErrDump.error_d(function, 0, line);
+                    CurValue = f.buildCallInst(CurBasicBlock, function);
+                }
             }
         }
         else {
@@ -321,71 +441,99 @@ public class Visitor {
             else if(unaryExpAST.getType() == 2){
                 visitUnaryExpAST(unaryExpAST.getUnaryExpAST(), true);
                 ConstInteger constInteger = (ConstInteger) CurValue;
-                CurValue = calValue(0, unaryExpAST.getUnaryOP(), constInteger.getVal());
-
+                CurValue = calValue(0, StrToOP(unaryExpAST.getUnaryOP()), constInteger.getVal());
             }
         }
     }
 
     private void visitExpAST(ExpAST expAST, boolean isConst){
+        CurValue = null;
+        CurOP = null;
         visitAddExpAST(expAST.getAddExpAST(), isConst);
     }
 
     private void visitAddExpAST(AddExpAST addExpAST, boolean isConstExp){
         if(!isConstExp) {
+            Value TmpValue = CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitMulExpAST(addExpAST.getMulExpAST(), false);
-            if (addExpAST.getType() != 1) {
-                Value TmpValue = CurValue;
-                visitAddExpAST(addExpAST.getAddExpAST(), false);
-                if (addExpAST.getOp().equals("+")) {
-                    CurValue = f.buildBinaryInst(OP.Add, TmpValue, CurValue, CurBasicBlock);
-                } else if (addExpAST.getOp().equals("-")) {
-                    CurValue = f.buildBinaryInst(OP.Sub, TmpValue, CurValue, CurBasicBlock);
+            if(TmpValue != null){
+                if(!TmpValue.getType().isPointerType() && !CurValue.getType().isPointerType()) {
+                    //  构建运算之前先compType
+                    TmpValue = compType(TmpValue);
+                    CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
                 }
+                else {
+                    Value target, index;
+                    if(TmpValue.getType().isPointerType()){
+                        target = TmpValue;
+                        index = CurValue;
+                    }
+                    else{
+                        target = CurValue;
+                        index = TmpValue;
+                    }
+                    ArrayList<Value> indexs = new ArrayList<>();
+                    indexs.add(index);
+
+                    CurValue = f.buildGepInst(target, indexs, CurBasicBlock);
+                }
+
+            }
+            if (addExpAST.getType() != 1) {
+                CurOP = StrToOP(addExpAST.getOp());
+                visitAddExpAST(addExpAST.getAddExpAST(), false);
             }
         }
         else{
+            ConstInteger left = (ConstInteger) CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitMulExpAST(addExpAST.getMulExpAST(), true);
+            ConstInteger right = (ConstInteger) CurValue;
+
+            if(left != null){
+                CurValue = calValue(left.getVal(), TmpOP, right.getVal());
+            }
             if(addExpAST.getType() == 2){
-                ConstInteger left = (ConstInteger) CurValue;
+                CurOP = StrToOP(addExpAST.getOp());
                 visitAddExpAST(addExpAST.getAddExpAST(), true);
-                ConstInteger right = (ConstInteger) CurValue;
-                CurValue = calValue(left.getVal(), addExpAST.getOp(), right.getVal());
             }
         }
     }
 
     private void visitMulExpAST(MulExpAST mulExpAST, boolean isConstExp){
         if(!isConstExp) {
+            Value TmpValue = CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitUnaryExpAST(mulExpAST.getUnaryExpAST(), false);
-
-            if (mulExpAST.getType() != 1) {
-                Value TmpValue = CurValue;
+            if(TmpValue != null){
+                TmpValue = compType(TmpValue);
+                CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
+            }
+            if (mulExpAST.getType() == 2) {
+                CurOP = StrToOP(mulExpAST.getOp());
                 visitMulExpAST(mulExpAST.getMulExpAST(), false);
-                switch (mulExpAST.getOp()) {
-                    case "*" :{
-                        CurValue = f.buildBinaryInst(OP.Mul, TmpValue, CurValue, CurBasicBlock);
-                        break;
-                    }
-                    case "/" :{
-                        CurValue = f.buildBinaryInst(OP.Div, TmpValue, CurValue, CurBasicBlock);
-                        break;
-                    }
-                    case "%" :{
-                        CurValue = f.buildBinaryInst(OP.Mod, TmpValue, CurValue, CurBasicBlock);
-                        break;
-                    }
-                }
             }
         }
         else{
+            ConstInteger left = (ConstInteger) CurValue;
+            OP TmpOP = CurOP;
+            CurValue = null;
+            CurOP = null;
             visitUnaryExpAST(mulExpAST.getUnaryExpAST(), true);
+            ConstInteger right = (ConstInteger) CurValue;
+            if(left != null){
+                CurValue = calValue(left.getVal(), TmpOP, right.getVal());
+            }
             if(mulExpAST.getType() == 2) {
-                ConstInteger left = (ConstInteger) CurValue;
+                CurOP = StrToOP(mulExpAST.getOp());
                 visitMulExpAST(mulExpAST.getMulExpAST(), true);
-                ConstInteger right = (ConstInteger) CurValue;
-
-                CurValue = calValue(left.getVal(), mulExpAST.getOp(), right.getVal());
             }
         }
     }
@@ -409,17 +557,22 @@ public class Visitor {
     }
 
     private void visitRelExpAST(RelExpAST relExpAST){
+        CurValue = null;
+        CurOP = null;
         visitAddExpAST(relExpAST.getAddExpAST(), false);
         if(relExpAST.getType() == 2){
             Value TmpValue = CurValue;
             visitRelExpAST(relExpAST.getRelExpAST());
             String op = relExpAST.getOp();
+
+            TmpValue = compType(TmpValue);
+
             switch (op) {
                 case "<" :{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
                     break;
                 }
-                case "<=" :{
+                case "<=":{
                     CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
                     break;
                 }
@@ -441,6 +594,9 @@ public class Visitor {
         if(eqExpAST.getType() == 2){
             Value TmpValue = CurValue;
             visitEqExpAST(eqExpAST.getEqExpAST());
+
+            //  构建Eq表达式之前先checkType
+            TmpValue = compType(TmpValue);
             if(eqExpAST.getOp().equals("==")){
                 CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Eq, CurBasicBlock);
             }
@@ -454,6 +610,7 @@ public class Visitor {
 
         if(lAndExpAST.getType() == 2){
             BasicBlock NxtLAndBlock = f.buildBasicBlock(CurFunction);
+
             CurValue = f.buildCmpInst(CurValue, ConstInteger.constZero, OP.Ne, CurBasicBlock);
             f.buildBrInst(CurValue, NxtLAndBlock, FalseBlock, CurBasicBlock);
 
@@ -464,6 +621,8 @@ public class Visitor {
 
 
     private void visitCondAST(CondAST condAST, BasicBlock TrueBlock, BasicBlock FalseBlock){
+        CurValue = null;
+        CurOP = null;
         visitLOrExpAST(condAST.getLOrExpAST(), TrueBlock, FalseBlock);
     }
 
@@ -479,7 +638,7 @@ public class Visitor {
             //  此时的CurVal为Exp的结果
             Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getLValAST(), 2);
+            visitLValAST(stmtAST.getLValAST(), 2, false);
             f.buildStoreInst(CurBasicBlock, value, CurValue);
         }
         //  Block
@@ -560,27 +719,39 @@ public class Visitor {
         }
         //  continue;
         else if(stmtAST.getType() == 8){
+            if(whileEntryBLocks.size() == 0) return;
+
             BasicBlock whileEntryBlock = getWhileEntry();
             f.buildBrInst(whileEntryBlock, CurBasicBlock);
             CurBasicBlock = f.buildBasicBlock(CurFunction);
         }
         //  break;
         else if(stmtAST.getType() == 9){
+            if(whileOutBlocks.size() == 0) return;
+
             BasicBlock whileOutBlock = getWhileOut();
             f.buildBrInst(whileOutBlock, CurBasicBlock);
             CurBasicBlock = f.buildBasicBlock(CurFunction);
         }
         //  LVal = getint();
         else if(stmtAST.getType() == 10){
-            Function function = new Function("@getint", new IntegerType(32));
-            CurValue = f.buildCallInst(CurBasicBlock, function);
+            Function scanfFunc = new Function("@__isoc99_scanf", new IntegerType(32));
+            ArrayList<Value> rParams = new ArrayList<>();
+            String fString = "%d\\00";
+            strNum++;
+            String strName = "@.str." + strNum;
+            Value fStrValue = new Value(strName, new StringType(fString, 1));
+            f.buildGlobalVar(strName, fStrValue.getType(),false, null, globalVars);
+            rParams.add(fStrValue);
 
-            Value value = CurValue;
             //  LVal获得变量的Value
-            visitLValAST(stmtAST.getLValAST(), 2);
+            visitLValAST(stmtAST.getLValAST(), 2, false);
+            rParams.add(CurValue);
             //  此时CurValue是LVal
-            f.buildStoreInst(CurBasicBlock, value, CurValue);
+
+            f.buildCallInst(CurBasicBlock, scanfFunc, rParams);
         }
+        //  printf
         else if(stmtAST.getType() == 11){
             Function printfFunc = new Function("@printf", new IntegerType(32));
             ArrayList<Value> rParams = new ArrayList<>();
@@ -590,7 +761,7 @@ public class Visitor {
             String strName = "@.str." + strNum;
             //  这里新建了一个StringType，属于是为了完成printf而自己新建的
             //  虽然不破坏整体的架构，但总感觉有点别扭(不过能跑就行x
-            Value fStrValue = new Value(strName, new StringType(fString));
+            Value fStrValue = new Value(strName, new StringType(fString, 0));
             f.buildGlobalVar(strName, fStrValue.getType(),false, null, globalVars);
             rParams.add(fStrValue);
             for(ExpAST expAST : expASTS){
@@ -599,30 +770,35 @@ public class Visitor {
             }
             f.buildCallInst(CurBasicBlock, printfFunc, rParams);
         }
+        //  return ;
         else if(stmtAST.getType() == 12){
             f.buildRetInst(CurBasicBlock);
         }
     }
 
     private void visitConstExpAST(ConstExpAST constExpAST){
+        CurValue = null;
+        CurOP = null;
         visitAddExpAST(constExpAST.getAddExpAST(),true);
     }
 
     private void visitConstInitValAST(ConstInitValAST constInitValAST){
         if(constInitValAST.getType() == 1) {
             visitConstExpAST(constInitValAST.getConstExpAST());
+            fillInitVal.add(CurValue);
         }
         else if(constInitValAST.getType() == 2){
             ArrayList<ConstInitValAST> constInitValASTS = constInitValAST.getConstInitValASTS();
             for(ConstInitValAST constInitValAST1 : constInitValASTS){
                 visitConstInitValAST(constInitValAST1);
-                fillInitVal.add(CurValue);
             }
         }
     }
 
     private void visitConstDefAST(ConstDefAST constDefAST, boolean isGlobal){
         String rawIdent = constDefAST.getIdent();
+        ErrDump.error_b(rawIdent, getNowSymTbl(), constDefAST.getLen());
+
         int cnt = addSymCnt(rawIdent);
         String ident = "@" + rawIdent + "_" + cnt;
 
@@ -647,16 +823,26 @@ public class Visitor {
 
             //  ConstDef一定有InitVal
             fillInitVal = new ArrayList<>();
-            if(isGlobal){
-                //  构建InitValS
-                visitConstInitValAST(constDefAST.getConstInitValAST());
+            //  构建InitValS
 
+            //  ConstArray用于ConstExp查值
+            visitConstInitValAST(constDefAST.getConstInitValAST());
+            ArrayList<Integer> arrayValue = new ArrayList<>();
+            for(Value value : fillInitVal){
+                arrayValue.add(Integer.parseInt(value.getName()));
+            }
+
+            ConstArray constArray = new ConstArray(ident, dimList, arrayValue);
+            //  添加;const来保证不会与ident重合，同时存下数组的初始值一遍直接解出初始值
+            pushSymbol(rawIdent + ";const", constArray);
+
+            //  buildArray用于constArray[某变量i]时构建gep等指令
+            if(isGlobal){
                 GlobalVar globalVar = f.buildGlobalVar(ident, dimList, fillInitVal, true, globalVars);
                 pushSymbol(rawIdent, globalVar);
             }
-            else {
+            else{
                 AllocInst allocInst = f.buildArray(ident, dimList, CurBasicBlock, true);
-
                 ArrayList<Value> indexs = new ArrayList<>();
                 int dim = dimList.size();
                 for (int i = 0; i < dim + 1; i++) {
@@ -672,22 +858,25 @@ public class Visitor {
                 rParams.add(new ConstInteger(4 * totDim));
                 f.buildCallInst(CurBasicBlock, memsetFunc, rParams);
 
-                visitConstInitValAST(constDefAST.getConstInitValAST());
-
                 //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
-                GepInst itPointer = pointer;
-                for (int i = 0; i < fillInitVal.size(); i++) {
-                    //  重新构建gep所需的indexs
-                    ArrayList<Value> itIndexs = new ArrayList<>();
-                    itIndexs.add(new ConstInteger(i));
-                    if (i != 0) {
-                        itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
-                    }
-
-                    f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
-                }
+                storeArrayInit(pointer);
                 pushSymbol(rawIdent, allocInst);
             }
+
+        }
+    }
+
+    private void storeArrayInit(GepInst pointer) {
+        GepInst itPointer = pointer;
+        for (int i = 0; i < fillInitVal.size(); i++) {
+            //  重新构建gep所需的indexs
+            ArrayList<Value> itIndexs = new ArrayList<>();
+            itIndexs.add(new ConstInteger(i));
+            if (i != 0) {
+                itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
+            }
+
+            f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
         }
     }
 
@@ -713,8 +902,8 @@ public class Visitor {
     private void visitVarDefAST(VarDefAST varDefAST, boolean isGlobal){
         //  这里rawIdent指的是未加@，cnt之类的ident(纯用户命名的ident)
         String rawIdent = varDefAST.getIdent();
+        ErrDump.error_b(rawIdent, getNowSymTbl(), varDefAST.getLine());
         int varDefType = varDefAST.getType();
-
         int cnt = addSymCnt(rawIdent);
         String ident = "@" + rawIdent + "_" + cnt;
 
@@ -722,7 +911,8 @@ public class Visitor {
             if(varDefType == 1 || varDefType == 2) {
                 if (varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
                 else CurValue = ConstInteger.constZero;
-                f.buildGlobalVar(ident, new IntegerType(32),false, CurValue, globalVars);
+                f.buildGlobalVar(ident, new PointerType(new IntegerType(32)),false, CurValue, globalVars);
+                CurValue = f.getAllocInst(ident, new IntegerType(32), CurBasicBlock);
                 pushSymbol(rawIdent, CurValue);
             }
             //  全局数组
@@ -805,17 +995,7 @@ public class Visitor {
                     visitInitValAST(varDefAST.getInitValAST(), false);
 
                     //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
-                    GepInst itPointer = pointer;
-                    for(int i = 0; i < fillInitVal.size(); i++){
-                        //  重新构建gep所需的indexs
-                        ArrayList<Value> itIndexs = new ArrayList<>();
-                        itIndexs.add(new ConstInteger(i));
-                        if(i != 0){
-                            itPointer = f.buildGepInst(pointer, itIndexs, CurBasicBlock);
-                        }
-
-                        f.buildStoreInst(CurBasicBlock, fillInitVal.get(i), itPointer);
-                    }
+                    storeArrayInit(pointer);
                 }
             }
 
@@ -857,6 +1037,9 @@ public class Visitor {
 
                 AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
                 f.buildStoreInst(CurBasicBlock, argument, allocInst);
+
+
+
                 pushSymbol(identArg, allocInst);
             }
         }
@@ -871,7 +1054,10 @@ public class Visitor {
 
     private void visitFuncDefAST(FuncDefAST funcDefAST){
         String ident = funcDefAST.getIdent();
+        ErrDump.error_b(ident, getNowSymTbl(), funcDefAST.getLine());
+
         String type = funcDefAST.getFuncType();
+        int line = funcDefAST.getLine();
 
         CurFunction = f.buildFunction("@" + ident, type, module);
         CurBasicBlock = f.buildBasicBlock(CurFunction);
@@ -888,6 +1074,8 @@ public class Visitor {
             for(FuncFParamAST funcFParamAST : funcFParamASTS){
                 //  平平无奇的起名环节
                 String rawIdentArg = funcFParamAST.getIdent();
+                ErrDump.error_b(rawIdentArg, tmpHashMap, line);
+
                 String typeArg = funcFParamAST.getbType();
 
                 int cnt = addSymCnt(rawIdentArg);
@@ -916,6 +1104,36 @@ public class Visitor {
         }
 
         visitBlockAST(funcDefAST.getBlockAST(), true);
+
+        //  visitBlock之后，我们要检查一下每个block是否只有一条跳转指令
+        //  不然sb llvm编译过不了(震怒x
+        ArrayList<BasicBlock> bbs = CurFunction.getBbs();
+        for(BasicBlock bb : bbs){
+            boolean isTerminal = false;
+            ArrayList<Instruction> insts = bb.getInsts();
+            int len = insts.size();
+            for(int i = 0; i < len; i++){
+                Instruction inst = insts.get(i);
+                if(isTerminal){
+                    bb.removeInst(inst);
+                    //  之所以这么做是因为对bb中insts的操作会同步到inst里面
+                    //  而如果我们不改变len和i的值，凭空让insts少了一条指令
+                    //  一定会引起后面i超出范围，从而get方法报错
+                    len--; i--;
+                }
+                else{
+                    if(inst instanceof RetInst || inst instanceof BrInst){
+                        isTerminal = true;
+                    }
+                }
+            }
+
+            //  如果没有ret语句，构建一个ret void
+            if(!isTerminal){
+                f.buildRetInst(CurBasicBlock);
+            }
+        }
+
     }
 
     public IRModule VisitCompUnit(CompUnitAST compUnitAST){

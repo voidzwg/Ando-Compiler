@@ -13,25 +13,26 @@ public class StmtAST extends BaseAST{
     private StmtAST elseStmtAST;
     private StmtAST loopStmt;
     private CondAST condAST;
-    private BreakAST breakAST;
-    private ContinueAST continueAST;
     //  对于[Exp]表示是否有Exp
     private boolean hasExp;
     private String fString;
     private ArrayList<ExpAST> expASTS;
     private int type;
+    private int line;
 
     // return Exp ;
-    public StmtAST(ExpAST expAST){
+    public StmtAST(ExpAST expAST, int line){
         this.expAST = expAST;
         this.type = 1;
+        this.line = line;
     }
 
     //  LVal = Exp
-    public StmtAST(LValAST lValAST, ExpAST expAST){
+    public StmtAST(LValAST lValAST, ExpAST expAST, int line){
         this.lValAST = lValAST;
         this.expAST = expAST;
         this.type = 2;
+        this.line = line;
     }
 
     //  Block
@@ -69,19 +70,18 @@ public class StmtAST extends BaseAST{
     }
 
     public StmtAST(ContinueAST continueAST) {
-        this.continueAST = continueAST;
         this.type = 8;
     }
 
     public StmtAST(BreakAST breakAST) {
-        this.breakAST = breakAST;
         this.type = 9;
     }
 
     //  LVal = getint();
-    public StmtAST(LValAST lValAST){
+    public StmtAST(LValAST lValAST, int line){
         this.lValAST = lValAST;
         this.type = 10;
+        this.line = line;
     }
 
     public StmtAST(String fString, ArrayList<ExpAST> expASTS){
@@ -90,8 +90,10 @@ public class StmtAST extends BaseAST{
         this.type = 11;
     }
 
-    public StmtAST(){
+    //  return ;
+    public StmtAST(int line){
         this.type = 12;
+        this.line = line;
     }
 
     public String getfString() {
@@ -134,5 +136,9 @@ public class StmtAST extends BaseAST{
 
     public int getType() {
         return type;
+    }
+
+    public int getLine() {
+        return line;
     }
 }

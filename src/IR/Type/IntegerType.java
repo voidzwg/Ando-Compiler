@@ -12,6 +12,10 @@ public class IntegerType extends Type{
         return true;
     }
 
+    public int getBit() {
+        return bit;
+    }
+
     @Override
     public String toString(){
         return "i" + bit;

@@ -1,9 +1,11 @@
 package Utils;
 
-import IR.IRModule;
-import IR.Value.*;
-import IR.Value.Instructions.BinaryInst;
-import IR.Value.Instructions.RetInst;
+import Backend.MCModule;
+import Backend.MachineValue.MCBlock;
+import Backend.MachineValue.MCFunction;
+import Backend.MachineValue.MachineInst.MCInst;
+import Backend.MachineValue.MachineInst.MCLi;
+import Backend.MachineValue.MachineInst.MCReturn;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -21,43 +23,45 @@ public class MIPSDump {
         }
     }
 
+    private static void DumpMCInst(MCInst mcInst) throws IOException {
+        if(mcInst instanceof MCLi){
+            MCLi mcLi = (MCLi) mcInst;
+            int imm = mcLi.getImm();
 
-    public static void DumpMips(IRModule module) throws IOException {
+            out.write("\tli a0 " + imm + "\n");
+        }
+        else if(mcInst instanceof MCReturn){
+            out.write("\tret\n");
+        }
+    }
 
+    private static void DumpMCBlock(MCBlock mcBlock) throws IOException {
+        ArrayList<MCInst> mcInsts = mcBlock.getMachineInsts();
+        for(MCInst mcInst : mcInsts){
+            DumpMCInst(mcInst);
+        }
+
+    }
+
+    private static void DumpMCFunction(MCFunction mcFunction) throws IOException {
+        ArrayList<MCBlock> mcBlocks = mcFunction.getMcBlocks();
+        String name = mcFunction.getName();
+        out.write(name + ":\n");
+
+        for(MCBlock mcBlock : mcBlocks){
+            DumpMCBlock(mcBlock);
+        }
+    }
+
+    public static void DumpMCModule(MCModule mcModule) throws IOException {
         out.write("\t.text\n");
         out.write("\t.globl main\n");
 
-        ArrayList<Function> functions = module.getFunctions();
-        for(Function function : functions){
-            ArrayList<BasicBlock> basicBlocks = function.getBbs();
-            for(BasicBlock basicBlock : basicBlocks){
-                DumpBasicBlock(basicBlock);
-            }
+        ArrayList<MCFunction> mcFunctions = mcModule.getMcFunctions();
+        for(MCFunction mcFunction : mcFunctions){
+            DumpMCFunction(mcFunction);
         }
 
         out.close();
-    }
-
-    private static void DumpBasicBlock(BasicBlock basicBlock) throws IOException {
-        String bbName = basicBlock.getName();
-        if(bbName.equals("block1")) bbName = "main";
-
-        out.write(bbName + ":\n");
-
-        ArrayList<Instruction> insts = basicBlock.getInsts();
-        for(Instruction inst : insts){
-            DumpInst(inst);
-        }
-    }
-
-    private static void DumpInst(Instruction inst) throws IOException {
-        if(inst instanceof RetInst){
-            Value value = ((RetInst) inst).getValue();
-
-            out.write("\t");
-            out.write("li a0, " + value.getName() + "\n");
-            out.write("\t");
-            out.write("ret\n");
-        }
     }
 }

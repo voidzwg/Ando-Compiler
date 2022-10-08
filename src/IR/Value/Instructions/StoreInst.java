@@ -9,7 +9,7 @@ import IR.Value.Value;
 public class StoreInst extends Instruction {
 
     public StoreInst(BasicBlock basicBlock, Value value, Value pointer) {
-        super("store", new IntegerType(32), OP.Store, basicBlock);
+        super("", new IntegerType(32), OP.Store, basicBlock, false);
         this.addOperand(value);
         this.addOperand(pointer);
     }

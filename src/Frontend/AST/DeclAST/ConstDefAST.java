@@ -8,19 +8,22 @@ public class ConstDefAST {
     String ident;
     ArrayList<ConstExpAST> constExpASTS;
     ConstInitValAST constInitValAST;
+    private int len;
     private int type;
 
-    public ConstDefAST(String ident, ConstInitValAST constInitValAST) {
+    public ConstDefAST(String ident, ConstInitValAST constInitValAST, int len) {
         this.ident = ident;
         this.constInitValAST = constInitValAST;
         this.type = 1;
+        this.len = len;
     }
 
-    public ConstDefAST(String ident, ArrayList<ConstExpAST> constExpASTS ,ConstInitValAST constInitValAST) {
+    public ConstDefAST(String ident, ArrayList<ConstExpAST> constExpASTS ,ConstInitValAST constInitValAST, int len) {
         this.ident = ident;
         this.constInitValAST = constInitValAST;
         this.constExpASTS = constExpASTS;
         this.type = 2;
+        this.len = len;
     }
 
     public String getIdent() {
@@ -37,5 +40,9 @@ public class ConstDefAST {
 
     public int getType() {
         return type;
+    }
+
+    public int getLen() {
+        return len;
     }
 }

@@ -19,7 +19,7 @@ public class GepInst extends Instruction {
     ArrayList<Value> indexs;
 
     public GepInst(ArrayList<Value> indexs, Value target, Type type, BasicBlock basicBlock) {
-        super("%" + (++Value.valNumber), type, OP.GEP, basicBlock);
+        super("%" + (++Value.valNumber), type, OP.GEP, basicBlock, true);
         this.indexs = indexs;
         this.target = target;
     }

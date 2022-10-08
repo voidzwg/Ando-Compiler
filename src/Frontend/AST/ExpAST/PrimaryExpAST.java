@@ -8,6 +8,7 @@ public class PrimaryExpAST {
     private LValAST lValAST;
     //  type表示该PrimaryExpAST的类型，1是expAST，2是numberAST
     private final int type;
+    private int line;
 
     public PrimaryExpAST(ExpAST expAST) {
         this.expAST = expAST;
@@ -22,6 +23,7 @@ public class PrimaryExpAST {
     public PrimaryExpAST(LValAST lValAST){
         this.lValAST = lValAST;
         this.type = 3;
+        this.line = lValAST.getLine();
     }
 
     public ExpAST getExpAST() {
@@ -36,5 +38,9 @@ public class PrimaryExpAST {
 
     public int getType() {
         return type;
+    }
+
+    public int getLine() {
+        return line;
     }
 }

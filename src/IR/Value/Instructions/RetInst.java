@@ -7,14 +7,11 @@ import IR.Value.Value;
 
 public class RetInst extends Instruction {
 
-    public RetInst(BasicBlock block){
-        super("", new VoidType(), OP.Ret, block);
-    }
-
     public RetInst(BasicBlock block, Value value){
-        super("", new VoidType(), OP.Ret, block);
+        super("", new VoidType(), OP.Ret, block, false);
         this.addOperand(value);
     }
+
 
     public Value getValue(){
         return this.getOperandList().get(0).getValue();

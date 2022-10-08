@@ -1,5 +1,6 @@
 package IR.Value;
 
+import IR.Type.IntegerType;
 import IR.Type.LabelType;
 
 import java.util.ArrayList;
@@ -12,13 +13,13 @@ public class BasicBlock extends Value{
     public static int blockNum = 0;
 
     public BasicBlock(){
-        super("block" + String.valueOf(++blockNum), new LabelType());
+        super("block" + ++blockNum, new LabelType());
         this.insts = new ArrayList<>();
         this.isTerminal = false;
     }
 
     public BasicBlock(Function function){
-        super("block" + String.valueOf(++blockNum), new LabelType());
+        super("block" + ++blockNum, new LabelType());
         this.insts = new ArrayList<>();
         this.parentFunc = function;
         this.isTerminal = false;
@@ -30,11 +31,6 @@ public class BasicBlock extends Value{
     }
 
 
-    //  Getters and Setters
-    public void setParentFunc(Function parentFunc) {
-        this.parentFunc = parentFunc;
-    }
-
     public ArrayList<Instruction> getInsts() {
         return insts;
     }
@@ -43,5 +39,7 @@ public class BasicBlock extends Value{
         isTerminal = terminal;
     }
 
-
+    public void removeInst(Instruction instruction){
+        insts.remove(instruction);
+    }
 }

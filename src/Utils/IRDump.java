@@ -116,6 +116,7 @@ public class IRDump {
             //  输出初始值
             ArrayList<Value> values = globalVar.getValues();
             if(values.size() == 0){
+                out.write(arrayType.toString().replace("*", ""));
                 out.write(" zeroinitializer\n");
             }
             else {
@@ -128,9 +129,17 @@ public class IRDump {
         else if(globalVar.getType() instanceof StringType){
             String strName = globalVar.getName();
             StringType stringType = (StringType) globalVar.getType();
-            //  由于fString中可能由\n等字符，所以要先预处理一下
-            String fString = calFString(stringType.getVal());
-            int len = calFStrLen(fString);
+            //  由于printf的fString中可能由\n等字符，所以要先预处理一下
+            String fString;
+            int len;
+            if(stringType.getMode() == 0) {
+                fString = calFString(stringType.getVal());
+                len = calFStrLen(fString);
+            }
+            else {
+                fString = "%d\\00";
+                len = 3;
+            }
 
             out.write(strName + " = constant ");
             out.write("[" + len + " x i8] c");
@@ -143,11 +152,32 @@ public class IRDump {
     }
 
     private static void DumpLib() throws IOException {
-        out.write("declare i32 @getint(...)\n");
         out.write("declare void @memset(i32*, i32, i32)\n");
         out.write("declare i32 @printf(i8*, ...)\n");
-
+        out.write("declare i32 @__isoc99_scanf(i8*, ...)\n\n");
     }
+
+    //  Name BasicBlock, Inst to let sb llvm run my damn program.
+    private static void ReNameFunc(Function function){
+        nowNum = 0;
+
+        ArrayList<Argument> args = function.getArgs();
+        for(Argument arg : args){
+            arg.setName("%" + nowNum++);
+        }
+
+        ArrayList<BasicBlock> basicBlocks = function.getBbs();
+        for (BasicBlock basicBlock : basicBlocks) {
+            basicBlock.setName("%" + nowNum++);
+            ArrayList<Instruction> instructions = basicBlock.getInsts();
+            for (Instruction inst : instructions) {
+                if (inst.hasName()) {
+                    inst.setName("%" + nowNum++);
+                }
+            }
+        }
+    }
+
     public static void DumpModule(IRModule module) throws IOException {
         DumpLib();
         //  DumpGlobalVars
@@ -162,7 +192,7 @@ public class IRDump {
         //  DumpFunctions
         ArrayList<Function> functions = module.getFunctions();
         for (Function function : functions) {
-            nowNum = 0;
+            ReNameFunc(function);
             DumpFunction(function);
             out.write("\n");
         }
@@ -192,32 +222,17 @@ public class IRDump {
 
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
 
-        int len = basicBlocks.size();
-        ArrayList<Boolean> vis = new ArrayList<>();
-        for(int i = 0; i < len; i++){
-            vis.add(false);
-        }
-
-        int tmpLen = len;
-        while (tmpLen != 0) {
-            for (int i = 0; i < len; i++) {
-                if(!vis.get(i)) {
-                    BasicBlock basicBlock = basicBlocks.get(i);
-                    String judName = getFirstName(basicBlock);
-                    if (judName.equals("") || judName.equals("%" + nowNum)) {
-                        vis.set(i, true);
-                        DumpBasicBlock(basicBlock);
-                    }
-                }
-            }
-            tmpLen--;
+        for(BasicBlock basicBlock : basicBlocks){
+            DumpBasicBlock(basicBlock);
         }
 
         out.write("}\n");
     }
 
     private static void DumpBasicBlock(BasicBlock bb) throws IOException {
-        out.write(bb.getName() + ":\n");
+        String bbName = bb.getName();
+        bbName = bbName.replace("%", "");
+        out.write(bbName + ":\n");
         ArrayList<Instruction> insts = bb.getInsts();
         for(Instruction inst : insts){
             out.write("\t");
@@ -226,11 +241,6 @@ public class IRDump {
     }
 
     private static void DumpInstruction(Instruction inst) throws IOException {
-        String instName = inst.getName();
-        if(instName.length() != 0 && instName.charAt(0) == '%'){
-            nowNum++;
-        }
-
         if(inst instanceof RetInst){
             RetInst retInst = (RetInst) inst;
             out.write("ret ");
@@ -248,6 +258,15 @@ public class IRDump {
             out.write("\n");
         }
 
+        else if(inst instanceof ConversionInst){
+            ConversionInst conversionInst = (ConversionInst) inst;
+            if(conversionInst.getOp() == OP.Zext){
+                out.write(inst.getName() + " = zext ");
+                out.write(conversionInst.getValue().toString());
+                out.write(" to i32\n");
+            }
+        }
+
         else if(inst instanceof BinaryInst){
             BinaryInst binaryInst = (BinaryInst) inst;
             Value left = binaryInst.getLeftVal();
@@ -260,14 +279,11 @@ public class IRDump {
             else if(op == OP.Sub){
                 out.write(inst.getName() + " = sub i32 ");
             }
-            else if(op == OP.Eq){
-                out.write(inst.getName() + " = eq i32 ");
-            }
             else if(op == OP.Mul){
                 out.write(inst.getName() + " = mul i32 ");
             }
             else if(op == OP.Div){
-                out.write(inst.getName() + " = div i32 ");
+                out.write(inst.getName() + " = sdiv i32 ");
             }
             else if(op == OP.Mod){
                 out.write(inst.getName() + " = srem i32 ");
@@ -331,12 +347,12 @@ public class IRDump {
             if(brInst.getJumType() == 1) {
                 out.write("br i1 ");
                 out.write(brInst.getJudVal().getName() + ", ");
-                out.write("label %" + brInst.getLabelLeft().getName() + ", ");
-                out.write("label %" + brInst.getLabelRight().getName() + "\n");
+                out.write("label " + brInst.getLabelLeft().getName() + ", ");
+                out.write("label " + brInst.getLabelRight().getName() + "\n");
             }
             //  直接跳转
             else {
-                out.write("br label %");
+                out.write("br label ");
                 out.write(brInst.getLabelJump().getName() + "\n");
             }
         }
@@ -351,8 +367,8 @@ public class IRDump {
             if(callInst.getType().isVoidTy()) out.write("call void ");
             else if(callInst.getType().isIntegerTy()) out.write("call i32 ");
 
-            //  特殊的printf
-            if(FuncName.equals("@printf")){
+            //  特殊的printf/scanf
+            if(FuncName.equals("@printf") || FuncName.equals("@__isoc99_scanf")){
                 out.write("(i8*, ...) ");
             }
 
@@ -361,13 +377,21 @@ public class IRDump {
 
             ArrayList<Value> values = callInst.getValues();
 
-            //  插播一段对printf的特殊报告
-            if(FuncName.equals("@printf")) {
+            //  插播一段对printf/scanf的特殊报告
+            if(FuncName.equals("@printf") || FuncName.equals("@__isoc99_scanf")) {
                 Value strVal = values.get(0);
                 values.remove(0);
                 StringType stringType = (StringType) strVal.getType();
-                String fString = calFString(stringType.getVal());
-                int len = calFStrLen(fString);
+
+                String fString;
+                int len;
+                if(stringType.getMode() == 0) {
+                    fString = calFString(stringType.getVal());
+                    len = calFStrLen(fString);
+                }
+                else {
+                    len = 3;
+                }
 
                 out.write("i8* getelementptr (");
                 out.write("[" + len + " x i8], ");

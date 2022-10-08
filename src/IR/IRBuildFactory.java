@@ -3,9 +3,6 @@ package IR;
 import IR.Type.*;
 import IR.Value.*;
 import IR.Value.Instructions.*;
-import com.sun.org.apache.xpath.internal.Arg;
-
-import java.awt.*;
 import java.util.ArrayList;
 
 //  PointerType 指 i32*
@@ -28,14 +25,6 @@ public class IRBuildFactory {
         int eleDim = tmpDimList.get(0);
         tmpDimList.remove(0);
         return new ArrayType(buildArrayType(tmpDimList), eleDim);
-    }
-
-    private Type calLowerType(ArrayList<Integer> dimList){
-        if(dimList.size() == 1){
-            return new PointerType(new IntegerType(32));
-        }
-        dimList.remove(0);
-        return calLowerType(dimList);
     }
 
     //  Utils方法，用于计算GepInst的Type，保证target一定为一个指针
@@ -99,10 +88,20 @@ public class IRBuildFactory {
         return allocInst;
     }
 
+    public AllocInst getAllocInst(String name, Type type, BasicBlock bb){
+        return new AllocInst(name, new PointerType(type), bb, false);
+    }
+
     public AllocInst buildAllocInst(String name, Type type,BasicBlock bb, boolean isConst){
-        AllocInst allocInst = new AllocInst(name, new PointerType(type), bb, isConst);
+        AllocInst allocInst = new AllocInst(new PointerType(type), bb, isConst);
         bb.addInst(allocInst);
         return allocInst;
+    }
+
+    public ConversionInst buildConversionInst(OP op, Value src, BasicBlock bb){
+        ConversionInst conversionInst = new ConversionInst(op, src, bb);
+        bb.addInst(conversionInst);
+        return conversionInst;
     }
 
     public GepInst getGepInst(Value target, ArrayList<Value> indexs,BasicBlock bb){
