@@ -17,7 +17,7 @@ public class AllocInst extends Instruction {
 
     //  为全局变量的alloc需要知道name，我们不能用num来命名了
     public AllocInst(String name, Type type, BasicBlock basicBlock, boolean isConst){
-        super(name, type, OP.Alloca, basicBlock, false);
+        super(name, type, OP.Alloca, basicBlock, true);
         this.isConst = isConst;
     }
 

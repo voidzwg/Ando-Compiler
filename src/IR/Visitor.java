@@ -57,7 +57,7 @@ public class Visitor {
     //  用来记录printf/scanf语句出现的次数，从而为fString命名
     private int strNum = 0;
 
-    //  用于cmp指令前的检查，将目标Value转换为i32
+    //  用于cmp指令前的检查，将目标Value转换为i32,被用在compType中
     private Value checkType(Value value){
         if(value.getType().isIntegerTy()){
             IntegerType integerType = (IntegerType) value.getType();
@@ -67,6 +67,24 @@ public class Visitor {
             }
         }
         return value;
+    }
+
+    //  由于compType全是在CurValue和TmpValue之间使用
+    //  因此我们就返回一个Value作为TmpValue的新值
+    //  CurValue在函数内就可以改变
+    private Value compType(Value tmp){
+        //  构建cmp指令之前先检查类型
+        //  构建cmp指令之前先检查类型
+        IntegerType tmpType = (IntegerType) tmp.getType();
+        IntegerType curType = (IntegerType) CurValue.getType();
+        if(tmpType.getBit() != curType.getBit()){
+            if(curType.getBit() == 1){
+                CurValue = checkType(CurValue);
+                return tmp;
+            }
+            else return checkType(tmp);
+        }
+        return tmp;
     }
 
     //  LVal有取出值的情况，fetchVal函数获取一个指针,返回其中的值
@@ -442,7 +460,27 @@ public class Visitor {
             CurOP = null;
             visitMulExpAST(addExpAST.getMulExpAST(), false);
             if(TmpValue != null){
-                CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
+                if(!TmpValue.getType().isPointerType() && !CurValue.getType().isPointerType()) {
+                    //  构建运算之前先compType
+                    TmpValue = compType(TmpValue);
+                    CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
+                }
+                else {
+                    Value target, index;
+                    if(TmpValue.getType().isPointerType()){
+                        target = TmpValue;
+                        index = CurValue;
+                    }
+                    else{
+                        target = CurValue;
+                        index = TmpValue;
+                    }
+                    ArrayList<Value> indexs = new ArrayList<>();
+                    indexs.add(index);
+
+                    CurValue = f.buildGepInst(target, indexs, CurBasicBlock);
+                }
+
             }
             if (addExpAST.getType() != 1) {
                 CurOP = StrToOP(addExpAST.getOp());
@@ -475,6 +513,7 @@ public class Visitor {
             CurOP = null;
             visitUnaryExpAST(mulExpAST.getUnaryExpAST(), false);
             if(TmpValue != null){
+                TmpValue = compType(TmpValue);
                 CurValue = f.buildBinaryInst(TmpOP, TmpValue, CurValue, CurBasicBlock);
             }
             if (mulExpAST.getType() == 2) {
@@ -526,17 +565,7 @@ public class Visitor {
             visitRelExpAST(relExpAST.getRelExpAST());
             String op = relExpAST.getOp();
 
-            //  构建cmp指令之前先检查类型
-            IntegerType tmpType = (IntegerType) TmpValue.getType();
-            IntegerType curType = (IntegerType) CurValue.getType();
-            if(tmpType.getBit() != curType.getBit()){
-                if(tmpType.getBit() == 1){
-                    TmpValue = checkType(TmpValue);
-                }
-                if(curType.getBit() == 1){
-                    CurValue = checkType(CurValue);
-                }
-            }
+            TmpValue = compType(TmpValue);
 
             switch (op) {
                 case "<" :{
@@ -567,16 +596,7 @@ public class Visitor {
             visitEqExpAST(eqExpAST.getEqExpAST());
 
             //  构建Eq表达式之前先checkType
-            IntegerType tmpType = (IntegerType) TmpValue.getType();
-            IntegerType curType = (IntegerType) CurValue.getType();
-            if(tmpType.getBit() != curType.getBit()){
-                if(tmpType.getBit() == 1){
-                    TmpValue = checkType(TmpValue);
-                }
-                if(curType.getBit() == 1){
-                    CurValue = checkType(CurValue);
-                }
-            }
+            TmpValue = compType(TmpValue);
             if(eqExpAST.getOp().equals("==")){
                 CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Eq, CurBasicBlock);
             }
@@ -765,12 +785,12 @@ public class Visitor {
     private void visitConstInitValAST(ConstInitValAST constInitValAST){
         if(constInitValAST.getType() == 1) {
             visitConstExpAST(constInitValAST.getConstExpAST());
+            fillInitVal.add(CurValue);
         }
         else if(constInitValAST.getType() == 2){
             ArrayList<ConstInitValAST> constInitValASTS = constInitValAST.getConstInitValASTS();
             for(ConstInitValAST constInitValAST1 : constInitValASTS){
                 visitConstInitValAST(constInitValAST1);
-                fillInitVal.add(CurValue);
             }
         }
     }
@@ -837,8 +857,6 @@ public class Visitor {
                 rParams.add(ConstInteger.constZero);
                 rParams.add(new ConstInteger(4 * totDim));
                 f.buildCallInst(CurBasicBlock, memsetFunc, rParams);
-
-                visitConstInitValAST(constDefAST.getConstInitValAST());
 
                 //  这里的itPointer用作获取每次建立的GepInst，从而构建Store指令
                 storeArrayInit(pointer);

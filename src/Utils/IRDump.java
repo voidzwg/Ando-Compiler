@@ -116,6 +116,7 @@ public class IRDump {
             //  输出初始值
             ArrayList<Value> values = globalVar.getValues();
             if(values.size() == 0){
+                out.write(arrayType.toString().replace("*", ""));
                 out.write(" zeroinitializer\n");
             }
             else {
