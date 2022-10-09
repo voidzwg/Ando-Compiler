@@ -24,15 +24,7 @@ public class MIPSDump {
     }
 
     private static void DumpMCInst(MCInst mcInst) throws IOException {
-        if(mcInst instanceof MCLi){
-            MCLi mcLi = (MCLi) mcInst;
-            int imm = mcLi.getImm();
-
-            out.write("\tli a0 " + imm + "\n");
-        }
-        else if(mcInst instanceof MCReturn){
-            out.write("\tret\n");
-        }
+        out.write("\t" + mcInst + "\n");
     }
 
     private static void DumpMCBlock(MCBlock mcBlock) throws IOException {

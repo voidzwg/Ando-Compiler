@@ -12,14 +12,19 @@ int main(){
     int var1,var2=con3;
     int var3;
     var3=getint();
+    // 鏃燘lockItem鐨勮鍙ュ潡
     {
         ;
     }
+    // Block宓屽Block鐨勬儏鍐?
     {{
 
     }}
+    
+    // 瑕嗙洊宸﹀€艰鍙?椤癸紝鍥犲瓙锛岃〃杈惧紡锛屽嚱鏁?
     var1=var2-var3*var2+(con2*var3)%(con1+con3);
     printf("the left val is %d\n",var1);
+    // Exp
     var2-var3*var2+(con2*var3)%(con1+con3);
     
     int var5=-+-+-con1;

@@ -1,3 +1,15 @@
+/*  author: Hyggge, 
+    email: hyggge6@gmail.com
+*/
+
+// #include<stdio.h>
+// int getint(){
+//    int n;
+//    scanf("%d",&n);
+//    return n;
+// }
+
+// const declare and define
 const int _a = 0;
 const int HelLo_World[5] = {1, 55, 0, 10, +9999};
 const int a_r__r[2][2] = {{-1, 0}, {6, -555}};
@@ -75,9 +87,9 @@ void func3(int a[][3]) {
             return; ; ;  ; ;;;
         } 
         else {
+            i = i +1;
             continue;
         }
-        i = i +1;
     }
 }
 

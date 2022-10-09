@@ -1,13 +1,18 @@
 package Backend.MachineValue.MachineInst;
 
+import Backend.Reg.VirtualReg;
+
 public class MCLi extends MCInst{
     private int imm;
+    private VirtualReg vReg;
 
-    public MCLi(int imm){
+    public MCLi(VirtualReg vReg, int imm){
+        this.vReg = vReg;
         this.imm = imm;
     }
 
-    public int getImm() {
-        return imm;
+    @Override
+    public String toString(){
+        return "li " + vReg + " " + imm;
     }
 }

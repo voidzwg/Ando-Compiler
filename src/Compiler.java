@@ -26,9 +26,9 @@ public class Compiler {
         IRDump.DumpModule(module);
 
         //  后端
-//        MCModule mcModule = new MCModule();
-//        mcModule.genMips(module);
-//
-//        MIPSDump.DumpMCModule(mcModule);
+        MCModule mcModule = new MCModule();
+        mcModule.genMips(module);
+
+        MIPSDump.DumpMCModule(mcModule);
     }
 }

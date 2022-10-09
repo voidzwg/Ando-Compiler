@@ -1,11 +1,27 @@
 package Backend.MachineValue.MachineInst;
 
-public class MCInst {
+public abstract class MCInst {
 
     public enum Tag{
-        ret
+        ret,
+        add,
+        addi,
+        sub,
+        xor,
+        xori,
+        or,
+        ori,
+        and,
+        andi,
+        mul,
+        div,
+        rem,
+        li,
+        la,
+        mv,
     }
 
-    private Tag tag;
+    public Tag tag;
+
 
 }
