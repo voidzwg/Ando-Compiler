@@ -36,8 +36,6 @@ public class MIPSDump {
 
     private static void DumpMCFunction(MCFunction mcFunction) throws IOException {
         ArrayList<MCBlock> mcBlocks = mcFunction.getMcBlocks();
-        String name = mcFunction.getName();
-        out.write(name + ":\n");
 
         for(MCBlock mcBlock : mcBlocks){
             DumpMCBlock(mcBlock);
@@ -46,7 +44,7 @@ public class MIPSDump {
 
     public static void DumpMCModule(MCModule mcModule) throws IOException {
         out.write("\t.text\n");
-        out.write("\t.globl main\n");
+        out.write("\t.globl main_0\n");
 
         ArrayList<MCFunction> mcFunctions = mcModule.getMcFunctions();
         for(MCFunction mcFunction : mcFunctions){

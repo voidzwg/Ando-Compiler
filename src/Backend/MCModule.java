@@ -9,7 +9,6 @@ import Backend.Reg.VirtualReg;
 import IR.IRModule;
 import IR.Value.*;
 import IR.Value.Instructions.*;
-import jdk.nashorn.internal.codegen.CompilerConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ public class MCModule {
     private final ArrayList<MCFunction> mcFunctions = new ArrayList<>();
     private MCFunction CurFunction;
     private MCBlock CurBlock;
+    private String CurFuncName;
     private int CurSize;
 
     //  valRegMap用于存储VirReg中的数据
@@ -58,7 +58,7 @@ public class MCModule {
         return (size + 15) / 16 * 16;
     }
 
-    private Reg valueToReg(Value value){
+    private Reg val2Reg(Value value){
         String ident = value.getName();
         if(regMap.containsKey(ident)){
             return regMap.get(ident);
@@ -70,7 +70,7 @@ public class MCModule {
             }
 
             Reg reg;
-            if(num == 0) return PhysicalReg.x0;
+            if(num == 0) return PhysicalReg.zero;
             else reg = new VirtualReg();
             valRegMap.put(num, reg);
             regMap.put(ident, reg);
@@ -84,7 +84,13 @@ public class MCModule {
         }
     }
 
-    private MCInst.Tag OPToTag(OP op){
+    //  这个函数命名确实可能有点抽象，解释一下
+    //  全写为 raw BasicBlock Name To Machine Code BasicBlock Name
+    private String rawBbName2MCBbName(String rawBbName){
+        return CurFuncName + "_" + rawBbName.replace("%", "");
+    }
+
+    private MCInst.Tag OP2Tag(OP op){
         if(op == OP.Sub) return MCInst.Tag.sub;
         else if(op == OP.Add) return MCInst.Tag.add;
         else if(op == OP.Mul) return MCInst.Tag.mul;
@@ -114,7 +120,7 @@ public class MCModule {
                 CurBlock.addInst(new MCLI(PhysicalReg.a0, imm));
             }
             else{
-                Reg reg = valueToReg(retInst.getValue());
+                Reg reg = val2Reg(retInst.getValue());
                 CurBlock.addInst(new MCMV(PhysicalReg.a0, reg));
             }
             CurBlock.addInst(new MCReturn());
@@ -154,17 +160,17 @@ public class MCModule {
             else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
                 ConstInteger constInteger = (ConstInteger) tmpRight;
                 int val = constInteger.getVal();
-                Reg rs1 = valueToReg(tmpLeft);
-                Reg rd = valueToReg(binaryInst);
+                Reg rs1 = val2Reg(tmpLeft);
+                Reg rd = val2Reg(binaryInst);
                 if(op == OP.Sub) val = -val;
                 CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, rd, rs1, val));
             }
 
             else {
-                Reg rs1 = valueToReg(left);
-                Reg rs2 = valueToReg(right);
-                Reg rd = valueToReg(binaryInst);
-                MCInst.Tag tag = OPToTag(op);
+                Reg rs1 = val2Reg(left);
+                Reg rs2 = val2Reg(right);
+                Reg rd = val2Reg(binaryInst);
+                MCInst.Tag tag = OP2Tag(op);
                 CurBlock.addInst(new MCBinaryInst(tag, rd, rs1, rs2));
             }
 
@@ -205,28 +211,22 @@ public class MCModule {
             }
             else if(isImm == 1){
                 int imm = ((ConstInteger) tmpRight).getVal();
-                Reg rs1 = valueToReg(tmpLeft);
-                Reg res = new VirtualReg();
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xori, res, rs1, imm));
-
-                Reg rd = valueToReg(cmpInst);
-                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, res));
-                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, res));
+                Reg rs1 = val2Reg(tmpLeft);
+                Reg rd = val2Reg(cmpInst);
+                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, rs1, imm));
+                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, rs1, imm));
             }
             else{
-                Reg rs1 = valueToReg(left);
-                Reg rs2 = valueToReg(right);
-                Reg res = new VirtualReg();
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xor, res, rs1, rs2));
-
-                Reg rd = valueToReg(cmpInst);
-                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, res));
-                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, res));
+                Reg rs1 = val2Reg(left);
+                Reg rs2 = val2Reg(right);
+                Reg rd = val2Reg(cmpInst);
+                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, rs1, rs2));
+                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, rs1, rs2));
             }
         }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
-            Reg value = valueToReg(storeInst.getValue());
+            Reg value = val2Reg(storeInst.getValue());
             int offset = CurSpTop;
             Value pointer = storeInst.getPointer();
             if(spMap.containsKey(pointer.getName())){
@@ -241,21 +241,21 @@ public class MCModule {
         else if(instruction instanceof LoadInst){
             LoadInst loadInst = (LoadInst) instruction;
             int offset = spMap.get(loadInst.getPointer().getName());
-            Reg rs = valueToReg(loadInst);
+            Reg rs = val2Reg(loadInst);
             CurBlock.addInst(new MCLoad(PhysicalReg.sp, rs, offset));
         }
         else if(instruction instanceof BrInst){
             BrInst brInst = (BrInst) instruction;
             if(brInst.isJump()){
                 BasicBlock jumpBB = brInst.getLabelJump();
-                CurBlock.addInst(new MCJump(jumpBB.getName()));
+                CurBlock.addInst(new MCJump(rawBbName2MCBbName(jumpBB.getName())));
             }
             else{
                 String leftLabel = brInst.getLabelLeft().getName();
                 String rightLabel = brInst.getLabelRight().getName();
-                Reg reg = valueToReg(brInst.getJudVal());
-                CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, leftLabel));
-                CurBlock.addInst(new MCJump(rightLabel));
+                Reg reg = val2Reg(brInst.getJudVal());
+                CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, rawBbName2MCBbName(leftLabel)));
+                CurBlock.addInst(new MCJump(rawBbName2MCBbName(rightLabel)));
             }
         }
     }
@@ -263,7 +263,10 @@ public class MCModule {
     private void genBasicBlock(BasicBlock basicBlock, boolean isEntry){
         ArrayList<Instruction> instructions = basicBlock.getInsts();
         ArrayList<MCInst> mcInsts = new ArrayList<>();
-        CurBlock = new MCBlock(CurFunction, mcInsts,basicBlock.getName());
+        String rawName = basicBlock.getName();
+        String mcBlockNumStr = rawName.replace("%", "");
+        String mcBlockName = CurFuncName + "_" + mcBlockNumStr;
+        CurBlock = new MCBlock(CurFunction, mcInsts, mcBlockName);
 
         if(isEntry) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, PhysicalReg.sp, PhysicalReg.sp, -CurSize));
         for(Instruction instruction : instructions){
@@ -276,10 +279,11 @@ public class MCModule {
 
         ArrayList<MCBlock> mcBlocks = new ArrayList<>();
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
-        //  全部清零
+        //  初始化，该清零的清零，该设置的设置
         CurSize = calSize(function);
         CurSpTop = 0;
         spMap.clear();
+        CurFuncName = function.getName().replace("@", "");
 
         for(int i = 0; i < basicBlocks.size(); i++){
             BasicBlock bb = basicBlocks.get(i);

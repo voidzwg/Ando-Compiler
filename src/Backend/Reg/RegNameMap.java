@@ -13,7 +13,7 @@ public class RegNameMap {
     }
 
     private RegNameMap() {
-        name2num.put("x0", 0);
+        name2num.put("zero", 0);
         name2num.put("at", 1);
         name2num.put("v0", 2);
         name2num.put("v1", 3);

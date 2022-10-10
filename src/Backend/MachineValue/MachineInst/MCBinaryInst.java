@@ -37,11 +37,11 @@ public class MCBinaryInst extends MCInst{
     public String toString(){
         StringBuilder stringBuilder = new StringBuilder(tag.name());
         stringBuilder.append(" ").append(rd);
-        stringBuilder.append(" ").append(rs1);
+        stringBuilder.append(", ").append(rs1);
         if(type == 1){
-            stringBuilder.append(" ").append(rs2);
+            stringBuilder.append(", ").append(rs2);
         }
-        else if(type == 2) stringBuilder.append(" ").append(imm);
+        else if(type == 2) stringBuilder.append(", ").append(imm);
         return stringBuilder.toString();
     }
 

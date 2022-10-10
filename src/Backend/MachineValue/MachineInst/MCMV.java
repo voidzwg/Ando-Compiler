@@ -13,6 +13,6 @@ public class MCMV extends MCInst{
 
     @Override
     public String toString(){
-        return "mv " + rd + " " + rs;
+        return "movz " + rd + ", " + rs + ", $zero";
     }
 }
