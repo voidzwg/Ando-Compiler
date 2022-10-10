@@ -9,6 +9,7 @@ import Backend.Reg.VirtualReg;
 import IR.IRModule;
 import IR.Value.*;
 import IR.Value.Instructions.*;
+import jdk.nashorn.internal.codegen.CompilerConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +28,15 @@ public class MCModule {
     private final HashMap<String, Reg> regMap = new HashMap<>();
     //  spMap存储value到sp中的位置
     private final HashMap<String, Integer> spMap = new HashMap<>();
+
+    //  用来记录函数是否为叶子函数
+    private final HashMap<String, Boolean> isLeafMap = new HashMap<>();
     private int CurSpTop = 0;
 
 
     private int calSize(Function function){
         int size = 0;
+        boolean isLeaf = true;
         ArrayList<BasicBlock> bbs = function.getBbs();
         for(BasicBlock bb : bbs){
             ArrayList<Instruction> insts = bb.getInsts();
@@ -39,8 +44,17 @@ public class MCModule {
                 if(inst.hasName()){
                     size += 4;
                 }
+                if(inst instanceof CallInst){
+                    isLeaf = false;
+                    CallInst callInst = (CallInst) inst;
+                    int argNum = callInst.getValues().size();
+                    if(argNum > 8) size += (argNum - 8) * 4;
+                }
             }
         }
+        isLeafMap.put(function.getName(), isLeaf);
+        //  预留给ra的
+        if(isLeaf) size += 4;
         return (size + 15) / 16 * 16;
     }
 
