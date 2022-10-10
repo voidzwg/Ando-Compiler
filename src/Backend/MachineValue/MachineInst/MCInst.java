@@ -4,6 +4,8 @@ public abstract class MCInst {
 
     public enum Tag{
         ret,
+        seqz,
+        snez,
         add,
         addi,
         sub,

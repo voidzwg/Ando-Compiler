@@ -59,6 +59,8 @@ public class MCModule {
     private MCInst.Tag OPToTag(OP op){
         if(op == OP.Sub) return MCInst.Tag.sub;
         else if(op == OP.Add) return MCInst.Tag.add;
+        else if(op == OP.Mul) return MCInst.Tag.mul;
+        else if(op == OP.Div) return MCInst.Tag.div;
         else return null;
     }
 
@@ -122,7 +124,22 @@ public class MCModule {
                     regMap.put(binaryInst.getName(), virtualReg);
                 }
                 else if(isImm == 1){
+                    int imm = ((ConstInteger) tmpRight).getVal();
+                    VirtualReg rs1 = valueToReg(tmpLeft);
+                    VirtualReg res = new VirtualReg();
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xori, res, rs1, imm));
 
+                    VirtualReg rd = valueToReg(binaryInst);
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seqz, rd, res));
+                }
+                else{
+                    VirtualReg rs1 = valueToReg(left);
+                    VirtualReg rs2 = valueToReg(right);
+                    VirtualReg res = new VirtualReg();
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xor, res, rs1, rs2));
+
+                    VirtualReg rd = valueToReg(binaryInst);
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seqz, rd, res));
                 }
             }
             //  Add, Sub
@@ -133,9 +150,11 @@ public class MCModule {
                     int rightVal = ((ConstInteger) right).getVal();
                     if(op == OP.Add) buildMCLi(leftVal + rightVal);
                     else if(op == OP.Sub) buildMCLi(leftVal - rightVal);
+                    else if(op == OP.Mul) buildMCLi(leftVal * rightVal);
+                    else if(op == OP.Div) buildMCLi(leftVal / rightVal);
                 }
 
-                else if(isImm == 1){
+                else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
                     ConstInteger constInteger = (ConstInteger) tmpRight;
                     int val = constInteger.getVal();
                     VirtualReg rs1 = valueToReg(tmpLeft);

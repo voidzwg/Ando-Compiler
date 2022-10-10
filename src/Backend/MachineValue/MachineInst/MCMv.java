@@ -10,4 +10,9 @@ public class MCMv extends MCInst{
         this.rd = rd;
         this.rs = rs;
     }
+
+    @Override
+    public String toString(){
+        return "mv " + rd + " " + rs;
+    }
 }
