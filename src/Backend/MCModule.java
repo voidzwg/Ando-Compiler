@@ -10,7 +10,6 @@ import IR.IRModule;
 import IR.Value.*;
 import IR.Value.Instructions.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -57,7 +56,7 @@ public class MCModule {
             }
 
             Reg reg;
-            if(num == 0) reg = PhysicalReg.x0;
+            if(num == 0) return PhysicalReg.x0;
             else reg = new VirtualReg();
             valRegMap.put(num, reg);
             regMap.put(ident, reg);
@@ -127,66 +126,89 @@ public class MCModule {
                 tmpLeft = left;
                 tmpRight = right;
             }
-
-            if(op == OP.Eq){
-                if(isImm == 2){
-                    int leftVal = ((ConstInteger) left).getVal();
-                    int rightVal = ((ConstInteger) right).getVal();
-                    int ans;
-                    if(leftVal == rightVal) ans = 1;
-                    else ans = 0;
-                    Reg reg = buildMCLi(ans);
-                    regMap.put(binaryInst.getName(), reg);
-                }
-                else if(isImm == 1){
-                    int imm = ((ConstInteger) tmpRight).getVal();
-                    Reg rs1 = valueToReg(tmpLeft);
-                    Reg res = new VirtualReg();
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xori, res, rs1, imm));
-
-                    Reg rd = valueToReg(binaryInst);
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, res));
-                }
-                else{
-                    Reg rs1 = valueToReg(left);
-                    Reg rs2 = valueToReg(right);
-                    Reg res = new VirtualReg();
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xor, res, rs1, rs2));
-
-                    Reg rd = valueToReg(binaryInst);
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, res));
-                }
-            }
             //  add, sub, mul, div
-            else{
-                //  全是constInteger，我他妈直接运算
-                if(isImm == 2){
-                    int leftVal = ((ConstInteger) left).getVal();
-                    int rightVal = ((ConstInteger) right).getVal();
-                    if(op == OP.Add) buildMCLi(leftVal + rightVal);
-                    else if(op == OP.Sub) buildMCLi(leftVal - rightVal);
-                    else if(op == OP.Mul) buildMCLi(leftVal * rightVal);
-                    else if(op == OP.Div) buildMCLi(leftVal / rightVal);
-                }
-
-                else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
-                    ConstInteger constInteger = (ConstInteger) tmpRight;
-                    int val = constInteger.getVal();
-                    Reg rs1 = valueToReg(tmpLeft);
-                    Reg rd = valueToReg(binaryInst);
-                    if(op == OP.Sub) val = -val;
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, rd, rs1, val));
-                }
-
-                else {
-                    Reg rs1 = valueToReg(left);
-                    Reg rs2 = valueToReg(right);
-                    Reg rd = valueToReg(binaryInst);
-                    MCInst.Tag tag = OPToTag(op);
-                    CurBlock.addInst(new MCBinaryInst(tag, rd, rs1, rs2));
-                }
+            //  全是constInteger，我他妈直接运算
+            if(isImm == 2){
+                int leftVal = ((ConstInteger) left).getVal();
+                int rightVal = ((ConstInteger) right).getVal();
+                if(op == OP.Add) buildMCLi(leftVal + rightVal);
+                else if(op == OP.Sub) buildMCLi(leftVal - rightVal);
+                else if(op == OP.Mul) buildMCLi(leftVal * rightVal);
+                else if(op == OP.Div) buildMCLi(leftVal / rightVal);
             }
 
+            else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
+                ConstInteger constInteger = (ConstInteger) tmpRight;
+                int val = constInteger.getVal();
+                Reg rs1 = valueToReg(tmpLeft);
+                Reg rd = valueToReg(binaryInst);
+                if(op == OP.Sub) val = -val;
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, rd, rs1, val));
+            }
+
+            else {
+                Reg rs1 = valueToReg(left);
+                Reg rs2 = valueToReg(right);
+                Reg rd = valueToReg(binaryInst);
+                MCInst.Tag tag = OPToTag(op);
+                CurBlock.addInst(new MCBinaryInst(tag, rd, rs1, rs2));
+            }
+
+        }
+        else if(instruction instanceof CmpInst){
+            CmpInst cmpInst = (CmpInst) instruction;
+            OP op = cmpInst.getOp();
+            Value left = cmpInst.getLeftVal();
+            Value right = cmpInst.getRightVal();
+            Value tmpLeft = left;
+            Value tmpRight = right;
+            int isImm = 0;
+
+            if(left instanceof ConstInteger){
+                isImm++;
+                tmpLeft = right;
+                tmpRight = left;
+            }
+            if(right instanceof ConstInteger){
+                isImm++;
+                tmpLeft = left;
+                tmpRight = right;
+            }
+            if(isImm == 2){
+                int leftVal = ((ConstInteger) left).getVal();
+                int rightVal = ((ConstInteger) right).getVal();
+                int ans;
+                if(op == OP.Eq) {
+                    if (leftVal == rightVal) ans = 1;
+                    else ans = 0;
+                }
+                else {
+                    if (leftVal == rightVal) ans = 0;
+                    else ans = 1;
+                }
+                Reg reg = buildMCLi(ans);
+                regMap.put(cmpInst.getName(), reg);
+            }
+            else if(isImm == 1){
+                int imm = ((ConstInteger) tmpRight).getVal();
+                Reg rs1 = valueToReg(tmpLeft);
+                Reg res = new VirtualReg();
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xori, res, rs1, imm));
+
+                Reg rd = valueToReg(cmpInst);
+                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, res));
+                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, res));
+            }
+            else{
+                Reg rs1 = valueToReg(left);
+                Reg rs2 = valueToReg(right);
+                Reg res = new VirtualReg();
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.xor, res, rs1, rs2));
+
+                Reg rd = valueToReg(cmpInst);
+                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, res));
+                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, res));
+            }
         }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
@@ -234,7 +256,7 @@ public class MCModule {
             genInst(instruction);
         }
     }
-    private void genFunction(Function function) throws IOException {
+    private void genFunction(Function function){
         String name = function.getName();
         name = name.replace("@", "");
 
@@ -255,7 +277,7 @@ public class MCModule {
         mcFunctions.add(CurFunction);
     }
 
-    public void genMips(IRModule irModule) throws IOException {
+    public void genMips(IRModule irModule){
         ArrayList<Function> functions = irModule.getFunctions();
         for(Function function : functions){
             genFunction(function);

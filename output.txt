@@ -6,14 +6,19 @@ main:
 	li $0 2
 	sw $0, 0(sp)
 	lw $1, 0(sp)
+	xori $2 $1 0
+	sne $3 $2
+	bnez $3, %4
+	j %7
 %4:
-	lw $2, 0(sp)
-	addi $3 $2 1
-	sw $3, 0(sp)
-%7:
-	li x0 0
-	sw x0, 0(sp)
-%8:
 	lw $4, 0(sp)
-	mv a0 $4
+	addi $5 $4 1
+	sw $5, 0(sp)
+	j %8
+%7:
+	sw x0, 0(sp)
+	j %8
+%8:
+	lw $6, 0(sp)
+	mv a0 $6
 	jr $ra

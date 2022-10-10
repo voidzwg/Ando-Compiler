@@ -10,6 +10,7 @@ public class MCBr extends MCInst{
 
     //  bnez/beqz
     public MCBr(Tag tag, Reg rs1, String label){
+        this.tag = tag;
         this.rs1 = rs1;
         this.label = label;
         this.type = 1;
