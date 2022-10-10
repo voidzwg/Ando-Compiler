@@ -21,6 +21,10 @@ public abstract class MCInst {
         li,
         la,
         mv,
+        bnez,
+        beqz,
+        bne,
+        beq
     }
 
     public Tag tag;

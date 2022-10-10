@@ -1,13 +1,19 @@
 	.text
 	.globl main
 main:
-	addi sp sp -16
-	li $0 1
+%0:
+	addi sp sp -32
+	li $0 2
 	sw $0, 0(sp)
-	li $1 2
-	sw $1, 0(sp)
-	li $2 3
-	sw $2, 4(sp)
-	lw $3, 0(sp)
-	mv a0 $3
+	lw $1, 0(sp)
+%4:
+	lw $2, 0(sp)
+	addi $3 $2 1
+	sw $3, 0(sp)
+%7:
+	li x0 0
+	sw x0, 0(sp)
+%8:
+	lw $4, 0(sp)
+	mv a0 $4
 	jr $ra

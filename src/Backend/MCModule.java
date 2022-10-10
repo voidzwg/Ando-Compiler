@@ -208,12 +208,27 @@ public class MCModule {
             Reg rs = valueToReg(loadInst);
             CurBlock.addInst(new MCLoad(PhysicalReg.sp, rs, offset));
         }
+        else if(instruction instanceof BrInst){
+            BrInst brInst = (BrInst) instruction;
+            if(brInst.isJump()){
+                BasicBlock jumpBB = brInst.getLabelJump();
+                CurBlock.addInst(new MCJump(jumpBB.getName()));
+            }
+            else{
+                String leftLabel = brInst.getLabelLeft().getName();
+                String rightLabel = brInst.getLabelRight().getName();
+                Reg reg = valueToReg(brInst.getJudVal());
+                CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, leftLabel));
+                CurBlock.addInst(new MCJump(rightLabel));
+            }
+        }
     }
 
     private void genBasicBlock(BasicBlock basicBlock, boolean isEntry){
         ArrayList<Instruction> instructions = basicBlock.getInsts();
         ArrayList<MCInst> mcInsts = new ArrayList<>();
         CurBlock = new MCBlock(CurFunction, mcInsts,basicBlock.getName());
+
         if(isEntry) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, PhysicalReg.sp, PhysicalReg.sp, -CurSize));
         for(Instruction instruction : instructions){
             genInst(instruction);
