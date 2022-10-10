@@ -1034,12 +1034,8 @@ public class Visitor {
         if(isEntry) {
             for (String identArg : tmpHashMap.keySet()) {
                 Value argument = tmpHashMap.get(identArg);
-
                 AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
                 f.buildStoreInst(CurBasicBlock, argument, allocInst);
-
-
-
                 pushSymbol(identArg, allocInst);
             }
         }

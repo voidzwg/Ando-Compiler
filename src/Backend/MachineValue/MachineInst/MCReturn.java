@@ -4,6 +4,6 @@ public class MCReturn extends MCInst {
 
     @Override
     public String toString(){
-        return "ret";
+        return "jr $ra";
     }
 }

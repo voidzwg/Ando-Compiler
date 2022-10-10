@@ -4,8 +4,6 @@ import Backend.MCModule;
 import Backend.MachineValue.MCBlock;
 import Backend.MachineValue.MCFunction;
 import Backend.MachineValue.MachineInst.MCInst;
-import Backend.MachineValue.MachineInst.MCLi;
-import Backend.MachineValue.MachineInst.MCReturn;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

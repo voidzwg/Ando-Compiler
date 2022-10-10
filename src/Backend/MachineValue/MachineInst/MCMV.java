@@ -1,12 +1,12 @@
 package Backend.MachineValue.MachineInst;
 
-import Backend.Reg.VirtualReg;
+import Backend.Reg.Reg;
 
-public class MCMv extends MCInst{
-    private VirtualReg rd;
-    private VirtualReg rs;
+public class MCMV extends MCInst{
+    private Reg rd;
+    private Reg rs;
 
-    public MCMv(VirtualReg rd, VirtualReg rs) {
+    public MCMV(Reg rd, Reg rs) {
         this.rd = rd;
         this.rs = rs;
     }

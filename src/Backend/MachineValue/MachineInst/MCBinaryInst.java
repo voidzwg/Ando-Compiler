@@ -1,15 +1,16 @@
 package Backend.MachineValue.MachineInst;
 
+import Backend.Reg.Reg;
 import Backend.Reg.VirtualReg;
 
 public class MCBinaryInst extends MCInst{
-    private VirtualReg rd;
-    private VirtualReg rs1;
-    private VirtualReg rs2;
+    private Reg rd;
+    private Reg rs1;
+    private Reg rs2;
     private int imm;
     private int type;
 
-    public MCBinaryInst(Tag tag, VirtualReg rd, VirtualReg rs1, VirtualReg rs2){
+    public MCBinaryInst(Tag tag, Reg rd, Reg rs1, Reg rs2){
         this.tag = tag;
         this.rd = rd;
         this.rs1 = rs1;
@@ -17,7 +18,7 @@ public class MCBinaryInst extends MCInst{
         this.type = 1;
     }
 
-    public MCBinaryInst(Tag tag, VirtualReg rd, VirtualReg rs1, int imm){
+    public MCBinaryInst(Tag tag, Reg rd, Reg rs1, int imm){
         this.tag = tag;
         this.rd = rd;
         this.rs1 = rs1;
@@ -25,7 +26,7 @@ public class MCBinaryInst extends MCInst{
         this.type = 2;
     }
 
-    public MCBinaryInst(Tag tag, VirtualReg rd, VirtualReg rs){
+    public MCBinaryInst(Tag tag, Reg rd, Reg rs){
         this.tag = tag;
         this.rd = rd;
         this.rs1 = rs;
