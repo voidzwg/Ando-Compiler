@@ -31,6 +31,37 @@ public class MCModule {
 
     //  用来记录函数是否为叶子函数
     private final HashMap<String, Boolean> isLeafMap = new HashMap<>();
+    private int calAns(OP op, int l, int r){
+        if(op == OP.Add) return l + r;
+        else if(op == OP.Sub) return l - r;
+        else if(op == OP.Mul) return l * r;
+        else if(op == OP.Div) return l / r;
+        else if(op == OP.Eq){
+            if(l == r) return 1;
+            else return 0;
+        }
+        else if(op == OP.Ne){
+            if(l == r) return 0;
+            else return 1;
+        }
+        else if(op == OP.Le){
+            if(l <= r) return 1;
+            else return 0;
+        }
+        else if(op == OP.Lt){
+            if(l < r) return 1;
+            else return 0;
+        }
+        else if(op == OP.Ge){
+            if(l >= r) return 1;
+            else return 0;
+        }
+        else if(op == OP.Gt){
+            if(l > r) return 1;
+            else return 0;
+        }
+        return 0;
+    }
     private int CurSpTop = 0;
 
 
@@ -95,7 +126,13 @@ public class MCModule {
         else if(op == OP.Add) return MCInst.Tag.add;
         else if(op == OP.Mul) return MCInst.Tag.mul;
         else if(op == OP.Div) return MCInst.Tag.div;
-        else return null;
+        else if(op == OP.Eq) return MCInst.Tag.seq;
+        else if(op == OP.Ne) return MCInst.Tag.sne;
+        else if(op == OP.Le) return MCInst.Tag.sle;
+        else if(op == OP.Lt) return MCInst.Tag.slt;
+        else if(op == OP.Ge) return MCInst.Tag.sge;
+        else if(op == OP.Gt) return MCInst.Tag.sgt;
+        return null;
     }
 
     //  返回加载进的VirReg
@@ -151,10 +188,7 @@ public class MCModule {
             if(isImm == 2){
                 int leftVal = ((ConstInteger) left).getVal();
                 int rightVal = ((ConstInteger) right).getVal();
-                if(op == OP.Add) buildMCLi(leftVal + rightVal);
-                else if(op == OP.Sub) buildMCLi(leftVal - rightVal);
-                else if(op == OP.Mul) buildMCLi(leftVal * rightVal);
-                else if(op == OP.Div) buildMCLi(leftVal / rightVal);
+                buildMCLi(calAns(op, leftVal, rightVal));
             }
 
             else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
@@ -198,14 +232,7 @@ public class MCModule {
                 int leftVal = ((ConstInteger) left).getVal();
                 int rightVal = ((ConstInteger) right).getVal();
                 int ans;
-                if(op == OP.Eq) {
-                    if (leftVal == rightVal) ans = 1;
-                    else ans = 0;
-                }
-                else {
-                    if (leftVal == rightVal) ans = 0;
-                    else ans = 1;
-                }
+                ans = calAns(op, leftVal, rightVal);
                 Reg reg = buildMCLi(ans);
                 regMap.put(cmpInst.getName(), reg);
             }
@@ -213,15 +240,13 @@ public class MCModule {
                 int imm = ((ConstInteger) tmpRight).getVal();
                 Reg rs1 = val2Reg(tmpLeft);
                 Reg rd = val2Reg(cmpInst);
-                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, rs1, imm));
-                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, rs1, imm));
+                CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, imm));
             }
             else{
                 Reg rs1 = val2Reg(left);
                 Reg rs2 = val2Reg(right);
                 Reg rd = val2Reg(cmpInst);
-                if(op == OP.Eq) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.seq, rd, rs1, rs2));
-                else CurBlock.addInst(new MCBinaryInst(MCInst.Tag.sne, rd, rs1, rs2));
+                CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, rs2));
             }
         }
         else if(instruction instanceof StoreInst){

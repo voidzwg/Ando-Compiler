@@ -3,6 +3,8 @@ import Frontend.AST.CompUnitAST;
 import Frontend.Parser;
 import IR.IRModule;
 import IR.Visitor;
+import Pass.PassManager;
+import Utils.ASTDump;
 import Utils.ErrDump;
 import Utils.IRDump;
 import Utils.MIPSDump;
@@ -16,19 +18,31 @@ public class Compiler {
         Parser parser = new Parser();
         CompUnitAST compUnitAST = parser.parseCompUnitAST();
 
-//        ASTDump.DumpCompUnit(compUnitAST);
+        //  前端输出
+        ASTDump.DumpCompUnit(compUnitAST);
 
         //  中端
         Visitor visitor = new Visitor();
-        IRModule module = visitor.VisitCompUnit(compUnitAST);
+        IRModule irModule = visitor.VisitCompUnit(compUnitAST);
 
+        //  错误处理
 //        ErrDump.errDump();
-        IRDump.DumpModule(module);
+
+        //  中端优化
+        PassManager passManager = PassManager.getInstance();
+        passManager.runIRPasses(irModule);
+
+        //  中端输出
+        IRDump.DumpModule(irModule);
 
         //  后端
         MCModule mcModule = new MCModule();
-        mcModule.genMips(module);
+        mcModule.genMips(irModule);
 
+        //  后端优化
+        passManager.runMCPasses(mcModule);
+
+        //  后端输出
         MIPSDump.DumpMCModule(mcModule);
     }
 }
