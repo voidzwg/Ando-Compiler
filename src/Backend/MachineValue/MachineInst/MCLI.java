@@ -4,15 +4,16 @@ import Backend.Reg.Reg;
 
 public class MCLI extends MCInst{
     private int imm;
-    private Reg reg;
+    private Reg rd;
 
-    public MCLI(Reg reg, int imm){
-        this.reg = reg;
+    public MCLI(Reg rd, int imm){
+        this.rd = rd;
         this.imm = imm;
+        defReg = rd;
     }
 
     @Override
     public String toString(){
-        return "li " + reg + " " + imm;
+        return "li " + rd + " " + imm;
     }
 }

@@ -14,6 +14,7 @@ public class MCBr extends MCInst{
         this.rs1 = rs1;
         this.label = label;
         this.type = 1;
+        useReg.add(rs1);
     }
 
     //  beq/bne
@@ -22,6 +23,8 @@ public class MCBr extends MCInst{
         this.rs2 = rs2;
         this.label = label;
         this.type = 2;
+        useReg.add(rs1);
+        useReg.add(rs2);
     }
 
     @Override

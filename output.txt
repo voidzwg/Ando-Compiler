@@ -6,7 +6,7 @@ main_0:
 	j main_2
 main_2:
 	lw $0, 0($sp)
-	slt $1, $0, 10
+	slti $1, $0, 10
 	sne $2, $1, 0
 	bnez $2, main_6
 	j main_9

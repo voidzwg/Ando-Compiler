@@ -11,6 +11,8 @@ public class MCSW extends MCInst{
         this.value = value;
         this.pointer = pointer;
         this.offset = offset;
+        useReg.add(value);
+        useReg.add(pointer);
     }
 
     @Override

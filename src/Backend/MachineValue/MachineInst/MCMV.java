@@ -9,6 +9,8 @@ public class MCMV extends MCInst{
     public MCMV(Reg rd, Reg rs) {
         this.rd = rd;
         this.rs = rs;
+        useReg.add(rs);
+        defReg = rd;
     }
 
     @Override

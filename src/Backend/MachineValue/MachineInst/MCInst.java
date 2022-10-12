@@ -1,5 +1,9 @@
 package Backend.MachineValue.MachineInst;
 
+import Backend.Reg.Reg;
+
+import java.util.ArrayList;
+
 public abstract class MCInst {
 
     public enum Tag{
@@ -8,6 +12,7 @@ public abstract class MCInst {
         sne,
         sle,
         slt,
+        slti,
         sge,
         sgt,
         add,
@@ -32,6 +37,14 @@ public abstract class MCInst {
     }
 
     public Tag tag;
+    public ArrayList<Reg> useReg = new ArrayList<>();
+    public Reg defReg = null;
 
+    public ArrayList<Reg> getUseReg(){
+        return useReg;
+    }
 
+    public Reg getDefReg(){
+        return defReg;
+    }
 }

@@ -19,8 +19,8 @@ public class MCModule {
     private final ArrayList<MCFunction> mcFunctions = new ArrayList<>();
     private MCFunction CurFunction;
     private MCBlock CurBlock;
-    private String CurFuncName;
     private int CurSize;
+    private String CurFuncName;
 
     //  valRegMap用于存储VirReg中的数据
     private final HashMap<Integer, Reg> valRegMap = new HashMap<>();
@@ -31,6 +31,8 @@ public class MCModule {
 
     //  用来记录函数是否为叶子函数
     private final HashMap<String, Boolean> isLeafMap = new HashMap<>();
+    //  查找mcBlock
+    private HashMap<String, MCBlock> mcBlockMap = new HashMap<>();
     private int calAns(OP op, int l, int r){
         if(op == OP.Add) return l + r;
         else if(op == OP.Sub) return l - r;
@@ -62,6 +64,7 @@ public class MCModule {
         }
         return 0;
     }
+
     private int CurSpTop = 0;
 
 
@@ -240,7 +243,8 @@ public class MCModule {
                 int imm = ((ConstInteger) tmpRight).getVal();
                 Reg rs1 = val2Reg(tmpLeft);
                 Reg rd = val2Reg(cmpInst);
-                CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, imm));
+                if(op == OP.Lt) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.slti, rd, rs1, imm));
+                else CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, imm));
             }
             else{
                 Reg rs1 = val2Reg(left);
@@ -267,40 +271,41 @@ public class MCModule {
             LoadInst loadInst = (LoadInst) instruction;
             int offset = spMap.get(loadInst.getPointer().getName());
             Reg rs = val2Reg(loadInst);
-            CurBlock.addInst(new MCLoad(PhysicalReg.sp, rs, offset));
+            CurBlock.addInst(new MCLW(rs, PhysicalReg.sp, offset));
         }
         else if(instruction instanceof BrInst){
             BrInst brInst = (BrInst) instruction;
             if(brInst.isJump()){
                 BasicBlock jumpBB = brInst.getLabelJump();
                 CurBlock.addInst(new MCJump(rawBbName2MCBbName(jumpBB.getName())));
+                CurBlock.setTrueBlock(mcBlockMap.get(rawBbName2MCBbName(jumpBB.getName())));
             }
             else{
                 String leftLabel = brInst.getLabelLeft().getName();
                 String rightLabel = brInst.getLabelRight().getName();
+                String mcLeftName = rawBbName2MCBbName(leftLabel);
+                String mcRightName = rawBbName2MCBbName(rightLabel);
                 Reg reg = val2Reg(brInst.getJudVal());
-                CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, rawBbName2MCBbName(leftLabel)));
-                CurBlock.addInst(new MCJump(rawBbName2MCBbName(rightLabel)));
+                CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, mcLeftName));
+                CurBlock.setTrueBlock(mcBlockMap.get(mcLeftName));
+                CurBlock.addInst(new MCJump(mcRightName));
+                CurBlock.setFalseBlock(mcBlockMap.get(mcRightName));
             }
         }
     }
 
-    private void genBasicBlock(BasicBlock basicBlock, boolean isEntry){
+    //  genFunction已经提前为genBasicBlock初始化好了CurBlock，
+    //  genBasicBlock直接添加指令就可以
+    private void genBasicBlock(BasicBlock basicBlock){
         ArrayList<Instruction> instructions = basicBlock.getInsts();
-        ArrayList<MCInst> mcInsts = new ArrayList<>();
-        String rawName = basicBlock.getName();
-        String mcBlockNumStr = rawName.replace("%", "");
-        String mcBlockName = CurFuncName + "_" + mcBlockNumStr;
-        CurBlock = new MCBlock(CurFunction, mcInsts, mcBlockName);
 
-        if(isEntry) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, PhysicalReg.sp, PhysicalReg.sp, -CurSize));
+        if(CurBlock.isEntry()) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, PhysicalReg.sp, PhysicalReg.sp, -CurSize));
         for(Instruction instruction : instructions){
             genInst(instruction);
         }
     }
     private void genFunction(Function function){
-        String name = function.getName();
-        name = name.replace("@", "");
+        CurFuncName = function.getName().replace("@", "");
 
         ArrayList<MCBlock> mcBlocks = new ArrayList<>();
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
@@ -308,15 +313,23 @@ public class MCModule {
         CurSize = calSize(function);
         CurSpTop = 0;
         spMap.clear();
-        CurFuncName = function.getName().replace("@", "");
-
-        for(int i = 0; i < basicBlocks.size(); i++){
+        mcBlockMap.clear();
+        for (int i = 0; i < basicBlocks.size(); i++) {
+            boolean isEntry = (i == 0);
             BasicBlock bb = basicBlocks.get(i);
-            genBasicBlock(bb, i == 0);
+            String mcBlockName = rawBbName2MCBbName(bb.getName());
+            MCBlock mcBlock = new MCBlock(CurFunction, new ArrayList<>(), mcBlockName, isEntry);
+            mcBlockMap.put(mcBlockName, mcBlock);
+        }
+
+        for (BasicBlock bb : basicBlocks) {
+            String mcBlockName = rawBbName2MCBbName(bb.getName());
+            CurBlock = mcBlockMap.get(mcBlockName);
+            genBasicBlock(bb);
             mcBlocks.add(CurBlock);
         }
 
-        CurFunction = new MCFunction(name, mcBlocks);
+        CurFunction = new MCFunction(CurFuncName, mcBlocks);
         mcFunctions.add(CurFunction);
     }
 

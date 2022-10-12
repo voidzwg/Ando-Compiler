@@ -3,6 +3,7 @@ package Pass;
 import Backend.MCModule;
 import IR.IRModule;
 import Pass.MC.RegAllocator;
+import Pass.Pass.*;
 
 import java.util.ArrayList;
 
@@ -11,22 +12,22 @@ public class PassManager {
     public static PassManager getInstance(){
         return passManager;
     }
-    ArrayList<Pass.Pass.IRPass> irPasses = new ArrayList<>();
-    ArrayList<Pass.Pass.MCPass> mcPasses = new ArrayList<>();
+    ArrayList<IRPass> irPasses = new ArrayList<>();
+    ArrayList<MCPass> mcPasses = new ArrayList<>();
 
     private PassManager(){
         mcPasses.add(new RegAllocator());
     }
 
     public void runIRPasses(IRModule irModule){
-        for(Pass.Pass.IRPass irPass : irPasses){
+        irPasses.forEach(irPass -> {
             irPass.run(irModule);
-        }
+        });
     }
 
     public void runMCPasses(MCModule mcModule){
-        for(Pass.Pass.MCPass mcPass : mcPasses){
+        mcPasses.forEach(mcPass -> {
             mcPass.run(mcModule);
-        }
+        });
     }
 }

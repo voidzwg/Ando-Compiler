@@ -3,6 +3,8 @@ package Backend.MachineValue.MachineInst;
 import Backend.Reg.Reg;
 import Backend.Reg.VirtualReg;
 
+import java.util.ArrayList;
+
 public class MCBinaryInst extends MCInst{
     private Reg rd;
     private Reg rs1;
@@ -16,6 +18,9 @@ public class MCBinaryInst extends MCInst{
         this.rs1 = rs1;
         this.rs2 = rs2;
         this.type = 1;
+        useReg.add(rs1);
+        useReg.add(rs2);
+        defReg = rd;
     }
 
     public MCBinaryInst(Tag tag, Reg rd, Reg rs1, int imm){
@@ -24,6 +29,8 @@ public class MCBinaryInst extends MCInst{
         this.rs1 = rs1;
         this.imm = imm;
         this.type = 2;
+        useReg.add(rs1);
+        defReg = rd;
     }
 
     public MCBinaryInst(Tag tag, Reg rd, Reg rs){
@@ -31,6 +38,8 @@ public class MCBinaryInst extends MCInst{
         this.rd = rd;
         this.rs1 = rs;
         this.type = 3;
+        useReg.add(rs);
+        defReg = rd;
     }
 
     @Override
@@ -44,5 +53,4 @@ public class MCBinaryInst extends MCInst{
         else if(type == 2) stringBuilder.append(", ").append(imm);
         return stringBuilder.toString();
     }
-
 }
