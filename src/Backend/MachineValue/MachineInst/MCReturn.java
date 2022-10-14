@@ -1,12 +1,11 @@
 package Backend.MachineValue.MachineInst;
 
-import Backend.Reg.PhysicalReg;
-import Backend.Reg.Reg;
+import Backend.Reg.MCReg;
 
 public class MCReturn extends MCInst {
 
     public MCReturn(){
-        useReg.add(new PhysicalReg("ra"));
+        useReg.add(new MCReg("ra"));
     }
     @Override
     public String toString(){

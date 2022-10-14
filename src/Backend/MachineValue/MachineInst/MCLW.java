@@ -12,7 +12,7 @@ public class MCLW extends MCInst{
         this.rs = rs;
         this.imm = imm;
         useReg.add(rs);
-        defReg = rd;
+        defReg.add(rd);
     }
 
     @Override

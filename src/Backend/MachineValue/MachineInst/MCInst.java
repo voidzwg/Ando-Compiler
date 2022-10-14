@@ -38,13 +38,13 @@ public abstract class MCInst {
 
     public Tag tag;
     public ArrayList<Reg> useReg = new ArrayList<>();
-    public Reg defReg = null;
+    public ArrayList<Reg> defReg = new ArrayList<>();
 
     public ArrayList<Reg> getUseReg(){
         return useReg;
     }
 
-    public Reg getDefReg(){
+    public ArrayList<Reg> getDefReg(){
         return defReg;
     }
 }

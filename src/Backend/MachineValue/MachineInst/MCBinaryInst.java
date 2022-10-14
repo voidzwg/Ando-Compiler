@@ -20,7 +20,7 @@ public class MCBinaryInst extends MCInst{
         this.type = 1;
         useReg.add(rs1);
         useReg.add(rs2);
-        defReg = rd;
+        defReg.add(rd);
     }
 
     public MCBinaryInst(Tag tag, Reg rd, Reg rs1, int imm){
@@ -30,7 +30,7 @@ public class MCBinaryInst extends MCInst{
         this.imm = imm;
         this.type = 2;
         useReg.add(rs1);
-        defReg = rd;
+        defReg.add(rd);
     }
 
     public MCBinaryInst(Tag tag, Reg rd, Reg rs){
@@ -39,7 +39,7 @@ public class MCBinaryInst extends MCInst{
         this.rs1 = rs;
         this.type = 3;
         useReg.add(rs);
-        defReg = rd;
+        defReg.add(rd);
     }
 
     @Override

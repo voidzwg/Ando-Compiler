@@ -3,7 +3,7 @@ package Backend;
 import Backend.MachineValue.MCBlock;
 import Backend.MachineValue.MCFunction;
 import Backend.MachineValue.MachineInst.*;
-import Backend.Reg.PhysicalReg;
+import Backend.Reg.MCReg;
 import Backend.Reg.Reg;
 import Backend.Reg.VirtualReg;
 import IR.IRModule;
@@ -104,7 +104,7 @@ public class MCModule {
             }
 
             Reg reg;
-            if(num == 0) return PhysicalReg.zero;
+            if(num == 0) return MCReg.zero;
             else reg = new VirtualReg();
             valRegMap.put(num, reg);
             regMap.put(ident, reg);
@@ -157,11 +157,11 @@ public class MCModule {
                 ConstInteger intConst = (ConstInteger) retInst.getValue();
                 int imm = intConst.getVal();
 
-                CurBlock.addInst(new MCLI(PhysicalReg.a0, imm));
+                CurBlock.addInst(new MCLI(MCReg.a0, imm));
             }
             else{
                 Reg reg = val2Reg(retInst.getValue());
-                CurBlock.addInst(new MCMV(PhysicalReg.a0, reg));
+                CurBlock.addInst(new MCMV(MCReg.a0, reg));
             }
             CurBlock.addInst(new MCReturn());
         }
@@ -265,13 +265,13 @@ public class MCModule {
                 spMap.put(pointer.getName(), offset);
                 CurSpTop += 4;
             }
-            CurBlock.addInst(new MCSW(value, PhysicalReg.sp, offset));
+            CurBlock.addInst(new MCSW(value, MCReg.sp, offset));
         }
         else if(instruction instanceof LoadInst){
             LoadInst loadInst = (LoadInst) instruction;
             int offset = spMap.get(loadInst.getPointer().getName());
             Reg rs = val2Reg(loadInst);
-            CurBlock.addInst(new MCLW(rs, PhysicalReg.sp, offset));
+            CurBlock.addInst(new MCLW(rs, MCReg.sp, offset));
         }
         else if(instruction instanceof BrInst){
             BrInst brInst = (BrInst) instruction;
@@ -299,7 +299,7 @@ public class MCModule {
     private void genBasicBlock(BasicBlock basicBlock){
         ArrayList<Instruction> instructions = basicBlock.getInsts();
 
-        if(CurBlock.isEntry()) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, PhysicalReg.sp, PhysicalReg.sp, -CurSize));
+        if(CurBlock.isEntry()) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, -CurSize));
         for(Instruction instruction : instructions){
             genInst(instruction);
         }

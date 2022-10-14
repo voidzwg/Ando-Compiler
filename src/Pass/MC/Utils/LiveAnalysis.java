@@ -6,6 +6,7 @@ import Backend.MachineValue.MachineInst.MCInst;
 import Backend.Reg.Reg;
 import Backend.Reg.VirtualReg;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,22 +26,18 @@ public class LiveAnalysis {
         for(MCBlock mcBlock : mcBlocks){
             //  计算use, def
             BlockLiveInfo liveInfo = new BlockLiveInfo();
-            ArrayList<MCInst> mcInsts = mcBlock.getMachineInsts();
+            ArrayList<MCInst> mcInsts = mcBlock.getMCInsts();
             for(MCInst mcInst : mcInsts){
-                Reg defReg = mcInst.getDefReg();
+                ArrayList<Reg> defReg = mcInst.getDefReg();
                 ArrayList<Reg> useReg = mcInst.getUseReg();
-                if(defReg instanceof VirtualReg){
-                    VirtualReg vDefReg = (VirtualReg) defReg;
-                    if(!liveInfo.use.contains(vDefReg)){
-                        liveInfo.def.add(vDefReg);
+                for(Reg reg : defReg){
+                    if(!liveInfo.use.contains(reg)){
+                        liveInfo.def.add(reg);
                     }
                 }
                 for(Reg reg : useReg){
-                    if(reg instanceof VirtualReg){
-                        VirtualReg vUseReg = (VirtualReg) reg;
-                        if(!liveInfo.def.contains(vUseReg)){
-                            liveInfo.use.add(vUseReg);
-                        }
+                    if(!liveInfo.def.contains(reg)){
+                        liveInfo.use.add(reg);
                     }
                 }
             }
@@ -55,7 +52,7 @@ public class LiveAnalysis {
             change = false;
             for(MCBlock mb : mcBlocks){
                 BlockLiveInfo info = liveAnalysisRes.get(mb);
-                HashSet<VirtualReg> newIn = new HashSet<>(info.use);
+                HashSet<Reg> newIn = new HashSet<>(info.use);
                 if(mb.hasSucc()){
                     info.out.addAll(liveAnalysisRes.get(mb.getTrueBlock()).in);
                     if(mb.hasFalseSucc()){
@@ -79,10 +76,10 @@ public class LiveAnalysis {
     }
 
     public static class BlockLiveInfo{
-        private HashSet<VirtualReg> use = new HashSet<>();
-        private HashSet<VirtualReg> def = new HashSet<>();
-        private HashSet<VirtualReg> in = new HashSet<>();
-        private HashSet<VirtualReg> out = new HashSet<>();
+        public HashSet<Reg> use = new HashSet<>();
+        public HashSet<Reg> def = new HashSet<>();
+        public HashSet<Reg> in = new HashSet<>();
+        public HashSet<Reg> out = new HashSet<>();
         public BlockLiveInfo(){
         }
     }

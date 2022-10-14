@@ -27,7 +27,7 @@ public class MIPSDump {
 
     private static void DumpMCBlock(MCBlock mcBlock) throws IOException {
         out.write(mcBlock.getName() + ":\n");
-        ArrayList<MCInst> mcInsts = mcBlock.getMachineInsts();
+        ArrayList<MCInst> mcInsts = mcBlock.getMCInsts();
         for(MCInst mcInst : mcInsts){
             DumpMCInst(mcInst);
         }

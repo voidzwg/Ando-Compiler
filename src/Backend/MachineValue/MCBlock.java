@@ -26,7 +26,7 @@ public class MCBlock {
         machineInsts.add(mcInst);
     }
 
-    public ArrayList<MCInst> getMachineInsts() {
+    public ArrayList<MCInst> getMCInsts() {
         return machineInsts;
     }
 
@@ -64,4 +64,5 @@ public class MCBlock {
     public boolean isEntry() {
         return isEntry;
     }
+
 }

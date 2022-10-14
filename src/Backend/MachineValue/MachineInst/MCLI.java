@@ -9,7 +9,7 @@ public class MCLI extends MCInst{
     public MCLI(Reg rd, int imm){
         this.rd = rd;
         this.imm = imm;
-        defReg = rd;
+        defReg.add(rd);
     }
 
     @Override
