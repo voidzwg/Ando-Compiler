@@ -39,8 +39,8 @@ public class Compiler {
         MCModule mcModule = new MCModule();
         mcModule.genMips(irModule);
 
-        //  后端优化
-        passManager.runMCPasses(mcModule);
+//        //  后端优化
+//        passManager.runMCPasses(mcModule);
 
         //  后端输出
         MIPSDump.DumpMCModule(mcModule);

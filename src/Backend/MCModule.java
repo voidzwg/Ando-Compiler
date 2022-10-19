@@ -255,23 +255,15 @@ public class MCModule {
         }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
-            Reg value = val2Reg(storeInst.getValue());
-            int offset = CurSpTop;
-            Value pointer = storeInst.getPointer();
-            if(spMap.containsKey(pointer.getName())){
-                offset = spMap.get(pointer.getName());
-            }
-            else {
-                spMap.put(pointer.getName(), offset);
-                CurSpTop += 4;
-            }
-            CurBlock.addInst(new MCSW(value, MCReg.sp, offset));
+            Reg rs = val2Reg(storeInst.getValue());
+            Reg rd = val2Reg(storeInst.getPointer());
+            CurBlock.addInst(new MCMV(rd, rs));
         }
         else if(instruction instanceof LoadInst){
             LoadInst loadInst = (LoadInst) instruction;
-            int offset = spMap.get(loadInst.getPointer().getName());
-            Reg rs = val2Reg(loadInst);
-            CurBlock.addInst(new MCLW(rs, MCReg.sp, offset));
+            Reg rd = val2Reg(loadInst);
+            Reg rs = val2Reg(loadInst.getPointer());
+            CurBlock.addInst(new MCMV(rd, rs));
         }
         else if(instruction instanceof BrInst){
             BrInst brInst = (BrInst) instruction;

@@ -15,6 +15,14 @@ public class MCMV extends MCInst{
 
     @Override
     public String toString(){
-        return "movz " + rd + ", " + rs + ", $zero";
+        return "move " + rd + ", " + rs;
+    }
+
+    public Reg getDst() {
+        return rd;
+    }
+
+    public Reg getSrc() {
+        return rs;
     }
 }

@@ -62,7 +62,7 @@ public class StmtAST extends BaseAST{
         this.elseStmtAST = elseStmtAST;
         this.type = 6;
     }
-
+    //  while (Cond) Stmt
     public StmtAST(CondAST condAST, StmtAST loopStmt){
         this.condAST = condAST;
         this.loopStmt = loopStmt;

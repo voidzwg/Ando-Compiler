@@ -2,20 +2,20 @@
 	.globl main_0
 main_0:
 	addi $sp, $sp, -32
-	sw $zero, 0($sp)
+	move $0, $zero
 	j main_2
 main_2:
-	lw $0, 0($sp)
-	slti $1, $0, 10
-	sne $2, $1, 0
-	bnez $2, main_6
+	move $1, $0
+	slti $2, $1, 10
+	sne $3, $2, 0
+	bnez $3, main_6
 	j main_9
 main_6:
-	lw $3, 0($sp)
-	addi $4, $3, 1
-	sw $4, 0($sp)
+	move $4, $0
+	addi $5, $4, 1
+	move $0, $5
 	j main_2
 main_9:
-	lw $5, 0($sp)
-	movz $a0, $5, $zero
+	move $6, $0
+	move $a0, $6
 	jr $ra

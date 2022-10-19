@@ -13,4 +13,8 @@ public class MCReg extends Reg{
         RegNameMap regNameMap = RegNameMap.getInstance();
         this.id = regNameMap.getRegNum(name);
     }
+
+    public int getPreColor(){
+        return id;
+    }
 }

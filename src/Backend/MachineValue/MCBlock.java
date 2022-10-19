@@ -1,8 +1,11 @@
 package Backend.MachineValue;
 
 import Backend.MachineValue.MachineInst.MCInst;
+import Backend.Reg.Reg;
+import Backend.Reg.VirtualReg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class MCBlock {
     private MCFunction parentFunc;
@@ -13,6 +16,7 @@ public class MCBlock {
     private boolean isEntry;
     private boolean hasSucc;
     private boolean hasFalseSucc;
+    private int loopDepth;
 
     public MCBlock(MCFunction parentFunc, ArrayList<MCInst> machineCodes, String name, boolean isEntry) {
         this.parentFunc = parentFunc;
@@ -28,6 +32,13 @@ public class MCBlock {
 
     public ArrayList<MCInst> getMCInsts() {
         return machineInsts;
+    }
+
+    public void setLoopDepth(int x){
+        this.loopDepth = x;
+    }
+    public int getLoopDepth() {
+        return loopDepth;
     }
 
     public String getName() {
@@ -63,6 +74,15 @@ public class MCBlock {
 
     public boolean isEntry() {
         return isEntry;
+    }
+
+    public HashSet<Reg> getVirtualReg(){
+        HashSet<Reg> virtualReg = new HashSet<>();
+        for(MCInst mcInst : machineInsts){
+            mcInst.getUseReg().stream().filter(reg -> reg instanceof VirtualReg).forEach(virtualReg::add);
+            mcInst.getDefReg().stream().filter(reg -> reg instanceof VirtualReg).forEach(virtualReg::add);
+        }
+        return virtualReg;
     }
 
 }
