@@ -14,6 +14,6 @@ public class MCLI extends MCInst{
 
     @Override
     public String toString(){
-        return "li " + rd + " " + imm;
+        return "li " + rd + ", " + imm;
     }
 }

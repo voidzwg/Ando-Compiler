@@ -12,6 +12,7 @@ import IR.Value.Instructions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class MCModule {
 
@@ -19,20 +20,21 @@ public class MCModule {
     private final ArrayList<MCFunction> mcFunctions = new ArrayList<>();
     private MCFunction CurFunction;
     private MCBlock CurBlock;
+    private Function CurIRFunction;
     private int CurSize;
     private String CurFuncName;
 
-    //  valRegMap用于存储VirReg中的数据
-    private final HashMap<Integer, Reg> valRegMap = new HashMap<>();
     //  regMap用于存储Value到VirReg的映射
     private final HashMap<String, Reg> regMap = new HashMap<>();
-    //  spMap存储value到sp中的位置
-    private final HashMap<String, Integer> spMap = new HashMap<>();
+    //  spMap存储Reg到sp中的位置
+    private final HashMap<Reg, Integer> spMap = new HashMap<>();
+    //  saveRegs存储所有需要在call的时候保存的Reg
+    private final HashSet<Reg> saveRegs = new HashSet<>();
 
     //  用来记录函数是否为叶子函数
     private final HashMap<String, Boolean> isLeafMap = new HashMap<>();
     //  查找mcBlock
-    private HashMap<String, MCBlock> mcBlockMap = new HashMap<>();
+    private final HashMap<String, MCBlock> mcBlockMap = new HashMap<>();
     private int calAns(OP op, int l, int r){
         if(op == OP.Add) return l + r;
         else if(op == OP.Sub) return l - r;
@@ -67,10 +69,12 @@ public class MCModule {
 
     private int CurSpTop = 0;
 
-
     private int calSize(Function function){
         int size = 0;
         boolean isLeaf = true;
+        //  传入的fParams
+        size += function.getArgs().size() * 4;
+
         ArrayList<BasicBlock> bbs = function.getBbs();
         for(BasicBlock bb : bbs){
             ArrayList<Instruction> insts = bb.getInsts();
@@ -82,14 +86,21 @@ public class MCModule {
                     isLeaf = false;
                     CallInst callInst = (CallInst) inst;
                     int argNum = callInst.getValues().size();
-                    if(argNum > 8) size += (argNum - 8) * 4;
+                    //  arg里有常数也有参数，干脆都算空间
+                    size += argNum * 4;
                 }
             }
         }
-        isLeafMap.put(function.getName(), isLeaf);
+        isLeafMap.put(function.getName().replace("@", ""), isLeaf);
         //  预留给ra的
-        if(isLeaf) size += 4;
-        return (size + 15) / 16 * 16;
+        if(!isLeaf) size += 4;
+        return size;
+    }
+
+    private Reg buildVirReg(){
+        Reg reg = new VirtualReg();
+        saveRegs.add(reg);
+        return reg;
     }
 
     private Reg val2Reg(Value value){
@@ -97,22 +108,18 @@ public class MCModule {
         if(regMap.containsKey(ident)){
             return regMap.get(ident);
         }
+        //  value为常数时，我们不应该建立映射
+        //  因为该寄存器内的值会不断改变
         if(value instanceof ConstInteger){
             int num = Integer.parseInt(ident);
-            if(valRegMap.containsKey(num)){
-                return valRegMap.get(num);
-            }
-
             Reg reg;
             if(num == 0) return MCReg.zero;
-            else reg = new VirtualReg();
-            valRegMap.put(num, reg);
-            regMap.put(ident, reg);
+            else reg = buildVirReg();
             CurBlock.addInst(new MCLI(reg, num));
             return reg;
         }
         else{
-            Reg reg = new VirtualReg();
+            Reg reg = buildVirReg();
             regMap.put(ident, reg);
             return reg;
         }
@@ -138,32 +145,29 @@ public class MCModule {
         return null;
     }
 
-    //  返回加载进的VirReg
-    private Reg buildMCLi(int val){
-        Reg reg;
-        if(!valRegMap.containsKey(val)){
-            reg = new VirtualReg();
-            valRegMap.put(val, reg);
+    private void epilogue(){
+        if(!isLeafMap.containsKey(CurFuncName)) {
+            CurBlock.addInst(new MCLW(MCReg.ra, MCReg.sp, CurSize - 4));
         }
-        else reg = valRegMap.get(val);
-        CurBlock.addInst(new MCLI(reg, val));
-        return reg;
+        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, CurSize));
+        CurBlock.addInst(new MCJump("$ra", 1));
+        CurBlock.addInst(new MCNOP());
     }
-
     private void genInst(Instruction instruction){
         if(instruction instanceof RetInst){
             RetInst retInst = (RetInst) instruction;
-            if(retInst.getValue() instanceof ConstInteger) {
+            Value retVal = retInst.getValue();
+            if(retVal instanceof ConstInteger) {
                 ConstInteger intConst = (ConstInteger) retInst.getValue();
                 int imm = intConst.getVal();
 
                 CurBlock.addInst(new MCLI(MCReg.a0, imm));
             }
-            else{
+            else if(!retVal.getName().equals("void")){
                 Reg reg = val2Reg(retInst.getValue());
                 CurBlock.addInst(new MCMV(MCReg.a0, reg));
             }
-            CurBlock.addInst(new MCReturn());
+            epilogue();
         }
         else if(instruction instanceof BinaryInst){
             BinaryInst binaryInst = (BinaryInst) instruction;
@@ -191,7 +195,9 @@ public class MCModule {
             if(isImm == 2){
                 int leftVal = ((ConstInteger) left).getVal();
                 int rightVal = ((ConstInteger) right).getVal();
-                buildMCLi(calAns(op, leftVal, rightVal));
+
+                Reg reg = buildVirReg();
+                CurBlock.addInst(new MCLI(reg, calAns(op, leftVal, rightVal)));
             }
 
             else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
@@ -236,7 +242,10 @@ public class MCModule {
                 int rightVal = ((ConstInteger) right).getVal();
                 int ans;
                 ans = calAns(op, leftVal, rightVal);
-                Reg reg = buildMCLi(ans);
+
+                Reg reg = buildVirReg();
+
+                CurBlock.addInst(new MCLI(reg, ans));
                 regMap.put(cmpInst.getName(), reg);
             }
             else if(isImm == 1){
@@ -269,7 +278,8 @@ public class MCModule {
             BrInst brInst = (BrInst) instruction;
             if(brInst.isJump()){
                 BasicBlock jumpBB = brInst.getLabelJump();
-                CurBlock.addInst(new MCJump(rawBbName2MCBbName(jumpBB.getName())));
+                CurBlock.addInst(new MCJump(rawBbName2MCBbName(jumpBB.getName()), 0));
+                CurBlock.addInst(new MCNOP());
                 CurBlock.setTrueBlock(mcBlockMap.get(rawBbName2MCBbName(jumpBB.getName())));
             }
             else{
@@ -280,9 +290,113 @@ public class MCModule {
                 Reg reg = val2Reg(brInst.getJudVal());
                 CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, mcLeftName));
                 CurBlock.setTrueBlock(mcBlockMap.get(mcLeftName));
-                CurBlock.addInst(new MCJump(mcRightName));
+                CurBlock.addInst(new MCJump(mcRightName, 0));
+                CurBlock.addInst(new MCNOP());
                 CurBlock.setFalseBlock(mcBlockMap.get(mcRightName));
             }
+        }
+        else if(instruction instanceof CallInst){
+            CallInst callInst = (CallInst) instruction;
+
+            saveAll(callInst);
+
+            String blockName = callInst.getCallFunc().getName().replace("@", "") + "_0";
+            CurBlock.addInst(new MCJump(blockName, 2));
+            CurBlock.addInst(new MCNOP());
+
+            //  保存返回值
+            if(callInst.hasName()){
+                Reg reg = val2Reg(callInst);
+                CurBlock.addInst(new MCMV(reg, MCReg.a0));
+                saveRegs.remove(reg);
+            }
+            loadAll();
+            if(callInst.hasName()) {
+                saveRegs.add(val2Reg(callInst));
+            }
+        }
+    }
+
+    private void loadAll(){
+        for(Reg reg : saveRegs){
+            CurBlock.addInst(new MCLW(reg, MCReg.sp, spMap.get(reg)));
+        }
+    }
+
+    private void saveAll(CallInst callInst){
+        saveAllReg();
+        ArrayList<Value> rParams = callInst.getValues();
+        for(int i = 0; i < rParams.size(); i++){
+            Value value = rParams.get(i);
+            if(i < 4){
+                String regName = "a" + i;
+                if(value instanceof ConstInteger){
+                    CurBlock.addInst(new MCLI(new MCReg(regName), ((ConstInteger) value).getVal()));
+                }
+                else{
+                    Reg reg = val2Reg(value);
+                    CurBlock.addInst(new MCMV(new MCReg(regName), reg));
+                }
+            }
+            else saveRParam(value, i * 4);
+        }
+    }
+
+    //  saveRegs在马上要call其他函数的时候被调用
+    //  saveRegs保存所有该函数目前要使用的寄存器的值
+    private void saveAllReg(){
+        for(Reg reg : saveRegs){
+            if(spMap.containsKey(reg)){
+                int pos = spMap.get(reg);
+                CurBlock.addInst(new MCSW(reg, MCReg.sp, pos));
+            }
+            else {
+                CurBlock.addInst(new MCSW(reg, MCReg.sp, CurSpTop));
+                spMap.put(reg, CurSpTop);
+                CurSpTop -= 4;
+            }
+        }
+    }
+
+    private void saveRParam(Value exRParam, int pos){
+        Reg reg;
+        //  在栈帧上存储参数需要从低到高存储
+        if(exRParam instanceof ConstInteger){
+            reg = new VirtualReg();
+            CurBlock.addInst(new MCLI(reg, ((ConstInteger) exRParam).getVal()));
+            CurBlock.addInst(new MCSW(reg, MCReg.sp, pos));
+        }
+        else {
+            reg = val2Reg(exRParam);
+            CurBlock.addInst(new MCSW(reg, MCReg.sp, pos));
+        }
+    }
+
+    //  prologue处理一些函数的初始化工作
+    //  例如接受参数，保存ra，初始化sp
+    private void prologue(){
+        //  1. 接受参数
+        for(int i = 0; i < CurIRFunction.getArgs().size(); i++){
+            String argName = "a" + i;
+            Value arg = CurIRFunction.getArgs().get(i);
+            Reg reg = val2Reg(arg);
+            if(i < 4) CurBlock.addInst(new MCMV(reg, new MCReg(argName)));
+            else {
+                CurBlock.addInst(new MCLW(reg, MCReg.sp, i * 4));
+            }
+        }
+
+        //  2. 设置栈顶
+        CurSize = calSize(CurIRFunction);
+        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, -CurSize));
+        CurSpTop = CurSize - 4;
+
+        //  3. 保存ra
+        //  ra和局部变量从高地址向低地址放，超过八个的函数参数从低地址向高地址放
+        if(!isLeafMap.containsKey(CurFuncName)){
+            CurBlock.addInst(new MCSW(MCReg.ra, MCReg.sp, CurSpTop));
+            spMap.put(MCReg.ra, CurSpTop);
+            CurSpTop -= 4;
         }
     }
 
@@ -291,24 +405,27 @@ public class MCModule {
     private void genBasicBlock(BasicBlock basicBlock){
         ArrayList<Instruction> instructions = basicBlock.getInsts();
 
-        if(CurBlock.isEntry()) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, -CurSize));
+        if(CurBlock.isEntry()){
+            prologue();
+        }
         for(Instruction instruction : instructions){
             genInst(instruction);
         }
     }
     private void genFunction(Function function){
         CurFuncName = function.getName().replace("@", "");
-
+        CurIRFunction = function;
         ArrayList<MCBlock> mcBlocks = new ArrayList<>();
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
         //  初始化，该清零的清零，该设置的设置
-        CurSize = calSize(function);
-        CurSpTop = 0;
         spMap.clear();
+        saveRegs.clear();
         mcBlockMap.clear();
+
         for (int i = 0; i < basicBlocks.size(); i++) {
             boolean isEntry = (i == 0);
             BasicBlock bb = basicBlocks.get(i);
+            bb.setName("%" + i);
             String mcBlockName = rawBbName2MCBbName(bb.getName());
             MCBlock mcBlock = new MCBlock(CurFunction, new ArrayList<>(), mcBlockName, isEntry);
             mcBlockMap.put(mcBlockName, mcBlock);

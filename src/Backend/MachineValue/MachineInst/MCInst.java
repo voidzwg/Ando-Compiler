@@ -33,7 +33,8 @@ public abstract class MCInst {
         bnez,
         beqz,
         bne,
-        beq
+        beq,
+        nop
     }
 
     public Tag tag;

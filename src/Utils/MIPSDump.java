@@ -47,8 +47,16 @@ public class MIPSDump {
         out.write("\t.globl main_0\n");
 
         ArrayList<MCFunction> mcFunctions = mcModule.getMcFunctions();
+        //  先输出main函数, 后面爱咋输出咋输出qwq
         for(MCFunction mcFunction : mcFunctions){
-            DumpMCFunction(mcFunction);
+            if(mcFunction.getName().equals("main")) {
+                DumpMCFunction(mcFunction);
+            }
+        }
+        for(MCFunction mcFunction : mcFunctions){
+            if(!mcFunction.getName().equals("main")) {
+                DumpMCFunction(mcFunction);
+            }
         }
 
         out.close();

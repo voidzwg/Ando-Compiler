@@ -18,8 +18,8 @@ public class Compiler {
         Parser parser = new Parser();
         CompUnitAST compUnitAST = parser.parseCompUnitAST();
 
-        //  前端输出
-        ASTDump.DumpCompUnit(compUnitAST);
+//        //  前端输出
+//        ASTDump.DumpCompUnit(compUnitAST);
 
         //  中端
         Visitor visitor = new Visitor();

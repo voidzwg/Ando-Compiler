@@ -376,7 +376,6 @@ public class RegAllocator implements Pass.MCPass {
                 }
                 live.addAll(useReg);
             }
-
         }
 
     }

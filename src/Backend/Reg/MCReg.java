@@ -5,6 +5,7 @@ public class MCReg extends Reg{
     public boolean isAllocated = false;
 
     public static MCReg sp = new MCReg("sp");
+    public static MCReg ra = new MCReg("ra");
     public static MCReg zero = new MCReg("zero");
     public static MCReg a0 = new MCReg("a0");
 
