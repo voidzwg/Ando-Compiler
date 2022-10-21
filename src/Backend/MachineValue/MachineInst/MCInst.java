@@ -34,7 +34,8 @@ public abstract class MCInst {
         beqz,
         bne,
         beq,
-        nop
+        nop,
+        syscall
     }
 
     public Tag tag;

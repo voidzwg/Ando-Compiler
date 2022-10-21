@@ -146,12 +146,24 @@ public class MCModule {
     }
 
     private void epilogue(){
-        if(!isLeafMap.containsKey(CurFuncName)) {
+        //  1. 恢复ra
+        if(!isLeafMap.get(CurFuncName)) {
             CurBlock.addInst(new MCLW(MCReg.ra, MCReg.sp, CurSize - 4));
         }
+
+        //  2. 复原栈顶
         CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, CurSize));
-        CurBlock.addInst(new MCJump("$ra", 1));
-        CurBlock.addInst(new MCNOP());
+
+        //  3. 生成jr ra或syscall
+        if(!CurFuncName.equals("main")) {
+            CurBlock.addInst(new MCJump("$ra", 1));
+            CurBlock.addInst(new MCOther(MCInst.Tag.nop));
+        }
+        else {
+            CurBlock.addInst(new MCLI(new MCReg("v0"), 10));
+            CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
+        }
+
     }
     private void genInst(Instruction instruction){
         if(instruction instanceof RetInst){
@@ -279,7 +291,7 @@ public class MCModule {
             if(brInst.isJump()){
                 BasicBlock jumpBB = brInst.getLabelJump();
                 CurBlock.addInst(new MCJump(rawBbName2MCBbName(jumpBB.getName()), 0));
-                CurBlock.addInst(new MCNOP());
+                CurBlock.addInst(new MCOther(MCInst.Tag.nop));
                 CurBlock.setTrueBlock(mcBlockMap.get(rawBbName2MCBbName(jumpBB.getName())));
             }
             else{
@@ -291,7 +303,7 @@ public class MCModule {
                 CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, mcLeftName));
                 CurBlock.setTrueBlock(mcBlockMap.get(mcLeftName));
                 CurBlock.addInst(new MCJump(mcRightName, 0));
-                CurBlock.addInst(new MCNOP());
+                CurBlock.addInst(new MCOther(MCInst.Tag.nop));
                 CurBlock.setFalseBlock(mcBlockMap.get(mcRightName));
             }
         }
@@ -302,7 +314,7 @@ public class MCModule {
 
             String blockName = callInst.getCallFunc().getName().replace("@", "") + "_0";
             CurBlock.addInst(new MCJump(blockName, 2));
-            CurBlock.addInst(new MCNOP());
+            CurBlock.addInst(new MCOther(MCInst.Tag.nop));
 
             //  保存返回值
             if(callInst.hasName()){
@@ -393,7 +405,8 @@ public class MCModule {
 
         //  3. 保存ra
         //  ra和局部变量从高地址向低地址放，超过八个的函数参数从低地址向高地址放
-        if(!isLeafMap.containsKey(CurFuncName)){
+
+        if(!isLeafMap.get(CurFuncName)){
             CurBlock.addInst(new MCSW(MCReg.ra, MCReg.sp, CurSpTop));
             spMap.put(MCReg.ra, CurSpTop);
             CurSpTop -= 4;
