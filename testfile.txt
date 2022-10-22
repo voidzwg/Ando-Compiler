@@ -1,7 +1,6 @@
-int var;
-
-const int one = 1;
+int x[2][2] = {{0, 1}, {2, 3}};
 
 int main() {
-  return var + one;
+    printf("%d\n", x[1][0]);
+    return 0;
 }

@@ -49,7 +49,17 @@ public class MIPSDump {
         if(mcDatas.size() != 0) out.write(".data\n");
         for(MCData mcData : mcDatas){
             if(mcData.getType() == 0){
-                out.write("\t" + mcData.getName() + ": .asciiz\"" + mcData.getString() + "\"\n");
+                out.write(mcData.getName() + ": .asciiz\"" + mcData.getString() + "\"\n");
+            }
+            else if(mcData.getType() == 1){
+                out.write(mcData.getName() + ": .word " + mcData.getNum() + "\n");
+            }
+            else if(mcData.getType() == 2){
+                out.write(mcData.getName() + ": \n");
+                ArrayList<Integer> inits = mcData.getInits();
+                for(int init : inits){
+                    out.write("\t.word " + init + "\n");
+                }
             }
         }
 

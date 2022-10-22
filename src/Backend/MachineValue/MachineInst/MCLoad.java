@@ -16,6 +16,7 @@ public class MCLoad extends MCInst{
         defReg.add(rd);
     }
 
+    //  la
     public MCLoad(Reg rd, String msgName){
         this.msgName = msgName;
         this.rd = rd;
