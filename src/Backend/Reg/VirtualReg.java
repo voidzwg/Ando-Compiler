@@ -2,10 +2,14 @@ package Backend.Reg;
 
 public class VirtualReg extends Reg{
     private static int id = 0;
-
-    private String name;
+    private int vid;
 
     public VirtualReg(){
-        this.name = "$" + id++;
+        super(String.valueOf(id++));
+        this.vid = id;
+    }
+
+    public int getId(){
+        return vid;
     }
 }

@@ -24,7 +24,7 @@ public class IRDump {
 
     static {
         try {
-            out = new BufferedWriter(new FileWriter(Global.outputFile));
+            out = new BufferedWriter(new FileWriter(Global.iroutFile));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,6 +1,9 @@
 package Backend.MachineValue;
 
+import Backend.Reg.Reg;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class MCFunction {
     private String name;
@@ -17,5 +20,13 @@ public class MCFunction {
 
     public ArrayList<MCBlock> getMcBlocks() {
         return mcBlocks;
+    }
+
+    public HashSet<Reg> getVirtualReg(){
+        HashSet<Reg> virtualReg = new HashSet<>();
+        for(MCBlock mcBlock : mcBlocks){
+            virtualReg.addAll(mcBlock.getVirtualReg());
+        }
+        return virtualReg;
     }
 }

@@ -9,6 +9,7 @@ public class BasicBlock extends Value{
     private Function parentFunc;
     private ArrayList<Instruction> insts;
     private boolean isTerminal;
+    private int loopDepth;
 
     public static int blockNum = 0;
 
@@ -16,6 +17,7 @@ public class BasicBlock extends Value{
         super("block" + ++blockNum, new LabelType());
         this.insts = new ArrayList<>();
         this.isTerminal = false;
+        this.loopDepth = 0;
     }
 
     public BasicBlock(Function function){
@@ -23,6 +25,7 @@ public class BasicBlock extends Value{
         this.insts = new ArrayList<>();
         this.parentFunc = function;
         this.isTerminal = false;
+        this.loopDepth = 0;
     }
 
     //  Main Methods
@@ -41,5 +44,13 @@ public class BasicBlock extends Value{
 
     public void removeInst(Instruction instruction){
         insts.remove(instruction);
+    }
+
+    public void setLoopDepth(int loopDepth){
+        this.loopDepth = loopDepth;
+    }
+
+    public int getLoopDepth(){
+        return loopDepth;
     }
 }

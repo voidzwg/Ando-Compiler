@@ -137,7 +137,7 @@ public class Visitor {
             CurValue = f.buildNumber(arrayValues.get(idx));
         }
     }
-    //  这两个block用于在continue和break时保存while循环入口块和跳出块的信息
+    //  这两个arrayList用于在continue和break时保存while循环入口块和跳出块的信息
     //  我们这里用数组模拟栈，之所以不能像之前的if/else中在函数中定义block来保存当前true/false block，
     //  是因为在if/else的时候无论是否发生了if/else的嵌套，还是只是单纯的非跳转语句
     //  我们只要在回溯的时候为上一层的block构建br即可
@@ -1034,12 +1034,8 @@ public class Visitor {
         if(isEntry) {
             for (String identArg : tmpHashMap.keySet()) {
                 Value argument = tmpHashMap.get(identArg);
-
                 AllocInst allocInst = f.buildAllocInst(identArg, argument.getType(), CurBasicBlock, false);
                 f.buildStoreInst(CurBasicBlock, argument, allocInst);
-
-
-
                 pushSymbol(identArg, allocInst);
             }
         }

@@ -22,6 +22,10 @@ public class BrInst extends Instruction {
         this.type = 2;
     }
 
+    public boolean isJump(){
+        return type == 2;
+    }
+
     public Value getJudVal(){
         return this.getOperandList().get(0).getValue();
     }
