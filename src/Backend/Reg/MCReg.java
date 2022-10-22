@@ -8,6 +8,7 @@ public class MCReg extends Reg{
     public static MCReg ra = new MCReg("ra");
     public static MCReg zero = new MCReg("zero");
     public static MCReg a0 = new MCReg("a0");
+    public static MCReg v0 = new MCReg("v0");
 
     public MCReg(String name){
         super(name);

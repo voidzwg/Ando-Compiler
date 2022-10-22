@@ -1,6 +1,7 @@
 package IR.Value.Instructions;
 
 import IR.Type.IntegerType;
+import IR.Type.StringType;
 import IR.Type.Type;
 import IR.Value.*;
 
@@ -32,6 +33,11 @@ public class CallInst extends Instruction {
 
     public Value getCallFunc(){
         return getOperandList().get(0).getValue();
+    }
+
+    public String getFString() {
+        StringType strType = (StringType) getOperandList().get(1).getValue().getType();
+        return strType.getVal();
     }
 
     public ArrayList<Value> getValues(){

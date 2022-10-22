@@ -1,6 +1,7 @@
 package Backend;
 
 import Backend.MachineValue.MCBlock;
+import Backend.MachineValue.MCData;
 import Backend.MachineValue.MCFunction;
 import Backend.MachineValue.MachineInst.*;
 import Backend.Reg.MCReg;
@@ -9,7 +10,6 @@ import Backend.Reg.VirtualReg;
 import IR.IRModule;
 import IR.Value.*;
 import IR.Value.Instructions.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +35,11 @@ public class MCModule {
     private final HashMap<String, Boolean> isLeafMap = new HashMap<>();
     //  查找mcBlock
     private final HashMap<String, MCBlock> mcBlockMap = new HashMap<>();
+
+    //  mips data段
+    private ArrayList<MCData> data = new ArrayList<>();
+    private int msgNum = 0;
+
     private int calAns(OP op, int l, int r){
         if(op == OP.Add) return l + r;
         else if(op == OP.Sub) return l - r;
@@ -115,7 +120,7 @@ public class MCModule {
             Reg reg;
             if(num == 0) return MCReg.zero;
             else reg = buildVirReg();
-            CurBlock.addInst(new MCLI(reg, num));
+            CurBlock.addInst(new MCLoad(reg, num));
             return reg;
         }
         else{
@@ -157,10 +162,9 @@ public class MCModule {
         //  3. 生成jr ra或syscall
         if(!CurFuncName.equals("main")) {
             CurBlock.addInst(new MCJump("$ra", 1));
-            CurBlock.addInst(new MCOther(MCInst.Tag.nop));
         }
         else {
-            CurBlock.addInst(new MCLI(new MCReg("v0"), 10));
+            CurBlock.addInst(new MCLoad(new MCReg("v0"), 10));
             CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
         }
 
@@ -173,7 +177,7 @@ public class MCModule {
                 ConstInteger intConst = (ConstInteger) retInst.getValue();
                 int imm = intConst.getVal();
 
-                CurBlock.addInst(new MCLI(MCReg.a0, imm));
+                CurBlock.addInst(new MCLoad(MCReg.a0, imm));
             }
             else if(!retVal.getName().equals("void")){
                 Reg reg = val2Reg(retInst.getValue());
@@ -209,7 +213,7 @@ public class MCModule {
                 int rightVal = ((ConstInteger) right).getVal();
 
                 Reg reg = buildVirReg();
-                CurBlock.addInst(new MCLI(reg, calAns(op, leftVal, rightVal)));
+                CurBlock.addInst(new MCLoad(reg, calAns(op, leftVal, rightVal)));
             }
 
             else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
@@ -257,7 +261,7 @@ public class MCModule {
 
                 Reg reg = buildVirReg();
 
-                CurBlock.addInst(new MCLI(reg, ans));
+                CurBlock.addInst(new MCLoad(reg, ans));
                 regMap.put(cmpInst.getName(), reg);
             }
             else if(isImm == 1){
@@ -291,7 +295,6 @@ public class MCModule {
             if(brInst.isJump()){
                 BasicBlock jumpBB = brInst.getLabelJump();
                 CurBlock.addInst(new MCJump(rawBbName2MCBbName(jumpBB.getName()), 0));
-                CurBlock.addInst(new MCOther(MCInst.Tag.nop));
                 CurBlock.setTrueBlock(mcBlockMap.get(rawBbName2MCBbName(jumpBB.getName())));
             }
             else{
@@ -303,18 +306,29 @@ public class MCModule {
                 CurBlock.addInst(new MCBr(MCInst.Tag.bnez, reg, mcLeftName));
                 CurBlock.setTrueBlock(mcBlockMap.get(mcLeftName));
                 CurBlock.addInst(new MCJump(mcRightName, 0));
-                CurBlock.addInst(new MCOther(MCInst.Tag.nop));
                 CurBlock.setFalseBlock(mcBlockMap.get(mcRightName));
             }
         }
         else if(instruction instanceof CallInst){
             CallInst callInst = (CallInst) instruction;
 
+            //  特判一下getint和printf
+            String callFuncName = callInst.getCallFunc().getName();
+            //  getint
+            if(callFuncName.equals("@__isoc99_scanf")){
+                callGetInt(callInst);
+                return;
+            }
+            //  printf
+            else if(callFuncName.equals("@printf")){
+                callPrintf(callInst);
+                return;
+            }
+
             saveAll(callInst);
 
             String blockName = callInst.getCallFunc().getName().replace("@", "") + "_0";
             CurBlock.addInst(new MCJump(blockName, 2));
-            CurBlock.addInst(new MCOther(MCInst.Tag.nop));
 
             //  保存返回值
             if(callInst.hasName()){
@@ -329,12 +343,73 @@ public class MCModule {
         }
     }
 
+    //  处理getint函数
+    //  其实就li $v0, 5和syscall两个指令
+    private void callGetInt(CallInst callInst){
+        CurBlock.addInst(new MCLoad(MCReg.v0, 5));
+        CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
+
+        //  将输入的值加载到新寄存器
+        Reg reg = val2Reg(callInst.getValues().get(0));
+        CurBlock.addInst(new MCMV(reg, MCReg.v0));
+    }
+    //  处理printf函数
+    private void callPrintf(CallInst callInst){
+        ArrayList<Value> values = callInst.getValues();
+        String fString = callInst.getFString();
+        fString = fString.replace("\"", "");
+
+        //  valTop表示values输出到第几个value了
+        int valTop = 0;
+        StringBuilder msgBuilder = new StringBuilder();
+        for(int i = 0; i < fString.length(); i++){
+            char c = fString.charAt(i);
+            if(c != '%'){
+                msgBuilder.append(c);
+            }
+            else{
+                String msg = msgBuilder.toString();
+                msgBuilder = new StringBuilder();
+                printStr(msg);
+                char jud = fString.charAt(i + 1);
+                if(jud == 'd'){
+                    printNum(values.get(valTop++));
+                }
+                i++;
+            }
+        }
+        String msg = msgBuilder.toString();
+        if(!msg.equals("")){
+            printStr(msg);
+        }
+    }
+
+    private void printStr(String str){
+        String name = "msg" + msgNum++;
+        MCData mcData = new MCData(name, str);
+        data.add(mcData);
+        CurBlock.addInst(new MCLoad(MCReg.a0, name));
+        CurBlock.addInst(new MCLoad(MCReg.v0, 4));
+        CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
+    }
+
+    private void printNum(Value value){
+        Reg reg = val2Reg(value);
+        CurBlock.addInst(new MCMV(MCReg.a0, reg));
+        CurBlock.addInst(new MCLoad(MCReg.v0, 1));
+        CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
+    }
+
+    //  当调用完一个函数后，回来要把存储的变量全部加载出来
+    //  loadAll建立一系列lw指令，将栈中存储的值加载到对应的寄存器中
     private void loadAll(){
         for(Reg reg : saveRegs){
             CurBlock.addInst(new MCLW(reg, MCReg.sp, spMap.get(reg)));
         }
     }
 
+    //  调用一个函数之前，我们要把当前活跃(其实就是之前出现过的)变量,传递的参数等全部存到栈里
+    //  saveAll建立一系列sw指令，将寄存器中的值全部存储到栈里
     private void saveAll(CallInst callInst){
         saveAllReg();
         ArrayList<Value> rParams = callInst.getValues();
@@ -343,19 +418,19 @@ public class MCModule {
             if(i < 4){
                 String regName = "a" + i;
                 if(value instanceof ConstInteger){
-                    CurBlock.addInst(new MCLI(new MCReg(regName), ((ConstInteger) value).getVal()));
+                    CurBlock.addInst(new MCLoad(new MCReg(regName), ((ConstInteger) value).getVal()));
                 }
                 else{
                     Reg reg = val2Reg(value);
                     CurBlock.addInst(new MCMV(new MCReg(regName), reg));
                 }
             }
-            else saveRParam(value, i * 4);
+            else saveRParam(value, (i - 4) * 4);
         }
     }
 
-    //  saveRegs在马上要call其他函数的时候被调用
-    //  saveRegs保存所有该函数目前要使用的寄存器的值
+    //  saveAllReg在马上要call其他函数的时候被调用
+    //  saveAllReg保存所有该函数目前要使用的寄存器的值
     private void saveAllReg(){
         for(Reg reg : saveRegs){
             if(spMap.containsKey(reg)){
@@ -370,12 +445,13 @@ public class MCModule {
         }
     }
 
+    //  当传递的参数超过四个时，saveRParam存储多余传递的参数
     private void saveRParam(Value exRParam, int pos){
         Reg reg;
         //  在栈帧上存储参数需要从低到高存储
         if(exRParam instanceof ConstInteger){
             reg = new VirtualReg();
-            CurBlock.addInst(new MCLI(reg, ((ConstInteger) exRParam).getVal()));
+            CurBlock.addInst(new MCLoad(reg, ((ConstInteger) exRParam).getVal()));
             CurBlock.addInst(new MCSW(reg, MCReg.sp, pos));
         }
         else {
@@ -394,7 +470,7 @@ public class MCModule {
             Reg reg = val2Reg(arg);
             if(i < 4) CurBlock.addInst(new MCMV(reg, new MCReg(argName)));
             else {
-                CurBlock.addInst(new MCLW(reg, MCReg.sp, i * 4));
+                CurBlock.addInst(new MCLW(reg, MCReg.sp, (i - 4) * 4));
             }
         }
 
@@ -460,6 +536,10 @@ public class MCModule {
         for(Function function : functions){
             genFunction(function);
         }
+    }
+
+    public ArrayList<MCData> getData(){
+        return data;
     }
 
     public ArrayList<MCFunction> getMcFunctions() {

@@ -2,6 +2,7 @@ package Utils;
 
 import Backend.MCModule;
 import Backend.MachineValue.MCBlock;
+import Backend.MachineValue.MCData;
 import Backend.MachineValue.MCFunction;
 import Backend.MachineValue.MachineInst.MCInst;
 
@@ -43,8 +44,17 @@ public class MIPSDump {
     }
 
     public static void DumpMCModule(MCModule mcModule) throws IOException {
-        out.write("\t.text\n");
-        out.write("\t.globl main_0\n");
+        //  输出data段
+        ArrayList<MCData> mcDatas = mcModule.getData();
+        if(mcDatas.size() != 0) out.write(".data\n");
+        for(MCData mcData : mcDatas){
+            if(mcData.getType() == 0){
+                out.write("\t" + mcData.getName() + ": .asciiz\"" + mcData.getString() + "\"\n");
+            }
+        }
+
+        //  输出text段
+        out.write(".text\n");
 
         ArrayList<MCFunction> mcFunctions = mcModule.getMcFunctions();
         //  先输出main函数, 后面爱咋输出咋输出qwq

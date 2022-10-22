@@ -1,66 +1,9 @@
-	.text
-	.globl main_0
+.text
 main_0:
-	addi $sp, $sp, -12
-	sw $ra, 8($sp)
-	li $a0, 4
-	jal fun_0
-	nop
-	move $10, $a0
-	move $a0, $10
-	lw $ra, 8($sp)
-	addi $sp, $sp, 12
+	addi $sp, $sp, -8
+	move $t1, $t2
+	addi $t3, $t1, 1
+	move $a0, $t3
+	addi $sp, $sp, 8
 	li $v0, 10
 	syscall
-fun_0:
-	move $0, $a0
-	addi $sp, $sp, -48
-	sw $ra, 44($sp)
-	move $1, $0
-	move $2, $1
-	seq $3, $2, 1
-	sne $4, $3, 0
-	bnez $4, fun_1
-	j fun_2
-	nop
-fun_1:
-	li $a0, 1
-	lw $ra, 44($sp)
-	addi $sp, $sp, 48
-	jr $ra
-	nop
-fun_2:
-	move $5, $1
-	move $6, $1
-	addi $7, $6, -1
-	sw $7, 40($sp)
-	sw $3, 36($sp)
-	sw $4, 32($sp)
-	sw $2, 28($sp)
-	sw $0, 24($sp)
-	sw $1, 20($sp)
-	sw $6, 16($sp)
-	sw $5, 12($sp)
-	move $a0, $7
-	jal fun_0
-	nop
-	move $8, $a0
-	lw $7, 40($sp)
-	lw $3, 36($sp)
-	lw $4, 32($sp)
-	lw $2, 28($sp)
-	lw $0, 24($sp)
-	lw $1, 20($sp)
-	lw $6, 16($sp)
-	lw $5, 12($sp)
-	mul $9, $5, $8
-	move $a0, $9
-	lw $ra, 44($sp)
-	addi $sp, $sp, 48
-	jr $ra
-	nop
-fun_3:
-	lw $ra, 44($sp)
-	addi $sp, $sp, 48
-	jr $ra
-	nop

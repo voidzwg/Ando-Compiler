@@ -4,10 +4,7 @@ import Frontend.Parser;
 import IR.IRModule;
 import IR.Visitor;
 import Pass.PassManager;
-import Utils.ASTDump;
-import Utils.ErrDump;
-import Utils.IRDump;
-import Utils.MIPSDump;
+import Utils.*;
 
 import java.io.*;
 
@@ -41,6 +38,9 @@ public class Compiler {
 
 //        //  后端优化
 //        passManager.runMCPasses(mcModule);
+
+        VirRegToMCReg virRegToMCReg = new VirRegToMCReg(mcModule);
+        virRegToMCReg.run();
 
         //  后端输出
         MIPSDump.DumpMCModule(mcModule);
