@@ -911,8 +911,7 @@ public class Visitor {
             if(varDefType == 1 || varDefType == 2) {
                 if (varDefAST.getType() == 2) visitInitValAST(varDefAST.getInitValAST(), true);
                 else CurValue = ConstInteger.constZero;
-                f.buildGlobalVar(ident, new PointerType(new IntegerType(32)),false, CurValue, globalVars);
-                CurValue = f.getAllocInst(ident, new IntegerType(32), CurBasicBlock);
+                CurValue = f.buildGlobalVar(ident, new PointerType(new IntegerType(32)),false, CurValue, globalVars);
                 pushSymbol(rawIdent, CurValue);
             }
             //  全局数组

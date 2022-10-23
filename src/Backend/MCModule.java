@@ -8,8 +8,14 @@ import Backend.Reg.MCReg;
 import Backend.Reg.Reg;
 import Backend.Reg.VirtualReg;
 import IR.IRModule;
+import IR.Type.ArrayType;
+import IR.Type.PointerType;
+import IR.Type.StringType;
+import IR.Type.Type;
 import IR.Value.*;
 import IR.Value.Instructions.*;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,8 +30,9 @@ public class MCModule {
     private int CurSize;
     private String CurFuncName;
 
-    //  regMap用于存储Value到VirReg的映射
-    private final HashMap<String, Reg> regMap = new HashMap<>();
+    //  regMap用于存储Value(i32)到VirReg的映射
+    private final HashMap<String, Reg> valRegMap = new HashMap<>();
+
     //  spMap存储Reg到sp中的位置
     private final HashMap<Reg, Integer> spMap = new HashMap<>();
     //  saveRegs存储所有需要在call的时候保存的Reg
@@ -38,6 +45,7 @@ public class MCModule {
 
     //  mips data段
     private ArrayList<MCData> data = new ArrayList<>();
+
     private int msgNum = 0;
 
     private int calAns(OP op, int l, int r){
@@ -110,8 +118,8 @@ public class MCModule {
 
     private Reg val2Reg(Value value){
         String ident = value.getName();
-        if(regMap.containsKey(ident)){
-            return regMap.get(ident);
+        if(valRegMap.containsKey(ident)){
+            return valRegMap.get(ident);
         }
         //  value为常数时，我们不应该建立映射
         //  因为该寄存器内的值会不断改变
@@ -123,9 +131,21 @@ public class MCModule {
             CurBlock.addInst(new MCLoad(reg, num));
             return reg;
         }
+        else if(value instanceof GlobalVar){
+            if(!(value.getType() instanceof ArrayType)) {
+                GlobalVar globalVar = (GlobalVar) value;
+                String name = ident.replace("@", "");
+                Reg reg = buildVirReg();
+                CurBlock.addInst(new MCLoad(reg, name));
+                CurBlock.addInst(new MCLW(reg, reg, 0));
+                valRegMap.put(ident, reg);
+                return reg;
+            }
+            else return null;
+        }
         else{
             Reg reg = buildVirReg();
-            regMap.put(ident, reg);
+            valRegMap.put(ident, reg);
             return reg;
         }
     }
@@ -262,7 +282,7 @@ public class MCModule {
                 Reg reg = buildVirReg();
 
                 CurBlock.addInst(new MCLoad(reg, ans));
-                regMap.put(cmpInst.getName(), reg);
+                valRegMap.put(cmpInst.getName(), reg);
             }
             else if(isImm == 1){
                 int imm = ((ConstInteger) tmpRight).getVal();
@@ -278,17 +298,38 @@ public class MCModule {
                 CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, rs2));
             }
         }
+        else if(instruction instanceof AllocInst){
+            AllocInst allocInst = (AllocInst) instruction;
+            Type type = instruction.getType();
+            if(type instanceof ArrayType) {
+                ArrayType arrType = (ArrayType) type;
+                int size = calArrSize(arrType);
+                CurSpTop -= size;
+            }
+            else {
+                CurSpTop -= 4;
+            }
+            Reg newAlloc = new VirtualReg();
+            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, newAlloc, MCReg.sp, CurSpTop));
+            valRegMap.put(allocInst.getName(), newAlloc);
+        }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
             Reg rs = val2Reg(storeInst.getValue());
-            Reg rd = val2Reg(storeInst.getPointer());
-            CurBlock.addInst(new MCMV(rd, rs));
+            Value pointer = storeInst.getPointer();
+
+            Reg reg = val2Reg(pointer);
+            CurBlock.addInst(new MCSW(rs, reg, 0));
         }
         else if(instruction instanceof LoadInst){
+            //  load指令对指针value操作，我们只需要找出该value对应的位置
+            //  再进行lw即可
             LoadInst loadInst = (LoadInst) instruction;
             Reg rd = val2Reg(loadInst);
-            Reg rs = val2Reg(loadInst.getPointer());
-            CurBlock.addInst(new MCMV(rd, rs));
+            Value pointer = loadInst.getPointer();
+
+            Reg reg = val2Reg(pointer);
+            CurBlock.addInst(new MCLW(rd, reg, 0));
         }
         else if(instruction instanceof BrInst){
             BrInst brInst = (BrInst) instruction;
@@ -324,6 +365,9 @@ public class MCModule {
                 callPrintf(callInst);
                 return;
             }
+            else if(callFuncName.equals("@memset")){
+                return;
+            }
 
             saveAll(callInst);
 
@@ -341,6 +385,72 @@ public class MCModule {
                 saveRegs.add(val2Reg(callInst));
             }
         }
+        else if(instruction instanceof GepInst){
+            GepInst gepInst = (GepInst) instruction;
+            Value target = gepInst.getTarget();
+
+            //  下面的一大部分是先计算出要偏移多少
+            //  gapDims用于存储每个维度的跨度，从而计算gep所需要跳转多少
+            ArrayList<Integer> gapDims = new ArrayList<>();
+            Type type = target.getType();
+            int size;
+            if(type.isArrayType()){
+                ArrayType arrType = (ArrayType) type;
+                size = calArrSize(arrType);
+                while (true){
+                    gapDims.add(size);
+                    size /= arrType.getEleDim();
+                    Type tmpType = arrType.getEleType();
+                    if(!(tmpType instanceof ArrayType)) break;
+                    else arrType = (ArrayType) arrType.getEleType();
+                }
+            }
+            gapDims.add(4);
+
+            ArrayList<Value> values = gepInst.getIndexs();
+            //  ans记录累加偏移
+            //  注意这里的Value保证都是i32，只是不知道是intConst还是变量
+            Reg ans = new VirtualReg();
+            int constNum = 0;
+            //  先把所有的intConst算出来
+            for(int i = 0; i < values.size(); i++){
+                Value value = values.get(i);
+                if(value instanceof ConstInteger){
+                    constNum += ((ConstInteger) value).getVal() * gapDims.get(i);
+                }
+            }
+            CurBlock.addInst(new MCLoad(ans, constNum));
+            //  再计算i32变量部分
+            for (Value value : values) {
+                if (!(value instanceof ConstInteger)) {
+                    Reg reg = val2Reg(value);
+                    Reg tmp = new VirtualReg();
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.mul, tmp, reg, 4));
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tmp));
+                }
+            }
+
+            //  终于计算完偏移了，接下来我们找到指针的pos，加上偏移加上sp即可得到地址
+            if(target instanceof GlobalVar){
+                Reg reg = new VirtualReg();
+                CurBlock.addInst(new MCLoad(reg, target.getName().replace("@","")));
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, reg));
+            }
+            Reg tarReg = val2Reg(target);
+            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tarReg));
+
+            valRegMap.put(gepInst.getName(), ans);
+        }
+    }
+
+    private int calArrSize(ArrayType arrType){
+        int res = 1;
+        PointerType it = arrType;
+        while (it instanceof ArrayType){
+            res *= ((ArrayType) it).getEleDim();
+            it = (PointerType) it.getEleType();
+        }
+        return res * 4;
     }
 
     //  处理getint函数
@@ -350,8 +460,9 @@ public class MCModule {
         CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
 
         //  将输入的值加载到新寄存器
-        Reg reg = val2Reg(callInst.getValues().get(0));
-        CurBlock.addInst(new MCMV(reg, MCReg.v0));
+        Value target = callInst.getValues().get(0);
+        Reg tarReg = val2Reg(target);
+        CurBlock.addInst(new MCSW(MCReg.v0, tarReg, 0));
     }
     //  处理printf函数
     private void callPrintf(CallInst callInst){
@@ -378,13 +489,12 @@ public class MCModule {
                 i++;
             }
         }
-        String msg = msgBuilder.toString();
-        if(!msg.equals("")){
-            printStr(msg);
-        }
+        printStr(msgBuilder.toString());
     }
 
     private void printStr(String str){
+        if(str.equals("")) return;
+
         String name = "msg" + msgNum++;
         MCData mcData = new MCData(name, str);
         data.add(mcData);
@@ -438,9 +548,9 @@ public class MCModule {
                 CurBlock.addInst(new MCSW(reg, MCReg.sp, pos));
             }
             else {
+                CurSpTop -= 4;
                 CurBlock.addInst(new MCSW(reg, MCReg.sp, CurSpTop));
                 spMap.put(reg, CurSpTop);
-                CurSpTop -= 4;
             }
         }
     }
@@ -477,15 +587,15 @@ public class MCModule {
         //  2. 设置栈顶
         CurSize = calSize(CurIRFunction);
         CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, -CurSize));
-        CurSpTop = CurSize - 4;
+        CurSpTop = CurSize;
 
         //  3. 保存ra
         //  ra和局部变量从高地址向低地址放，超过八个的函数参数从低地址向高地址放
 
         if(!isLeafMap.get(CurFuncName)){
+            CurSpTop -= 4;
             CurBlock.addInst(new MCSW(MCReg.ra, MCReg.sp, CurSpTop));
             spMap.put(MCReg.ra, CurSpTop);
-            CurSpTop -= 4;
         }
     }
 
@@ -531,7 +641,34 @@ public class MCModule {
         mcFunctions.add(CurFunction);
     }
 
+    //  由于printf里面的fString已经在printStr里处理了
+    //  因此我们globalVar将不处理全局的fString
+    private void genGlobalVar(GlobalVar globalVar){
+        Type type = globalVar.getType();
+        String name = globalVar.getName().replace("@", "");
+        if(type instanceof StringType) return;
+        if (!(type instanceof ArrayType)) {
+            ConstInteger init = (ConstInteger) globalVar.getValue();
+            data.add(new MCData(name, init.getVal()));
+        }
+        else{
+            ArrayList<Value> values = globalVar.getValues();
+            ArrayList<Integer> inits = new ArrayList<>();
+            for(Value value : values){
+                ConstInteger intConst = (ConstInteger) value;
+                inits.add(intConst.getVal());
+            }
+            data.add(new MCData(name, inits));
+        }
+    }
+
     public void genMips(IRModule irModule){
+        //  先把globalVar处理了
+        ArrayList<GlobalVar> globalVars = irModule.getGlobalVars();
+        for(GlobalVar globalVar : globalVars){
+            genGlobalVar(globalVar);
+        }
+
         ArrayList<Function> functions = irModule.getFunctions();
         for(Function function : functions){
             genFunction(function);
