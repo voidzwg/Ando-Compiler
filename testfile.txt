@@ -1,8 +1,0 @@
-int x[2] = {0, 1};
-
-int main() {
-    int y[2] = {0, 1};
-    x[y[1]] = 10;
-    printf("x[1] = %d\n", x[1]);
-    return 0;
-}

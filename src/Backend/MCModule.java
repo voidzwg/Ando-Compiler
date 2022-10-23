@@ -32,8 +32,6 @@ public class MCModule {
 
     //  regMap用于存储Value(i32)到VirReg的映射
     private final HashMap<String, Reg> valRegMap = new HashMap<>();
-    //  valStackMap用于存储Value(i32*)到VirReg的映射
-    private final HashMap<String, Integer> valStackMap = new HashMap<>();
 
     //  spMap存储Reg到sp中的位置
     private final HashMap<Reg, Integer> spMap = new HashMap<>();
@@ -311,21 +309,17 @@ public class MCModule {
             else {
                 CurSpTop -= 4;
             }
-            valStackMap.put(allocInst.getName(), CurSpTop);
+            Reg newAlloc = new VirtualReg();
+            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, newAlloc, MCReg.sp, CurSpTop));
+            valRegMap.put(allocInst.getName(), newAlloc);
         }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
             Reg rs = val2Reg(storeInst.getValue());
             Value pointer = storeInst.getPointer();
 
-            if(valStackMap.containsKey(pointer)) {
-                int pos = valStackMap.get(pointer.getName());
-                CurBlock.addInst(new MCSW(rs, MCReg.sp, pos));
-            }
-            else {
-                Reg reg = val2Reg(pointer);
-                CurBlock.addInst(new MCSW(rs, reg, 0));
-            }
+            Reg reg = val2Reg(pointer);
+            CurBlock.addInst(new MCSW(rs, reg, 0));
         }
         else if(instruction instanceof LoadInst){
             //  load指令对指针value操作，我们只需要找出该value对应的位置
@@ -334,16 +328,8 @@ public class MCModule {
             Reg rd = val2Reg(loadInst);
             Value pointer = loadInst.getPointer();
 
-            //  对于已知偏移的指针，我们就不需要寄存器存它了，用的时候直接lw就行
-            if(valStackMap.containsKey(pointer.getName())) {
-                int pos = valStackMap.get(pointer.getName());
-                CurBlock.addInst(new MCLW(rd, MCReg.sp, pos));
-            }
-            //  未知的那我们之前一定用寄存器保存了该值
-            else{
-                Reg reg = val2Reg(pointer);
-                CurBlock.addInst(new MCLW(rd, reg, 0));
-            }
+            Reg reg = val2Reg(pointer);
+            CurBlock.addInst(new MCLW(rd, reg, 0));
         }
         else if(instruction instanceof BrInst){
             BrInst brInst = (BrInst) instruction;
@@ -450,15 +436,9 @@ public class MCModule {
                 CurBlock.addInst(new MCLoad(reg, target.getName().replace("@","")));
                 CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, reg));
             }
-            else if(valStackMap.containsKey(target.getName())) {
-                int offset = valStackMap.get(target.getName());
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, MCReg.sp));
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, ans, ans, offset));
-            }
-            else{
-                Reg tarReg = val2Reg(target);
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tarReg));
-            }
+            Reg tarReg = val2Reg(target);
+            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tarReg));
+
             valRegMap.put(gepInst.getName(), ans);
         }
     }
@@ -481,8 +461,8 @@ public class MCModule {
 
         //  将输入的值加载到新寄存器
         Value target = callInst.getValues().get(0);
-        int pos = valStackMap.get(target.getName());
-        CurBlock.addInst(new MCSW(MCReg.v0, MCReg.sp, pos));
+        Reg tarReg = val2Reg(target);
+        CurBlock.addInst(new MCSW(MCReg.v0, tarReg, 0));
     }
     //  处理printf函数
     private void callPrintf(CallInst callInst){
