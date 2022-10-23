@@ -438,7 +438,9 @@ public class MCModule {
             for (Value value : values) {
                 if (!(value instanceof ConstInteger)) {
                     Reg reg = val2Reg(value);
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, reg));
+                    Reg tmp = new VirtualReg();
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.mul, tmp, reg, 4));
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tmp));
                 }
             }
 

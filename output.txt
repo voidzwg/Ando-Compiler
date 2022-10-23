@@ -2,25 +2,46 @@
 x_0: 
 	.word 0
 	.word 1
-	.word 2
-	.word 3
-msg0: .asciiz"\n"
+msg0: .asciiz"x[1] = "
+msg1: .asciiz"\n"
 .text
 main_0:
-	addi $sp, $sp, -20
-	sw $ra, 16($sp)
-	li $t1, 8
-	la $t2, x_0
-	add $t1, $t1, $t2
-	lw $t3, 0($t1)
-	move $a0, $t3
-	li $v0, 1
-	syscall
+	addi $sp, $sp, -56
+	sw $ra, 52($sp)
+	li $t1, 0
+	add $t1, $t1, $sp
+	addi $t1, $t1, 44
+	sw $zero, 0($t1)
+	li $t2, 4
+	add $t2, $t2, $t1
+	li $t3, 1
+	sw $t3, 0($t2)
+	li $t4, 4
+	add $t4, $t4, $sp
+	addi $t4, $t4, 44
+	lw $t5, 0($t4)
+	li $t6, 0
+	mul $t7, $t5, 4
+	add $t6, $t6, $t7
+	la $t8, x_0
+	add $t6, $t6, $t8
+	li $t9, 10
+	sw $t9, 0($t6)
+	li $s0, 4
+	la $s1, x_0
+	add $s0, $s0, $s1
+	lw $s2, 0($s0)
 	la $a0, msg0
 	li $v0, 4
 	syscall
+	move $a0, $s2
+	li $v0, 1
+	syscall
+	la $a0, msg1
+	li $v0, 4
+	syscall
 	li $a0, 0
-	lw $ra, 16($sp)
-	addi $sp, $sp, 20
+	lw $ra, 52($sp)
+	addi $sp, $sp, 56
 	li $v0, 10
 	syscall
