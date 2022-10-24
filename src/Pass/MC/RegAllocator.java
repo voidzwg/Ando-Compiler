@@ -62,6 +62,9 @@ public class RegAllocator implements Pass.MCPass {
     // loopDepth用于记录Reg所在的深度，作为selectSpill的参考因素
     private HashMap<Reg, Integer> loopDepth;
 
+    private boolean idPreColored(int id){
+        return (id >= 0 && id <= 2) || (id >= 4 && id <= 7) || id == 26 || id == 27 || id == 31;
+    }
 
     @Override
     public void run(MCModule mcModule) {
@@ -106,20 +109,22 @@ public class RegAllocator implements Pass.MCPass {
 
             for(MCBlock block : mf.getMcBlocks()) {
                 for (MCInst inst : block.getMCInsts()) {
-
+                    //  TODO 插入lw sw指令
                 }
             }
         }
     }
 
     private void assignColors(MCFunction mf){
-        HashMap<Reg, Integer> color = new HashMap<>();
+        HashMap<Reg, MCReg> colored = new HashMap<>();
 
         while (!selectStack.empty()){
             Reg n = selectStack.pop();
             HashSet<Integer> okColors = new HashSet<>();
             for(int i = 0; i < K; i++){
-                okColors.add(i);
+                if(!idPreColored(i)) {
+                    okColors.add(i);
+                }
             }
             for(Reg w : adjList.get(n)){
                 Reg u = getAlias(w);
@@ -128,14 +133,15 @@ public class RegAllocator implements Pass.MCPass {
                         MCReg mcReg = (MCReg) u;
                         okColors.remove(mcReg.getPreColor());
                     }
-                    else okColors.remove(color.get(u));
+                    else okColors.remove(colored.get(u).getId());
                 }
             }
             if(okColors.isEmpty()){
                 spilledNodes.add(n);
             }else{
                 coloredNodes.add(n);
-                color.put(n, okColors.iterator().next());
+                int pid = okColors.iterator().next();
+                colored.put(n, new MCReg(pid, true));
             }
         }
 
@@ -146,8 +152,21 @@ public class RegAllocator implements Pass.MCPass {
         }
 
         for(Reg n : coalescedNodes){
-            color.put(n, color.get(getAlias(n)));
+            colored.put(n, colored.get(getAlias(n)));
         }
+
+        for (MCBlock mb : mf.getMcBlocks()) {
+            for (MCInst mcInst : mb.getMCInsts()) {
+                ArrayList<Reg> defs = new ArrayList<>(mcInst.getDefReg());
+                ArrayList<Reg> uses = new ArrayList<>(mcInst.getUseReg());
+
+                defs.stream().filter(colored::containsKey)
+                        .forEach(def -> mcInst.replaceReg(def, colored.get(def)));
+                uses.stream().filter(colored::containsKey)
+                        .forEach(use -> mcInst.replaceReg(use, colored.get(use)));
+            }
+        }
+
     }
 
     private void selectSpill(){
@@ -275,7 +294,7 @@ public class RegAllocator implements Pass.MCPass {
 
     private Reg getAlias(Reg reg){
         if(coalescedNodes.contains(reg)){
-            return getAlias(reg);
+            return getAlias(alias.get(reg));
         }
         return reg;
     }

@@ -6,9 +6,6 @@ import Backend.Reg.VirtualReg;
 import java.util.ArrayList;
 
 public class MCBinaryInst extends MCInst{
-    private Reg rd;
-    private Reg rs1;
-    private Reg rs2;
     private int imm;
     private int type;
 

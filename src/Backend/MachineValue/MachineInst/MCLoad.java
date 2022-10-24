@@ -4,7 +4,6 @@ import Backend.Reg.Reg;
 
 public class MCLoad extends MCInst{
     private int imm;
-    private Reg rd;
     private String msgName;
     private int type;
 

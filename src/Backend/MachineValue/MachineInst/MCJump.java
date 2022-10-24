@@ -9,7 +9,7 @@ public class MCJump extends MCInst{
         this.label = label;
         this.type = type;
         if(type == 1){
-            useReg.add(new MCReg(label.replace("$", "")));
+            useReg.add(MCReg.ra);
         }
     }
 

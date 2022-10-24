@@ -14,8 +14,6 @@ import IR.Type.StringType;
 import IR.Type.Type;
 import IR.Value.*;
 import IR.Value.Instructions.*;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -184,7 +182,7 @@ public class MCModule {
             CurBlock.addInst(new MCJump("$ra", 1));
         }
         else {
-            CurBlock.addInst(new MCLoad(new MCReg("v0"), 10));
+            CurBlock.addInst(new MCLoad(MCReg.v0, 10));
             CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
         }
 
@@ -356,17 +354,17 @@ public class MCModule {
             //  特判一下getint和printf
             String callFuncName = callInst.getCallFunc().getName();
             //  getint
-            if(callFuncName.equals("@__isoc99_scanf")){
-                callGetInt(callInst);
-                return;
-            }
-            //  printf
-            else if(callFuncName.equals("@printf")){
-                callPrintf(callInst);
-                return;
-            }
-            else if(callFuncName.equals("@memset")){
-                return;
+            switch (callFuncName) {
+                case "@__isoc99_scanf":
+                    callGetInt(callInst);
+                    return;
+
+                //  printf
+                case "@printf":
+                    callPrintf(callInst);
+                    return;
+                case "@memset":
+                    return;
             }
 
             saveAll(callInst);
@@ -528,11 +526,11 @@ public class MCModule {
             if(i < 4){
                 String regName = "a" + i;
                 if(value instanceof ConstInteger){
-                    CurBlock.addInst(new MCLoad(new MCReg(regName), ((ConstInteger) value).getVal()));
+                    CurBlock.addInst(new MCLoad(new MCReg(regName, false), ((ConstInteger) value).getVal()));
                 }
                 else{
                     Reg reg = val2Reg(value);
-                    CurBlock.addInst(new MCMV(new MCReg(regName), reg));
+                    CurBlock.addInst(new MCMV(new MCReg(regName, false), reg));
                 }
             }
             else saveRParam(value, (i - 4) * 4);
@@ -578,7 +576,7 @@ public class MCModule {
             String argName = "a" + i;
             Value arg = CurIRFunction.getArgs().get(i);
             Reg reg = val2Reg(arg);
-            if(i < 4) CurBlock.addInst(new MCMV(reg, new MCReg(argName)));
+            if(i < 4) CurBlock.addInst(new MCMV(reg, new MCReg(argName, false)));
             else {
                 CurBlock.addInst(new MCLW(reg, MCReg.sp, (i - 4) * 4));
             }

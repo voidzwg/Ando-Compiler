@@ -36,11 +36,11 @@ public class Compiler {
         MCModule mcModule = new MCModule();
         mcModule.genMips(irModule);
 
-//        //  后端优化
-//        passManager.runMCPasses(mcModule);
+        //  后端优化
+        passManager.runMCPasses(mcModule);
 
-        VirRegToMCReg virRegToMCReg = new VirRegToMCReg(mcModule);
-        virRegToMCReg.run();
+//        VirRegToMCReg virRegToMCReg = new VirRegToMCReg(mcModule);
+//        virRegToMCReg.run();
 
         //  后端输出
         MIPSDump.DumpMCModule(mcModule);
