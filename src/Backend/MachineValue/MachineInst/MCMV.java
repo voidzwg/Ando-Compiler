@@ -3,7 +3,6 @@ package Backend.MachineValue.MachineInst;
 import Backend.Reg.Reg;
 
 public class MCMV extends MCInst{
-
     public MCMV(Reg rd, Reg rs1) {
         this.rd = rd;
         this.rs1 = rs1;

@@ -106,10 +106,10 @@ public class RegAllocator implements Pass.MCPass {
 
     private void rewriteProgram(MCFunction mf){
         for(Reg r : spilledNodes){
-
             for(MCBlock block : mf.getMcBlocks()) {
                 for (MCInst inst : block.getMCInsts()) {
                     //  TODO 插入lw sw指令
+
                 }
             }
         }
@@ -152,7 +152,11 @@ public class RegAllocator implements Pass.MCPass {
         }
 
         for(Reg n : coalescedNodes){
-            colored.put(n, colored.get(getAlias(n)));
+            Reg tmp = getAlias(n);
+            if(tmp.isPrecolored()){
+                colored.put(n, (MCReg) tmp);
+            }
+            else colored.put(n, colored.get(tmp));
         }
 
         for (MCBlock mb : mf.getMcBlocks()) {
