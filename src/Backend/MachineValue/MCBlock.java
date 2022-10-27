@@ -85,4 +85,12 @@ public class MCBlock {
         return virtualReg;
     }
 
+    //  在pos位置插入指令mcInst
+    public void insertInst(MCInst mcInst, int pos){
+        machineInsts.add(pos, mcInst);
+    }
+
+    public void deleteInst(MCInst mcInst){
+        machineInsts.remove(mcInst);
+    }
 }

@@ -21,4 +21,8 @@ public class MCJump extends MCInst{
         else name = "jal";
         return name + " " + label;
     }
+
+    protected int getType(){
+        return type;
+    }
 }

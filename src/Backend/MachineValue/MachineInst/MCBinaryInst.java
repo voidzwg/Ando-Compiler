@@ -50,4 +50,12 @@ public class MCBinaryInst extends MCInst{
         else if(type == 2) stringBuilder.append(", ").append(imm);
         return stringBuilder.toString();
     }
+
+    public void setImm(int imm){
+        this.imm = imm;
+    }
+
+    public int getImm(){
+        return imm;
+    }
 }

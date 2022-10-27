@@ -1,0 +1,192 @@
+.data
+a1_0: .word 1
+a2_0: .word 3
+a3_0: .word 8
+b1_0: .word 2
+b2_0: .word -5
+b3_0: .word 6
+msg0: .asciiz"19231204"
+msg1: .asciiz"\n"
+msg2: .asciiz"Continue is error!\n"
+msg3: .asciiz"Break is error!And < is error!\n"
+msg4: .asciiz"+ is correct!\n"
+msg5: .asciiz"+ is error!\n"
+msg6: .asciiz"a1+b1 is "
+msg7: .asciiz"\n"
+msg8: .asciiz"a2+b2 is "
+msg9: .asciiz"\n"
+msg10: .asciiz"Break is error!\n"
+msg11: .asciiz"Continue is error!\n"
+.text
+main_0:
+	addi $sp, $sp, -276
+	sw $ra, 200($sp)
+	la $a0, msg0
+	li $v0, 4
+	syscall
+	la $a0, msg1
+	li $v0, 4
+	syscall
+	add $v1, $sp, 196
+	li $t0, 10
+	sw $t0, 0($v1)
+	j main_1
+main_1:
+	lw $t1, 0($v1)
+	sne $t2, $t1, 0
+	bnez $t2, main_2
+	j main_3
+main_2:
+	lw $t3, 0($v1)
+	li $t4, 1
+	sub $t5, $t3, $t4
+	sw $t5, 0($v1)
+	lw $t6, 0($v1)
+	la $t7, b3_0
+	lw $s0, 0($t7)
+	slt $s1, $t6, $s0
+	sne $s2, $s1, 0
+	bnez $s2, main_4
+	j main_5
+main_3:
+	lw $s3, 0($v1)
+	la $s4, b1_0
+	lw $s5, 0($s4)
+	sne $s6, $s3, $s5
+	sne $s7, $s6, 0
+	bnez $s7, main_16
+	j main_17
+main_4:
+	j main_1
+main_5:
+	lw $t8, 0($v1)
+	slti $t9, $t8, 1
+	sne $gp, $t9, 0
+	sw $gp, 204($sp)
+	lw $gp, 204($sp)
+	bnez $gp, main_7
+	j main_8
+main_6:
+	la $a0, msg2
+	li $v0, 4
+	syscall
+	j main_5
+main_7:
+	j main_3
+main_8:
+	lw $gp, 0($v1)
+	sw $gp, 208($sp)
+	lw $gp, 208($sp)
+	seq $gp, $gp, 3
+	sw $gp, 212($sp)
+	lw $gp, 212($sp)
+	sne $gp, $gp, 0
+	sw $gp, 216($sp)
+	lw $gp, 216($sp)
+	bnez $gp, main_10
+	j main_11
+main_9:
+	la $a0, msg3
+	li $v0, 4
+	syscall
+	j main_8
+main_10:
+	la $a0, msg4
+	li $v0, 4
+	syscall
+	j main_12
+main_11:
+	la $a0, msg5
+	li $v0, 4
+	syscall
+	j main_12
+main_12:
+	lw $gp, 0($v1)
+	sw $gp, 220($sp)
+	lw $gp, 0($s4)
+	sw $gp, 224($sp)
+	lw $gp, 220($sp)
+	lw $fp, 224($sp)
+	seq $gp, $gp, $fp
+	sw $gp, 228($sp)
+	lw $gp, 228($sp)
+	sne $gp, $gp, 0
+	sw $gp, 232($sp)
+	lw $gp, 232($sp)
+	bnez $gp, main_13
+	j main_14
+main_13:
+	j main_3
+main_14:
+	j main_1
+main_15:
+	j main_14
+main_16:
+	lw $gp, 0($v1)
+	sw $gp, 236($sp)
+	lw $gp, 236($sp)
+	seq $gp, $gp, 0
+	sw $gp, 240($sp)
+	lw $gp, 240($sp)
+	sne $gp, $gp, 0
+	sw $gp, 244($sp)
+	lw $gp, 244($sp)
+	bnez $gp, main_18
+	j main_19
+main_17:
+	lw $gp, 0($s4)
+	sw $gp, 248($sp)
+	li $gp, 1
+	sw $gp, 252($sp)
+	lw $gp, 252($sp)
+	lw $fp, 248($sp)
+	add $gp, $gp, $fp
+	sw $gp, 256($sp)
+	la $a0, msg6
+	li $v0, 4
+	syscall
+	lw $gp, 256($sp)
+	move $a0, $gp
+	li $v0, 1
+	syscall
+	la $a0, msg7
+	li $v0, 4
+	syscall
+	la $gp, b2_0
+	sw $gp, 260($sp)
+	lw $gp, 260($sp)
+	lw $gp, 0($gp)
+	sw $gp, 264($sp)
+	li $gp, 3
+	sw $gp, 268($sp)
+	lw $gp, 268($sp)
+	lw $fp, 264($sp)
+	add $gp, $gp, $fp
+	sw $gp, 272($sp)
+	la $a0, msg8
+	li $v0, 4
+	syscall
+	lw $gp, 272($sp)
+	move $a0, $gp
+	li $v0, 1
+	syscall
+	la $a0, msg9
+	li $v0, 4
+	syscall
+	li $a0, 0
+	lw $ra, 200($sp)
+	addi $sp, $sp, 276
+	li $v0, 10
+	syscall
+main_18:
+	la $a0, msg10
+	li $v0, 4
+	syscall
+	j main_20
+main_19:
+	la $a0, msg11
+	li $v0, 4
+	syscall
+	j main_20
+main_20:
+	j main_17

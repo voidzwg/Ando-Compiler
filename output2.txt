@@ -1,0 +1,183 @@
+.data
+msg0: .asciiz"fibo["
+msg1: .asciiz"] = "
+msg2: .asciiz"\n"
+.text
+main_0:
+	addi $sp, $sp, -48
+	sw $ra, 44($sp)
+	add $22, $sp, 40
+	sw $zero, 0($22)
+
+	li $v0, 5
+	syscall
+	sw $v0, 0($22)
+	lw $23, 0($22)
+	lw $24, 0($22)
+	//  TODO 保存环境
+	sw $23, 36($sp)
+	sw $24, 32($sp)
+	sw $22, 28($sp)
+	move $a0, $24
+	jal fib_0
+	move $25, $a0
+	lw $23, 36($sp)
+	lw $24, 32($sp)
+	lw $22, 28($sp)
+	la $a0, msg0
+	li $v0, 4
+	syscall
+	move $a0, $23
+	li $v0, 1
+	syscall
+	la $a0, msg1
+	li $v0, 4
+	syscall
+	move $a0, $25
+	li $v0, 1
+	syscall
+	la $a0, msg2
+	li $v0, 4
+	syscall
+	li $a0, 0
+	lw $ra, 44($sp)
+	addi $sp, $sp, 48
+	li $v0, 10
+	syscall
+fib_0:
+	move $0, $a0
+	addi $sp, $sp, -92
+	sw $ra, 88($sp)
+	//  TODO $1保存n的地址
+	add $1, $sp, 84
+	sw $0, 0($1)
+	//  TODO $2存储ret的地址
+	add $2, $sp, 80
+	li $3, 1
+	sw $3, 0($2)
+	lw $4, 0($1)
+	seq $5, $4, 1
+	sne $6, $5, 0
+	bnez $6, fib_1
+	j fib_2
+fib_1:
+    //  TODO 令ret = 1
+	li $7, 1
+	sw $7, 0($2)
+	j fib_3
+fib_2:
+    //  TODO 判断n是否为2
+	lw $8, 0($1)
+	seq $9, $8, 2
+	sne $10, $9, 0
+	bnez $10, fib_4
+	j fib_5
+fib_3:
+    //  TODO 将ret加载入$2的地址并返回
+	lw $11, 0($2)
+	move $a0, $11
+	lw $ra, 88($sp)
+	addi $sp, $sp, 92
+	jr $ra
+fib_4:
+    //  TODO 令ret = 2
+	li $12, 1
+	sw $12, 0($2)
+	j fib_6
+fib_5:
+    //  TODO 递归
+	lw $13, 0($1)
+	li $14, 1
+	//  TODO $15为n - 1
+	sub $15, $13, $14
+	//  TODO 保存环境
+	sw $14, 76($sp)
+	sw $1, 72($sp)
+	sw $13, 68($sp)
+	sw $3, 64($sp)
+	sw $12, 60($sp)
+	sw $6, 56($sp)
+	sw $8, 52($sp)
+	sw $11, 48($sp)
+	sw $0, 44($sp)
+	sw $5, 40($sp)
+	sw $15, 36($sp)
+	sw $4, 32($sp)
+	sw $10, 28($sp)
+	sw $7, 24($sp)
+	sw $2, 20($sp)
+	sw $9, 16($sp)
+
+	move $a0, $15
+	jal fib_0
+	//  TODO $16为fib(n - 1)
+	move $16, $a0
+	lw $14, 76($sp)
+	lw $1, 72($sp)
+	lw $13, 68($sp)
+	lw $3, 64($sp)
+	lw $12, 60($sp)
+	lw $6, 56($sp)
+	lw $8, 52($sp)
+	lw $11, 48($sp)
+	lw $0, 44($sp)
+	lw $5, 40($sp)
+	lw $15, 36($sp)
+	lw $4, 32($sp)
+	lw $10, 28($sp)
+	lw $7, 24($sp)
+	lw $2, 20($sp)
+	lw $9, 16($sp)
+
+	//  TODO $19 = n - 2
+	lw $17, 0($1)
+	li $18, 2
+	sub $19, $17, $18
+	sw $14, 76($sp)
+	sw $17, 12($sp)
+	sw $1, 72($sp)
+	sw $13, 68($sp)
+	sw $3, 64($sp)
+	sw $12, 60($sp)
+	sw $6, 56($sp)
+	sw $8, 52($sp)
+	sw $11, 48($sp)
+	sw $0, 44($sp)
+	sw $5, 40($sp)
+	sw $15, 36($sp)
+	sw $4, 32($sp)
+	sw $10, 28($sp)
+	sw $18, 8($sp)
+	sw $16, 4($sp)
+	sw $7, 24($sp)
+	sw $2, 20($sp)
+	sw $19, 0($sp)
+	sw $9, 16($sp)
+	move $a0, $19
+	jal fib_0
+	move $20, $a0
+	lw $14, 76($sp)
+	lw $17, 12($sp)
+	lw $1, 72($sp)
+	lw $13, 68($sp)
+	lw $3, 64($sp)
+	lw $12, 60($sp)
+	lw $6, 56($sp)
+	lw $8, 52($sp)
+	lw $11, 48($sp)
+	lw $0, 44($sp)
+	lw $5, 40($sp)
+	lw $15, 36($sp)
+	lw $4, 32($sp)
+	lw $10, 28($sp)
+	lw $18, 8($sp)
+	lw $16, 4($sp)
+	lw $7, 24($sp)
+	lw $2, 20($sp)
+	lw $19, 0($sp)
+	lw $9, 16($sp)
+	add $21, $16, $20
+	sw $21, 0($2)
+	j fib_6
+fib_6:
+	j fib_3
