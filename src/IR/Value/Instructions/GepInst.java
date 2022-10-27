@@ -22,6 +22,10 @@ public class GepInst extends Instruction {
         super("%" + (++Value.valNumber), type, OP.GEP, basicBlock, true);
         this.indexs = indexs;
         this.target = target;
+        this.addOperand(target);
+        for(Value index : indexs){
+            this.addOperand(index);
+        }
     }
 
     public Value getTarget() {

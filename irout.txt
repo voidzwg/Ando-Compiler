@@ -2,99 +2,194 @@ declare void @memset(i32*, i32, i32)
 declare i32 @printf(i8*, ...)
 declare i32 @__isoc99_scanf(i8*, ...)
 
-@b1_0 = global i32 2
-@b2_0 = global i32 -5
-@b3_0 = global i32 6
-@.str.1 = constant [20 x i8] c"Continue is error!\0A\00"
-@.str.2 = constant [32 x i8] c"Break is error!And < is error!\0A\00"
-@.str.3 = constant [15 x i8] c"+ is correct!\0A\00"
-@.str.4 = constant [13 x i8] c"+ is error!\0A\00"
-@.str.5 = constant [17 x i8] c"Break is error!\0A\00"
-@.str.6 = constant [20 x i8] c"Continue is error!\0A\00"
-@.str.7 = constant [13 x i8] c"a1+b1 is %d\0A\00"
-@.str.8 = constant [13 x i8] c"a2+b2 is %d\0A\00"
+@var_a_0 = global i32 0
+@var_a0_0 = global i32 0
+@var_a1_0 = global i32 0
+@var_init_0 = global i32 -1
+@var_init0_0 = global i32 -7
+@var_init1_0 = global i32 2
+@.str.1 = constant [20 x i8] c"this is a yu ju ky\0A\00"
+@.str.2 = constant [15 x i8] c"unbelievable!\0A\00"
+@.str.3 = constant [3 x i8] c"%d\00"
+@.str.4 = constant [27 x i8] c"var_a from getint() is %d\0A\00"
+@.str.5 = constant [14 x i8] c"getint is %d\0A\00"
+@.str.6 = constant [5 x i8] c"tmp\0A\00"
+@.str.7 = constant [5 x i8] c"tmp\0A\00"
+@.str.8 = constant [5 x i8] c"tmp\0A\00"
+@.str.9 = constant [5 x i8] c"tmp\0A\00"
+@.str.10 = constant [5 x i8] c"tmp\0A\00"
+define void @func_void0() {
+0:
+	ret void
+}
+
+define void @func_void1(i32 %0) {
+1:
+	%2 = alloca i32
+	store i32 %0, i32* %2
+	ret void
+}
+
+define void @func_void2(i32 %0, i32 %1, i32 %2) {
+3:
+	%4 = alloca i32
+	store i32 %0, i32* %4
+	%5 = alloca i32
+	store i32 %1, i32* %5
+	%6 = alloca i32
+	store i32 %2, i32* %6
+	ret void
+}
+
+define i32 @func_int0() {
+0:
+	ret i32 0
+}
+
+define i32 @func_int1(i32 %0) {
+1:
+	%2 = alloca i32
+	store i32 %0, i32* %2
+	ret i32 1
+}
+
+define i32 @func_int2(i32 %0, i32 %1) {
+2:
+	%3 = alloca i32
+	store i32 %0, i32* %3
+	%4 = alloca i32
+	store i32 %1, i32* %4
+	ret i32 2
+}
+
 define i32 @main() {
 0:
-	%1 = alloca i32
-	store i32 10, i32* %1
-	br label %2
-2:
-	%3 = load i32, i32* %1
-	%4 = icmp ne i32 %3, 0
-	br i1 %4, label %5, label %12
-5:
-	%6 = load i32, i32* %1
-	%7 = sub i32 %6, 1
-	store i32 %7, i32* %1
-	%8 = load i32, i32* %1
-	%9 = load i32, i32* @b3_0
-	%10 = icmp slt i32 %8, %9
-	%11 = icmp ne i1 %10, 0
-	br i1 %11, label %17, label %18
-12:
-	%13 = load i32, i32* %1
-	%14 = load i32, i32* @b1_0
-	%15 = icmp ne i32 %13, %14
-	%16 = icmp ne i1 %15, 0
-	br i1 %16, label %43, label %47
-17:
-	br label %2
-18:
-	%19 = load i32, i32* %1
-	%20 = icmp slt i32 %19, 1
-	%21 = icmp ne i1 %20, 0
-	br i1 %21, label %24, label %25
-22:
-	%23 = call i32 (i8*, ...) @printf(i8* getelementptr ([20 x i8], [20 x i8]* @.str.1, i64 0, i64 0))
-	br label %18
-24:
-	br label %12
+	%1 = sub i32 0, 1
+	store i32 %1, i32* @var_a_0
+	%2 = add i32 1, 1
+	%3 = sub i32 0, 5
+	%4 = mul i32 %2, %3
+	%5 = sub i32 0, 1
+	%6 = mul i32 %4, %5
+	%7 = srem i32 %6, 7
+	%8 = add i32 %7, 1
+	%9 = sub i32 0, 5
+	%10 = sub i32 %8, %9
+	store i32 %10, i32* @var_a0_0
+	store i32 1, i32* @var_a1_0
+	%11 = alloca i32
+	store i32 0, i32* %11
+	%12 = alloca i32
+	store i32 1, i32* %12
+	call void @func_void0()
+	%13 = add i32 1, 1
+	%14 = call i32 (i8*, ...) @printf(i8* getelementptr ([20 x i8], [20 x i8]* @.str.1, i64 0, i64 0))
+	store i32 1, i32* @var_a_0
+	br label %15
+15:
+	%16 = load i32, i32* @var_a_0
+	%17 = icmp sle i32 %16, 10
+	%18 = icmp ne i1 %17, 0
+	br i1 %18, label %19, label %25
+19:
+	%20 = load i32, i32* @var_a_0
+	%21 = add i32 %20, 1
+	store i32 %21, i32* @var_a_0
+	%22 = load i32, i32* @var_a_0
+	%23 = icmp sge i32 %22, 8
+	%24 = icmp ne i1 %23, 0
+	br i1 %24, label %27, label %28
 25:
-	%26 = load i32, i32* %1
-	%27 = icmp eq i32 %26, 3
-	%28 = icmp ne i1 %27, 0
-	br i1 %28, label %31, label %33
-29:
-	%30 = call i32 (i8*, ...) @printf(i8* getelementptr ([32 x i8], [32 x i8]* @.str.2, i64 0, i64 0))
+	%26 = icmp ne i32 1, 0
+	br i1 %26, label %32, label %35
+27:
 	br label %25
+28:
+	br label %15
+29:
+	br label %15
+30:
+	br label %29
 31:
-	%32 = call i32 (i8*, ...) @printf(i8* getelementptr ([15 x i8], [15 x i8]* @.str.3, i64 0, i64 0))
-	br label %35
-33:
-	%34 = call i32 (i8*, ...) @printf(i8* getelementptr ([13 x i8], [13 x i8]* @.str.4, i64 0, i64 0))
-	br label %35
+	br label %29
+32:
+	%33 = icmp eq i32 1, 1
+	%34 = icmp ne i1 %33, 0
+	br i1 %34, label %38, label %42
 35:
-	%36 = load i32, i32* %1
-	%37 = load i32, i32* @b1_0
-	%38 = icmp eq i32 %36, %37
-	%39 = icmp ne i1 %38, 0
-	br i1 %39, label %40, label %41
-40:
-	br label %12
-41:
-	br label %2
+	%36 = icmp eq i32 0, 0
+	%37 = icmp ne i1 %36, 0
+	br i1 %37, label %67, label %68
+38:
+	%39 = call i32 @func_int0()
+	%40 = icmp eq i32 %39, 0
+	%41 = icmp ne i1 %40, 0
+	br i1 %41, label %43, label %47
 42:
-	br label %41
+	br label %35
 43:
-	%44 = load i32, i32* %1
-	%45 = icmp eq i32 %44, 0
+	%44 = call i32 @func_int1(i32 1)
+	%45 = icmp eq i32 %44, 1
 	%46 = icmp ne i1 %45, 0
-	br i1 %46, label %54, label %56
+	br i1 %46, label %48, label %55
 47:
-	%48 = load i32, i32* @b1_0
-	%49 = add i32 1, %48
-	%50 = call i32 (i8*, ...) @printf(i8* getelementptr ([13 x i8], [13 x i8]* @.str.7, i64 0, i64 0), i32 %49)
-	%51 = load i32, i32* @b2_0
-	%52 = add i32 3, %51
-	%53 = call i32 (i8*, ...) @printf(i8* getelementptr ([13 x i8], [13 x i8]* @.str.8, i64 0, i64 0), i32 %52)
-	ret i32 0
-54:
-	%55 = call i32 (i8*, ...) @printf(i8* getelementptr ([17 x i8], [17 x i8]* @.str.5, i64 0, i64 0))
-	br label %58
-56:
-	%57 = call i32 (i8*, ...) @printf(i8* getelementptr ([20 x i8], [20 x i8]* @.str.6, i64 0, i64 0))
-	br label %58
-58:
+	br label %42
+48:
+	%49 = call i32 @func_int2(i32 1, i32 2)
+	%50 = sub i32 %49, 5
+	%51 = sub i32 0, 1
+	%52 = add i32 %50, %51
+	%53 = icmp ne i32 %52, 1
+	%54 = icmp ne i1 %53, 0
+	br i1 %54, label %56, label %59
+55:
 	br label %47
+56:
+	%57 = icmp slt i32 1, 2
+	%58 = icmp ne i1 %57, 0
+	br i1 %58, label %60, label %63
+59:
+	br label %55
+60:
+	%61 = icmp sgt i32 2, 1
+	%62 = icmp ne i1 %61, 0
+	br i1 %62, label %64, label %66
+63:
+	br label %59
+64:
+	%65 = call i32 (i8*, ...) @printf(i8* getelementptr ([15 x i8], [15 x i8]* @.str.2, i64 0, i64 0))
+	br label %66
+66:
+	br label %63
+67:
+	br label %68
+68:
+	%69 = call i32 @func_int0()
+	%70 = icmp eq i32 0, %69
+	%71 = icmp ne i1 %70, 0
+	br i1 %71, label %72, label %73
+72:
+	br label %73
+73:
+	%74 = call i32 @func_int1(i32 1)
+	%75 = icmp eq i32 0, %74
+	%76 = zext i1 %75 to i32
+	%77 = sub i32 2, %76
+	%78 = icmp eq i32 %77, 2
+	%79 = icmp ne i1 %78, 0
+	br i1 %79, label %80, label %81
+80:
+	br label %81
+81:
+	%82 = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr ([3 x i8], [3 x i8]* @.str.3, i64 0, i64 0), i32* @var_a_0)
+	%83 = load i32, i32* @var_a_0
+	%84 = call i32 (i8*, ...) @printf(i8* getelementptr ([27 x i8], [27 x i8]* @.str.4, i64 0, i64 0), i32 %83)
+	%85 = call i32 (i8*, ...) @printf(i8* getelementptr ([14 x i8], [14 x i8]* @.str.5, i64 0, i64 0), i32 1)
+	%86 = call i32 (i8*, ...) @printf(i8* getelementptr ([5 x i8], [5 x i8]* @.str.6, i64 0, i64 0))
+	%87 = call i32 (i8*, ...) @printf(i8* getelementptr ([5 x i8], [5 x i8]* @.str.7, i64 0, i64 0))
+	%88 = call i32 (i8*, ...) @printf(i8* getelementptr ([5 x i8], [5 x i8]* @.str.8, i64 0, i64 0))
+	%89 = call i32 (i8*, ...) @printf(i8* getelementptr ([5 x i8], [5 x i8]* @.str.9, i64 0, i64 0))
+	%90 = call i32 (i8*, ...) @printf(i8* getelementptr ([5 x i8], [5 x i8]* @.str.10, i64 0, i64 0))
+	ret i32 0
 }
 

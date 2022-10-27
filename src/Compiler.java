@@ -32,9 +32,9 @@ public class Compiler {
         //  中端输出
         IRDump.DumpModule(irModule);
 
-//        //  后端
-//        MCModule mcModule = new MCModule();
-//        mcModule.genMips(irModule);
+        //  后端
+        MCModule mcModule = new MCModule();
+        mcModule.genMips(irModule);
 
 //        //  后端优化
 //        passManager.runMCPasses(mcModule);
@@ -42,7 +42,7 @@ public class Compiler {
 //        VirReg2MCReg virRegToMCReg = new VirReg2MCReg(mcModule);
 //        virRegToMCReg.run();
 
-//        //  后端输出
-//        MIPSDump.DumpMCModule(mcModule);
+        //  后端输出
+        MIPSDump.DumpMCModule(mcModule);
     }
 }

@@ -1,25 +1,20 @@
-
-
-// һЩ��������  0\1֮���滻Ϊ���� �������ʽ 
 const int const_name1 = 2+3;
 const int const_name_2 = 8-(7-2), _const_name3 = 0, const_name4_=6;
 const int const_name5[2+3] = {2+3,9-6,8-(7-2),(2+1)+1,0}; 
 const int const_name_6[9-6] = {0,0,1*(+2)}, _const_name7[(2+1)+1] = {0,0,3,9}, const_name8_[2] = {7,6*9/6};  // ��ֵ������͸�ά���ȶ�Ӧ
 const int const_name9[1][8-(7-2)] = {{1,2,3}}; 
 const int const_name_10[1][1] = {{-78549321}}, _const_name11[2][3/1] = {{8,0,3},{9,1,9}};
-//һЩ��������
-int var_name1 = 9-6; //���Ӵ�����
+int var_name1 = 9-6;
 int var_name_2 = 7%4, _var_name3, var_name4_= (2+1)+1;
 int var_name5[7%4]; 
 int var_name_6[7%4] = {(2+1)+1,7*6-9,6-7+8-(12%5)}, _var_name7[3*8/8], var_name8_[2];  // ��ֵ������͸�ά���ȶ�Ӧ
 int var_name9[8][3]; 
 int var_name_10[1][2*3/2+3] = {{7,4,0,6,1,6}}, _var_name11[2][1] = {{0},{0}}, var_name12_[2][3/1] = {{8,0,3},{9,1,9}};
 
-//һЩ�������ʽ
 /*2+3 9-6 8-(7-2) (2+1)+1 
 1*2 1*(6/2) 3*8/8 7%4*/ 
 
-void fun_name1_() {  // ¼��2������ȴ�С�� 
+void fun_name1_() {
 	const int fun1_const_1 = 9+19;
 	int fun1_var1__ =  fun1_const_1 + const_name5[4-3] - var_name_10[1][2];
 	;
@@ -68,13 +63,12 @@ int fun_name4(int fun4_para){
 }
 
 
-int fun_name5(int fun5_para1, int fun5_para2) {  // �ó˷�д�ݣ����16�η� 
+int fun_name5(int fun5_para1, int fun5_para2) {
 	const int fun5_const = 16; 
 	int fun5_var = 0;
 	int ans = 1;
 	while(fun5_para2 >= 1) {
 		fun5_para2 = fun5_para2 - 1;
-		//printf("%d\n",fun5_para2);
 		fun5_var = fun5_var+1;
 		if(fun5_var == 16) break;
 		else {

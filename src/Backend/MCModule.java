@@ -620,6 +620,17 @@ public class MCModule {
             CurBlock.addInst(new MCSW(MCReg.ra, MCReg.sp, CurSpTop));
             spMap.put(MCReg.ra, CurSpTop);
         }
+
+        //  4. 加载用到的全局变量
+        for(BasicBlock bb : CurIRFunction.getBbs()){
+            for(Instruction inst : bb.getInsts()){
+                for(Value useValue : inst.getUseValues()){
+                    if(useValue instanceof GlobalVar){
+                        val2Reg(useValue);
+                    }
+                }
+            }
+        }
     }
 
     //  genFunction已经提前为genBasicBlock初始化好了CurBlock，
