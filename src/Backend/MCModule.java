@@ -42,7 +42,7 @@ public class MCModule {
     private final HashMap<String, MCBlock> mcBlockMap = new HashMap<>();
 
     //  mips data段
-    private ArrayList<MCData> data = new ArrayList<>();
+    private final ArrayList<MCData> data = new ArrayList<>();
 
     private int msgNum = 0;
 
@@ -132,9 +132,7 @@ public class MCModule {
                     size += 4;  //  Reg ans;
                 }
                 else if(inst instanceof ConversionInst){
-                    ConversionInst conversionInst = (ConversionInst) inst;
-                    Reg oriReg = val2Reg(conversionInst.getValue());
-                    valRegMap.put(inst.getName(), oriReg);
+                    size += 4;
                 }
             }
         }
@@ -463,6 +461,11 @@ public class MCModule {
             }
 
             valRegMap.put(gepInst.getName(), ans);
+        }
+        else if(instruction instanceof ConversionInst){
+            ConversionInst conversionInst = (ConversionInst) instruction;
+            Reg oriReg = val2Reg(conversionInst.getValue());
+            valRegMap.put(instruction.getName(), oriReg);
         }
     }
 

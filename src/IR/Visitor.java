@@ -1058,6 +1058,7 @@ public class Visitor {
         CurBasicBlock = f.buildBasicBlock(CurFunction);
         //  进入一个新函数后命名要重新开始
         Value.valNumber = -1;
+        fillInitVal = new ArrayList<>();
 
         pushSymbol(ident, CurFunction);
 

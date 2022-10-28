@@ -39,8 +39,8 @@ public class Compiler {
 //        //  后端优化
 //        passManager.runMCPasses(mcModule);
 
-//        VirReg2MCReg virRegToMCReg = new VirReg2MCReg(mcModule);
-//        virRegToMCReg.run();
+        VirReg2MCReg virRegToMCReg = new VirReg2MCReg(mcModule);
+        virRegToMCReg.run();
 
         //  后端输出
         MIPSDump.DumpMCModule(mcModule);
