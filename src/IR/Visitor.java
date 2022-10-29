@@ -43,6 +43,18 @@ public class Visitor {
                 return OP.Div;
             case "%":
                 return OP.Mod;
+            case "==":
+                return OP.Eq;
+            case "!=":
+                return OP.Ne;
+            case ">":
+                return OP.Gt;
+            case "<":
+                return OP.Lt;
+            case ">=":
+                return OP.Ge;
+            case "<=":
+                return OP.Le;
         }
         return null;
     }
@@ -113,6 +125,7 @@ public class Visitor {
         else {
             value = find(lValAST.getIdent() + ";const");
             ConstArray constArray = (ConstArray) value;
+            assert constArray != null;
             ArrayList<Integer> dimList = constArray.getDimList();
             ArrayList<Integer> arrayValues = constArray.getArrayValues();
 
@@ -459,6 +472,8 @@ public class Visitor {
             CurValue = null;
             CurOP = null;
             visitMulExpAST(addExpAST.getMulExpAST(), false);
+            //  TmpValue用于保存上一层传进来的用于计算Value
+            //  如果为null说明是最左边的第一次递归
             if(TmpValue != null){
                 if(!TmpValue.getType().isPointerType() && !CurValue.getType().isPointerType()) {
                     //  构建运算之前先compType
@@ -557,55 +572,43 @@ public class Visitor {
     }
 
     private void visitRelExpAST(RelExpAST relExpAST){
+        Value TmpValue = CurValue;
+        OP TmpOP = CurOP;
         CurValue = null;
         CurOP = null;
         visitAddExpAST(relExpAST.getAddExpAST(), false);
-        if(relExpAST.getType() == 2){
-            Value TmpValue = CurValue;
-            visitRelExpAST(relExpAST.getRelExpAST());
-            String op = relExpAST.getOp();
 
+        if(TmpValue != null){
             TmpValue = compType(TmpValue);
-
-            switch (op) {
-                case "<" :{
-                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Lt, CurBasicBlock);
-                    break;
-                }
-                case "<=":{
-                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Le, CurBasicBlock);
-                    break;
-                }
-                case ">" :{
-                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Gt, CurBasicBlock);
-                    break;
-                }
-                case ">=" :{
-                    CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ge, CurBasicBlock);
-                    break;
-                }
-            }
+            CurValue = f.buildCmpInst(TmpValue, CurValue, TmpOP, CurBasicBlock);
         }
-
+        if(relExpAST.getType() == 2){
+            CurOP = StrToOP(relExpAST.getOp());
+            visitRelExpAST(relExpAST.getRelExpAST());
+        }
     }
 
     private void visitEqExpAST(EqExpAST eqExpAST){
+        Value TmpValue = CurValue;
+        OP TmpOP = CurOP;
+        CurValue = null;
+        CurOP = null;
         visitRelExpAST(eqExpAST.getRelExpAST());
-        if(eqExpAST.getType() == 2){
-            Value TmpValue = CurValue;
-            visitEqExpAST(eqExpAST.getEqExpAST());
 
-            //  构建Eq表达式之前先checkType
+        if(TmpValue != null){
             TmpValue = compType(TmpValue);
-            if(eqExpAST.getOp().equals("==")){
-                CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Eq, CurBasicBlock);
-            }
-            else CurValue = f.buildCmpInst(TmpValue, CurValue, OP.Ne, CurBasicBlock);
+            CurValue = f.buildCmpInst(TmpValue, CurValue, TmpOP, CurBasicBlock);
+        }
+
+        if(eqExpAST.getType() == 2){
+            CurOP = StrToOP(eqExpAST.getOp());
+            visitEqExpAST(eqExpAST.getEqExpAST());
         }
     }
 
     private void visitLAndExpAST(LAndExpAST lAndExpAST, BasicBlock TrueBLock, BasicBlock FalseBlock){
-
+        CurValue = null;
+        CurOP = null;
         visitEqExpAST(lAndExpAST.getEqExpAST());
 
         if(lAndExpAST.getType() == 2){
