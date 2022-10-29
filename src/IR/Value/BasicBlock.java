@@ -12,7 +12,7 @@ public class BasicBlock extends Value{
     private ArrayList<Instruction> insts;
     private boolean isTerminal;
     private int loopDepth;
-
+    private int domLV;
     public static int blockNum = 0;
 
     public BasicBlock(){
@@ -65,6 +65,10 @@ public class BasicBlock extends Value{
     }
     public void setNxtBlock(BasicBlock bb){
         nxtBlocks.add(bb);
+    }
+
+    public void setDomLV(int domLV){
+        this.domLV = domLV;
     }
 
     public void setLoopDepth(int loopDepth){

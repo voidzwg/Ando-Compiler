@@ -1047,6 +1047,7 @@ public class Visitor {
                 f.buildStoreInst(CurBasicBlock, argument, allocInst);
                 pushSymbol(identArg, allocInst);
             }
+            CurFunction.setBbEntry(CurBasicBlock);
         }
 
         ArrayList<BlockItemAST> blockItemASTS = blockAST.getBlockItems();

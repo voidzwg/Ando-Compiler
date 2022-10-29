@@ -12,10 +12,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class DomAnalysis {
-
     public static HashMap<BasicBlock, HashSet<BasicBlock>> run(Function function){
         HashMap<BasicBlock, HashSet<BasicBlock>> df = new HashMap<>();
+        //  dom记录支配每个块被哪些块支配
         HashMap<BasicBlock, HashSet<BasicBlock>> dom = new HashMap<>();
+        //  idom记录每个Bb的直接支配者
+        HashMap<BasicBlock, BasicBlock> idom = new HashMap<>();
+        //  idoms记录每个Bb直接支配哪些块
         HashMap<BasicBlock, ArrayList<BasicBlock>> idoms = new HashMap<>();
         ArrayList<BasicBlock> basicBlocks = function.getBbs();
 
@@ -88,9 +91,61 @@ public class DomAnalysis {
         }
 
         //  计算直接支配(idom)关系
+        for(BasicBlock bb : basicBlocks){
+            HashSet<BasicBlock> domSet = dom.get(bb);
+            if(domSet.size() == 1){
+                idom.put(bb, null);
+            }
+            for(BasicBlock domBb : domSet){
+                if(domBb.equals(bb)){
+                    continue;
+                }
 
+                boolean isIdom = true;
+                for (BasicBlock tmpDomBb : domSet) {
+                    if (!tmpDomBb.equals(bb) &&
+                            !tmpDomBb.equals(domBb) &&
+                            dom.get(tmpDomBb).contains(domBb)) {
+                        isIdom = false;
+                        break;
+                    }
+                }
 
+                if (isIdom) {
+                    idom.put(bb, domBb);
+                    idoms.get(domBb).add(bb);
+                    break;
+                }
+            }
+        }
+        function.setIdoms(idoms);
+
+        //  建立支配树
+        BasicBlock bbEntry = function.getBbEntry();
+        buildDomTree(bbEntry, 0, function);
+
+        //  计算DF
+        for (BasicBlock bb : basicBlocks) {
+            if (bb.getPreBlocks().size() > 1) {
+
+                for (BasicBlock p : bb.getPreBlocks()) {
+                    BasicBlock runner = p;
+                    while (!runner.equals(idom.get(bb))
+                            && df.containsKey(runner)) {
+                        df.get(runner).add(bb);
+                        runner = idom.get(runner);
+                    }
+                }
+            }
+        }
 
         return df;
+    }
+
+    private static void buildDomTree(BasicBlock bb, int domLV, Function function){
+        bb.setDomLV(domLV);
+        for(BasicBlock sonBb : function.getIdoms().get(bb)){
+            buildDomTree(sonBb, domLV + 1, function);
+        }
     }
 }

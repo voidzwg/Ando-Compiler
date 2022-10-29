@@ -27,22 +27,22 @@ public class Compiler {
 
         //  中端优化
         PassManager passManager = PassManager.getInstance();
-//        passManager.runIRPasses(irModule);
+        passManager.runIRPasses(irModule);
 
         //  中端输出
         IRDump.DumpModule(irModule);
 
-        //  后端
-        MCModule mcModule = new MCModule();
-        mcModule.genMips(irModule);
-
-//        //  后端优化
-//        passManager.runMCPasses(mcModule);
-
-        VirReg2MCReg virRegToMCReg = new VirReg2MCReg(mcModule);
-        virRegToMCReg.run();
-
-        //  后端输出
-        MIPSDump.DumpMCModule(mcModule);
+//        //  后端
+//        MCModule mcModule = new MCModule();
+//        mcModule.genMips(irModule);
+//
+////        //  后端优化
+////        passManager.runMCPasses(mcModule);
+//
+//        VirReg2MCReg virRegToMCReg = new VirReg2MCReg(mcModule);
+//        virRegToMCReg.run();
+//
+//        //  后端输出
+//        MIPSDump.DumpMCModule(mcModule);
     }
 }
