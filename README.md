@@ -8,3 +8,6 @@
 在Compiler下与src同级的testfile.txt中编写要编译的sysY代码，运行Compiler，随后你将在output.txt中看到输出。
 
 Tips: Compiler.java文件调中的ASTDump输出语法树,IRDump输出llvm ir,MIPSDump输出mips(
+
+##更新日志
+v1.0 2022.10.29 完成第一版ando-compiler
