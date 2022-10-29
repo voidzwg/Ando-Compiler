@@ -97,10 +97,11 @@ public class MCModule {
                         size += 4;
                     }
                 }
-                else if(inst instanceof BinaryInst){
-                    size += 4;
-                }
-                else if(inst instanceof CmpInst){
+                else if(inst instanceof BinaryInst || inst instanceof CmpInst){
+                    ArrayList<Value> values = inst.getUseValues();
+                    for(Value value : values){
+                        if(value instanceof ConstInteger) size += 4;
+                    }
                     size += 4;
                 }
                 else if(inst instanceof AllocInst){
@@ -165,7 +166,6 @@ public class MCModule {
         }
         else if(value instanceof GlobalVar){
             if(!(value.getType() instanceof ArrayType)) {
-                GlobalVar globalVar = (GlobalVar) value;
                 String name = ident.replace("@", "");
                 Reg reg = buildVirReg();
                 CurBlock.addInst(new MCLoad(reg, name));
@@ -189,7 +189,7 @@ public class MCModule {
 
     private MCInst.Tag OP2Tag(OP op){
         if(op == OP.Sub) return MCInst.Tag.sub;
-        else if(op == OP.Add) return MCInst.Tag.add;
+        else if(op == OP.Add) return MCInst.Tag.addu;
         else if(op == OP.Mul) return MCInst.Tag.mul;
         else if(op == OP.Div) return MCInst.Tag.div;
         else if(op == OP.Mod) return MCInst.Tag.rem;
@@ -209,7 +209,7 @@ public class MCModule {
         }
 
         //  2. 复原栈顶
-        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, CurSize));
+        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addiu, MCReg.sp, MCReg.sp, CurSize));
 
         //  3. 生成jr ra或syscall
         if(!CurFuncName.equals("main")) {
@@ -242,21 +242,13 @@ public class MCModule {
             OP op = binaryInst.getOp();
             Value left = binaryInst.getLeftVal();
             Value right = binaryInst.getRightVal();
-            //  tmpLeft，tmpRight用于只有一个是ConstInteger的情况
-            //  tmpLeft用来存AllocInst, tmpRight用来存ConstInteger
-            Value tmpLeft = left;
-            Value tmpRight = right;
             int isImm = 0;
 
             if(left instanceof ConstInteger){
                 isImm++;
-                tmpLeft = right;
-                tmpRight = left;
             }
             if(right instanceof ConstInteger){
                 isImm++;
-                tmpLeft = left;
-                tmpRight = right;
             }
             //  add, sub, mul, div
             //  全是constInteger，我他妈直接运算
@@ -281,19 +273,13 @@ public class MCModule {
             OP op = cmpInst.getOp();
             Value left = cmpInst.getLeftVal();
             Value right = cmpInst.getRightVal();
-            Value tmpLeft = left;
-            Value tmpRight = right;
             int isImm = 0;
 
             if(left instanceof ConstInteger){
                 isImm++;
-                tmpLeft = right;
-                tmpRight = left;
             }
             if(right instanceof ConstInteger){
                 isImm++;
-                tmpLeft = left;
-                tmpRight = right;
             }
             if(isImm == 2){
                 int leftVal = ((ConstInteger) left).getVal();
@@ -303,13 +289,6 @@ public class MCModule {
 
                 Reg rd = val2Reg(cmpInst);
                 CurBlock.addInst(new MCLoad(rd, ans));
-            }
-            else if(isImm == 1){
-                int imm = ((ConstInteger) tmpRight).getVal();
-                Reg rs1 = val2Reg(tmpLeft);
-                Reg rd = val2Reg(cmpInst);
-                if(op == OP.Lt) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.slti, rd, rs1, imm));
-                else CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, imm));
             }
             else{
                 Reg rs1 = val2Reg(left);
@@ -330,7 +309,7 @@ public class MCModule {
                 CurSpTop -= 4;
             }
             Reg newAlloc = val2Reg(allocInst);
-            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, newAlloc, MCReg.sp, CurSpTop));
+            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, newAlloc, MCReg.sp, CurSpTop));
         }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
@@ -445,7 +424,7 @@ public class MCModule {
                     Reg reg = val2Reg(value);
                     Reg tmp = new VirtualReg();
                     CurBlock.addInst(new MCBinaryInst(MCInst.Tag.mul, tmp, reg, gapDims.get(i)));
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tmp));
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, ans, ans, tmp));
                 }
             }
 
@@ -453,11 +432,11 @@ public class MCModule {
             if(target instanceof GlobalVar){
                 Reg reg = new VirtualReg();
                 CurBlock.addInst(new MCLoad(reg, target.getName().replace("@","")));
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, reg));
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, ans, ans, reg));
             }
             else {
                 Reg tarReg = val2Reg(target);
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tarReg));
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, ans, ans, tarReg));
             }
 
             valRegMap.put(gepInst.getName(), ans);
@@ -612,7 +591,7 @@ public class MCModule {
 
         //  2. 设置栈顶
         CurSize = calSize(CurIRFunction);
-        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, -CurSize));
+        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addiu, MCReg.sp, MCReg.sp, -CurSize));
         CurSpTop = CurSize;
 
         //  3. 保存ra

@@ -54,7 +54,7 @@ public class MCFunction {
             Reg rd = mcInst.getRd();
             Reg rs1 = mcInst.getRs1();
             MCInst.Tag tag = mcInst.getTag();
-            if(rd == MCReg.sp && rs1 == MCReg.sp && tag == MCInst.Tag.addi){
+            if(rd == MCReg.sp && rs1 == MCReg.sp && tag == MCInst.Tag.addiu){
                 MCBinaryInst mcBinaryInst = (MCBinaryInst) mcInst;
                 mcBinaryInst.setImm(-stackSize);
                 break;
@@ -69,7 +69,7 @@ public class MCFunction {
                 Reg rd = mcInst.getRd();
                 Reg rs1 = mcInst.getRs1();
                 MCInst.Tag tag = mcInst.getTag();
-                if (rd == MCReg.sp && rs1 == MCReg.sp && tag == MCInst.Tag.addi) {
+                if (rd == MCReg.sp && rs1 == MCReg.sp && tag == MCInst.Tag.addiu) {
                     MCBinaryInst mcBinaryInst = (MCBinaryInst) mcInst;
                     mcBinaryInst.setImm(stackSize);
                     break;

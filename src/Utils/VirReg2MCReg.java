@@ -127,6 +127,10 @@ public class VirReg2MCReg {
 
                             //  插入lw指令
                             int pos = spPos.get(reg);
+                            if(reg.toString().equals("$55")){
+                                int aaa = 1;
+
+                            }
                             MCInst lwInst = new MCLW(tmp, MCReg.sp, pos);
                             mb.insertInst(lwInst, i);
                             i++;
@@ -143,10 +147,17 @@ public class VirReg2MCReg {
                         Reg reg = defReg.get(0);
                         mcInst.replaceReg(reg, tmpReg);
                         //  插入sw指令
-                        MCInst swInst = new MCSW(tmpReg, MCReg.sp, size);
+                        int pos;
+                        if(spPos.containsKey(reg)){
+                            pos = spPos.get(reg);
+                        }
+                        else {
+                            pos = size;
+                            spPos.put(reg, size);
+                            size += 4;
+                        }
+                        MCInst swInst = new MCSW(tmpReg, MCReg.sp, pos);
                         mb.insertInst(swInst, i + 1);
-                        spPos.put(reg, size);
-                        size += 4;
                         i++;
                     }
                 }

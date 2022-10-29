@@ -884,6 +884,7 @@ public class Visitor {
         ArrayList<ConstDefAST> constDefASTS = constDeclAST.getConstDefASTS();
         for(ConstDefAST constDefAST : constDefASTS){
             visitConstDefAST(constDefAST, isGlobal);
+            fillInitVal = new ArrayList<>();
         }
     }
 
@@ -896,6 +897,7 @@ public class Visitor {
         ArrayList<VarDefAST> varDefASTS = varDeclAST.getVarDefASTS();
         for(VarDefAST varDefAST : varDefASTS){
             visitVarDefAST(varDefAST, isGlobal);
+            fillInitVal = new ArrayList<>();
         }
     }
 
@@ -934,10 +936,15 @@ public class Visitor {
                 GlobalVar globalVar;
                 if(varDefAST.getType() == 4){
                     visitInitValAST(varDefAST.getInitValAST(), true);
-                    globalVar = f.buildGlobalVar(ident, dimList, fillInitVal, false,globalVars);
                 }
-                else globalVar = f.buildGlobalVar(ident, dimList, new ArrayList<>(), false,globalVars);
+                else {
+                    //  如果没有显式初始化就填充0
+                    for(int i = 0; i < totDim; i++){
+                        fillInitVal.add(ConstInteger.constZero);
+                    }
+                }
 
+                globalVar = f.buildGlobalVar(ident, dimList, fillInitVal, false,globalVars);
                 pushSymbol(rawIdent, globalVar);
             }
         }
