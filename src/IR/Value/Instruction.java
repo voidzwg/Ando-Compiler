@@ -1,7 +1,10 @@
 package IR.Value;
 
 import IR.Type.Type;
+import IR.Use;
 import IR.Value.Instructions.OP;
+
+import java.util.ArrayList;
 
 public abstract class Instruction extends User{
     BasicBlock parentbb;
@@ -10,7 +13,6 @@ public abstract class Instruction extends User{
     //  因此一些特殊的名字我们是不算的
     boolean hasName;
 
-
     public Instruction(String name, Type type, OP op, BasicBlock basicBlock, boolean hasName) {
         super(name, type);
         this.op = op;
@@ -18,8 +20,13 @@ public abstract class Instruction extends User{
         this.hasName = hasName;
     }
 
-
-    //  Getters and Setters
+    public ArrayList<Value> getUseValues(){
+        ArrayList<Value> useValues = new ArrayList<>();
+        for(Use use : operandList){
+            useValues.add(use.getValue());
+        }
+        return  useValues;
+    }
 
     public OP getOp() {
         return op;

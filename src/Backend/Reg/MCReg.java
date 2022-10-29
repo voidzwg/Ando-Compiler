@@ -1,19 +1,32 @@
 package Backend.Reg;
 
 public class MCReg extends Reg{
-    private final int id;
-    public boolean isAllocated = false;
+    protected boolean isAllocated;
 
-    public static MCReg sp = new MCReg("sp");
-    public static MCReg ra = new MCReg("ra");
-    public static MCReg zero = new MCReg("zero");
-    public static MCReg a0 = new MCReg("a0");
-    public static MCReg v0 = new MCReg("v0");
+    public static MCReg sp = new MCReg("sp", false);
+    public static MCReg ra = new MCReg("ra", false);
+    public static MCReg zero = new MCReg("zero", false);
+    public static MCReg a0 = new MCReg("a0", false);
+    public static MCReg a1 = new MCReg("a1", false);
+    public static MCReg a2 = new MCReg("a2", false);
+    public static MCReg a3 = new MCReg("a3", false);
+    public static MCReg v0 = new MCReg("v0", false);
+    private final RegNameMap regNameMap = RegNameMap.getInstance();
 
-    public MCReg(String name){
+    public MCReg(String name, boolean isAllocated){
         super(name);
-        RegNameMap regNameMap = RegNameMap.getInstance();
+        this.isAllocated = isAllocated;
         this.id = regNameMap.getRegNum(name);
+    }
+
+    public MCReg(int pid, boolean isAllocated){
+        super(pid);
+        this.isAllocated = isAllocated;
+        this.name = regNameMap.getRegName(pid);
+    }
+
+    public int getId(){
+        return id;
     }
 
     public int getPreColor(){

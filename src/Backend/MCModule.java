@@ -14,8 +14,6 @@ import IR.Type.StringType;
 import IR.Type.Type;
 import IR.Value.*;
 import IR.Value.Instructions.*;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +42,7 @@ public class MCModule {
     private final HashMap<String, MCBlock> mcBlockMap = new HashMap<>();
 
     //  mips data段
-    private ArrayList<MCData> data = new ArrayList<>();
+    private final ArrayList<MCData> data = new ArrayList<>();
 
     private int msgNum = 0;
 
@@ -53,6 +51,7 @@ public class MCModule {
         else if(op == OP.Sub) return l - r;
         else if(op == OP.Mul) return l * r;
         else if(op == OP.Div) return l / r;
+        else if(op == OP.Mod) return l % r;
         else if(op == OP.Eq){
             if(l == r) return 1;
             else return 0;
@@ -92,15 +91,49 @@ public class MCModule {
         for(BasicBlock bb : bbs){
             ArrayList<Instruction> insts = bb.getInsts();
             for(Instruction inst : insts){
-                if(inst.hasName()){
+                if(inst instanceof RetInst){
+                    Value retVal = ((RetInst) inst).getValue();
+                    if(!retVal.getName().equals("void")){
+                        size += 4;
+                    }
+                }
+                else if(inst instanceof BinaryInst || inst instanceof CmpInst){
+                    ArrayList<Value> values = inst.getUseValues();
+                    for(Value value : values){
+                        if(value instanceof ConstInteger) size += 4;
+                    }
                     size += 4;
                 }
-                if(inst instanceof CallInst){
+                else if(inst instanceof AllocInst){
+                    Type type = inst.getType();
+                    if(type instanceof ArrayType){
+                        ArrayType arrayType = (ArrayType) type;
+                        size += calArrSize(arrayType);
+                    }
+                    else size += 4;
+                }
+                else if(inst instanceof LoadInst){
+                    size += 4;
+                }
+                else if(inst instanceof BrInst){
+                    if(!((BrInst) inst).isJump()){
+                        size += 4;
+                    }
+                }
+                else if(inst instanceof CallInst){
                     isLeaf = false;
                     CallInst callInst = (CallInst) inst;
                     int argNum = callInst.getValues().size();
                     //  arg里有常数也有参数，干脆都算空间
                     size += argNum * 4;
+
+                    if(callInst.hasName()) size += 4;
+                }
+                else if(inst instanceof GepInst){
+                    size += 4;  //  Reg ans;
+                }
+                else if(inst instanceof ConversionInst){
+                    size += 4;
                 }
             }
         }
@@ -133,11 +166,9 @@ public class MCModule {
         }
         else if(value instanceof GlobalVar){
             if(!(value.getType() instanceof ArrayType)) {
-                GlobalVar globalVar = (GlobalVar) value;
                 String name = ident.replace("@", "");
                 Reg reg = buildVirReg();
                 CurBlock.addInst(new MCLoad(reg, name));
-                CurBlock.addInst(new MCLW(reg, reg, 0));
                 valRegMap.put(ident, reg);
                 return reg;
             }
@@ -158,9 +189,10 @@ public class MCModule {
 
     private MCInst.Tag OP2Tag(OP op){
         if(op == OP.Sub) return MCInst.Tag.sub;
-        else if(op == OP.Add) return MCInst.Tag.add;
+        else if(op == OP.Add) return MCInst.Tag.addu;
         else if(op == OP.Mul) return MCInst.Tag.mul;
         else if(op == OP.Div) return MCInst.Tag.div;
+        else if(op == OP.Mod) return MCInst.Tag.rem;
         else if(op == OP.Eq) return MCInst.Tag.seq;
         else if(op == OP.Ne) return MCInst.Tag.sne;
         else if(op == OP.Le) return MCInst.Tag.sle;
@@ -177,14 +209,14 @@ public class MCModule {
         }
 
         //  2. 复原栈顶
-        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, CurSize));
+        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addiu, MCReg.sp, MCReg.sp, CurSize));
 
         //  3. 生成jr ra或syscall
         if(!CurFuncName.equals("main")) {
             CurBlock.addInst(new MCJump("$ra", 1));
         }
         else {
-            CurBlock.addInst(new MCLoad(new MCReg("v0"), 10));
+            CurBlock.addInst(new MCLoad(MCReg.v0, 10));
             CurBlock.addInst(new MCOther(MCInst.Tag.syscall));
         }
 
@@ -210,21 +242,13 @@ public class MCModule {
             OP op = binaryInst.getOp();
             Value left = binaryInst.getLeftVal();
             Value right = binaryInst.getRightVal();
-            //  tmpLeft，tmpRight用于只有一个是ConstInteger的情况
-            //  tmpLeft用来存AllocInst, tmpRight用来存ConstInteger
-            Value tmpLeft = left;
-            Value tmpRight = right;
             int isImm = 0;
 
             if(left instanceof ConstInteger){
                 isImm++;
-                tmpLeft = right;
-                tmpRight = left;
             }
             if(right instanceof ConstInteger){
                 isImm++;
-                tmpLeft = left;
-                tmpRight = right;
             }
             //  add, sub, mul, div
             //  全是constInteger，我他妈直接运算
@@ -232,19 +256,9 @@ public class MCModule {
                 int leftVal = ((ConstInteger) left).getVal();
                 int rightVal = ((ConstInteger) right).getVal();
 
-                Reg reg = buildVirReg();
-                CurBlock.addInst(new MCLoad(reg, calAns(op, leftVal, rightVal)));
-            }
-
-            else if(isImm == 1 && (op == OP.Sub || op == OP.Add)){
-                ConstInteger constInteger = (ConstInteger) tmpRight;
-                int val = constInteger.getVal();
-                Reg rs1 = val2Reg(tmpLeft);
                 Reg rd = val2Reg(binaryInst);
-                if(op == OP.Sub) val = -val;
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, rd, rs1, val));
+                CurBlock.addInst(new MCLoad(rd, calAns(op, leftVal, rightVal)));
             }
-
             else {
                 Reg rs1 = val2Reg(left);
                 Reg rs2 = val2Reg(right);
@@ -259,19 +273,13 @@ public class MCModule {
             OP op = cmpInst.getOp();
             Value left = cmpInst.getLeftVal();
             Value right = cmpInst.getRightVal();
-            Value tmpLeft = left;
-            Value tmpRight = right;
             int isImm = 0;
 
             if(left instanceof ConstInteger){
                 isImm++;
-                tmpLeft = right;
-                tmpRight = left;
             }
             if(right instanceof ConstInteger){
                 isImm++;
-                tmpLeft = left;
-                tmpRight = right;
             }
             if(isImm == 2){
                 int leftVal = ((ConstInteger) left).getVal();
@@ -279,17 +287,8 @@ public class MCModule {
                 int ans;
                 ans = calAns(op, leftVal, rightVal);
 
-                Reg reg = buildVirReg();
-
-                CurBlock.addInst(new MCLoad(reg, ans));
-                valRegMap.put(cmpInst.getName(), reg);
-            }
-            else if(isImm == 1){
-                int imm = ((ConstInteger) tmpRight).getVal();
-                Reg rs1 = val2Reg(tmpLeft);
                 Reg rd = val2Reg(cmpInst);
-                if(op == OP.Lt) CurBlock.addInst(new MCBinaryInst(MCInst.Tag.slti, rd, rs1, imm));
-                else CurBlock.addInst(new MCBinaryInst(OP2Tag(op), rd, rs1, imm));
+                CurBlock.addInst(new MCLoad(rd, ans));
             }
             else{
                 Reg rs1 = val2Reg(left);
@@ -309,9 +308,8 @@ public class MCModule {
             else {
                 CurSpTop -= 4;
             }
-            Reg newAlloc = new VirtualReg();
-            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, newAlloc, MCReg.sp, CurSpTop));
-            valRegMap.put(allocInst.getName(), newAlloc);
+            Reg newAlloc = val2Reg(allocInst);
+            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, newAlloc, MCReg.sp, CurSpTop));
         }
         else if(instruction instanceof StoreInst){
             StoreInst storeInst = (StoreInst) instruction;
@@ -356,17 +354,16 @@ public class MCModule {
             //  特判一下getint和printf
             String callFuncName = callInst.getCallFunc().getName();
             //  getint
-            if(callFuncName.equals("@__isoc99_scanf")){
-                callGetInt(callInst);
-                return;
-            }
-            //  printf
-            else if(callFuncName.equals("@printf")){
-                callPrintf(callInst);
-                return;
-            }
-            else if(callFuncName.equals("@memset")){
-                return;
+            switch (callFuncName) {
+                case "@__isoc99_scanf":
+                    callGetInt(callInst);
+                    return;
+
+                case "@printf":
+                    callPrintf(callInst);
+                    return;
+                case "@memset":
+                    return;
             }
 
             saveAll(callInst);
@@ -410,7 +407,7 @@ public class MCModule {
             ArrayList<Value> values = gepInst.getIndexs();
             //  ans记录累加偏移
             //  注意这里的Value保证都是i32，只是不知道是intConst还是变量
-            Reg ans = new VirtualReg();
+            Reg ans = buildVirReg();
             int constNum = 0;
             //  先把所有的intConst算出来
             for(int i = 0; i < values.size(); i++){
@@ -421,12 +418,13 @@ public class MCModule {
             }
             CurBlock.addInst(new MCLoad(ans, constNum));
             //  再计算i32变量部分
-            for (Value value : values) {
+            for (int i = 0; i < values.size(); i++) {
+                Value value = values.get(i);
                 if (!(value instanceof ConstInteger)) {
                     Reg reg = val2Reg(value);
                     Reg tmp = new VirtualReg();
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.mul, tmp, reg, 4));
-                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tmp));
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.mul, tmp, reg, gapDims.get(i)));
+                    CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, ans, ans, tmp));
                 }
             }
 
@@ -434,12 +432,19 @@ public class MCModule {
             if(target instanceof GlobalVar){
                 Reg reg = new VirtualReg();
                 CurBlock.addInst(new MCLoad(reg, target.getName().replace("@","")));
-                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, reg));
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, ans, ans, reg));
             }
-            Reg tarReg = val2Reg(target);
-            CurBlock.addInst(new MCBinaryInst(MCInst.Tag.add, ans, ans, tarReg));
+            else {
+                Reg tarReg = val2Reg(target);
+                CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addu, ans, ans, tarReg));
+            }
 
             valRegMap.put(gepInst.getName(), ans);
+        }
+        else if(instruction instanceof ConversionInst){
+            ConversionInst conversionInst = (ConversionInst) instruction;
+            Reg oriReg = val2Reg(conversionInst.getValue());
+            valRegMap.put(instruction.getName(), oriReg);
         }
     }
 
@@ -528,11 +533,11 @@ public class MCModule {
             if(i < 4){
                 String regName = "a" + i;
                 if(value instanceof ConstInteger){
-                    CurBlock.addInst(new MCLoad(new MCReg(regName), ((ConstInteger) value).getVal()));
+                    CurBlock.addInst(new MCLoad(new MCReg(regName, false), ((ConstInteger) value).getVal()));
                 }
                 else{
                     Reg reg = val2Reg(value);
-                    CurBlock.addInst(new MCMV(new MCReg(regName), reg));
+                    CurBlock.addInst(new MCMV(new MCReg(regName, false), reg));
                 }
             }
             else saveRParam(value, (i - 4) * 4);
@@ -578,7 +583,7 @@ public class MCModule {
             String argName = "a" + i;
             Value arg = CurIRFunction.getArgs().get(i);
             Reg reg = val2Reg(arg);
-            if(i < 4) CurBlock.addInst(new MCMV(reg, new MCReg(argName)));
+            if(i < 4) CurBlock.addInst(new MCMV(reg, new MCReg(argName, false)));
             else {
                 CurBlock.addInst(new MCLW(reg, MCReg.sp, (i - 4) * 4));
             }
@@ -586,7 +591,7 @@ public class MCModule {
 
         //  2. 设置栈顶
         CurSize = calSize(CurIRFunction);
-        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addi, MCReg.sp, MCReg.sp, -CurSize));
+        CurBlock.addInst(new MCBinaryInst(MCInst.Tag.addiu, MCReg.sp, MCReg.sp, -CurSize));
         CurSpTop = CurSize;
 
         //  3. 保存ra
@@ -596,6 +601,17 @@ public class MCModule {
             CurSpTop -= 4;
             CurBlock.addInst(new MCSW(MCReg.ra, MCReg.sp, CurSpTop));
             spMap.put(MCReg.ra, CurSpTop);
+        }
+
+        //  4. 加载用到的全局变量
+        for(BasicBlock bb : CurIRFunction.getBbs()){
+            for(Instruction inst : bb.getInsts()){
+                for(Value useValue : inst.getUseValues()){
+                    if(useValue instanceof GlobalVar){
+                        val2Reg(useValue);
+                    }
+                }
+            }
         }
     }
 
@@ -620,6 +636,7 @@ public class MCModule {
         spMap.clear();
         saveRegs.clear();
         mcBlockMap.clear();
+        valRegMap.clear();
 
         for (int i = 0; i < basicBlocks.size(); i++) {
             boolean isEntry = (i == 0);
@@ -638,6 +655,7 @@ public class MCModule {
         }
 
         CurFunction = new MCFunction(CurFuncName, mcBlocks);
+        CurFunction.setStackSize(CurSize);
         mcFunctions.add(CurFunction);
     }
 

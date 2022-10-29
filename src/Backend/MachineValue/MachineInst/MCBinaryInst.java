@@ -6,9 +6,6 @@ import Backend.Reg.VirtualReg;
 import java.util.ArrayList;
 
 public class MCBinaryInst extends MCInst{
-    private Reg rd;
-    private Reg rs1;
-    private Reg rs2;
     private int imm;
     private int type;
 
@@ -52,5 +49,13 @@ public class MCBinaryInst extends MCInst{
         }
         else if(type == 2) stringBuilder.append(", ").append(imm);
         return stringBuilder.toString();
+    }
+
+    public void setImm(int imm){
+        this.imm = imm;
+    }
+
+    public int getImm(){
+        return imm;
     }
 }

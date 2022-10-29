@@ -3,8 +3,6 @@ package Backend.MachineValue.MachineInst;
 import Backend.Reg.Reg;
 
 public class MCBr extends MCInst{
-    private Reg rs1;
-    private Reg rs2;
     private int type;
     private String label;
 

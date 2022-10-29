@@ -3,14 +3,14 @@ package Pass.MC;
 import Backend.MCModule;
 import Backend.MachineValue.MCBlock;
 import Backend.MachineValue.MCFunction;
-import Backend.MachineValue.MachineInst.MCInst;
-import Backend.MachineValue.MachineInst.MCMV;
+import Backend.MachineValue.MachineInst.*;
 import Backend.Reg.MCReg;
 import Backend.Reg.Reg;
+import Backend.Reg.VirtualReg;
 import Pass.MC.Utils.LiveAnalysis;
 import Pass.Pass;
 import Pass.MC.Utils.LiveAnalysis.BlockLiveInfo;
-import javafx.util.Pair;
+import Utils.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,7 +61,15 @@ public class RegAllocator implements Pass.MCPass {
     private HashMap<Reg, Reg> alias;
     // loopDepth用于记录Reg所在的深度，作为selectSpill的参考因素
     private HashMap<Reg, Integer> loopDepth;
+    //  rewriteMap用于保存rewrite函数中为溢出的虚拟寄存器暂时分配的寄存器
+    private HashMap<Reg, VirtualReg> rewriteRegMap;
+    //  rewritePosMap记录溢出的Reg在栈上的位置
+    private HashMap<Reg, Integer> rewritePosMap;
 
+    //  ando架构中这些寄存器遵守abi约定，其他全部用于分配
+    private boolean idPreColored(int id){
+        return (id >= 0 && id <= 2) || (id >= 4 && id <= 7) || id == 26 || id == 27 || id == 29 || id == 31;
+    }
 
     @Override
     public void run(MCModule mcModule) {
@@ -102,40 +110,59 @@ public class RegAllocator implements Pass.MCPass {
     }
 
     private void rewriteProgram(MCFunction mf){
+        int size = mf.getStackSize();
         for(Reg r : spilledNodes){
-
-            for(MCBlock block : mf.getMcBlocks()) {
-                for (MCInst inst : block.getMCInsts()) {
-
+            for(MCBlock mb : mf.getMcBlocks()) {
+                //  我们从mf的stackSize之上为新变量分配空间
+                ArrayList<MCInst> mcInsts = mb.getMCInsts();
+                for (int i = 0; i < mcInsts.size(); i++) {
+                    MCInst inst = mcInsts.get(i);
+                    if(inst.getDefReg().contains(r)){
+                        VirtualReg newReg = new VirtualReg();
+                        rewriteRegMap.put(r, newReg);
+                        MCInst swInst = new MCSW(newReg, MCReg.sp, size);
+                        rewritePosMap.put(r, size);
+                        size += 4;
+                        mb.insertInst(swInst, i + 1);
+                        inst.replaceReg(r, newReg);
+                    }
+                    if(inst.getUseReg().contains(r)){
+                        VirtualReg reg = rewriteRegMap.get(r);
+                        int pos = rewritePosMap.get(r);
+                        MCInst lwInst = new MCLW(reg, MCReg.sp, pos);
+                        mb.insertInst(lwInst, i);
+                        inst.replaceReg(r, reg);
+                    }
                 }
             }
         }
+        //  更新stackSize
+        mf.setStackSize(size);
     }
 
     private void assignColors(MCFunction mf){
-        HashMap<Reg, Integer> color = new HashMap<>();
+        HashMap<Reg, MCReg> colored = new HashMap<>();
 
         while (!selectStack.empty()){
             Reg n = selectStack.pop();
             HashSet<Integer> okColors = new HashSet<>();
             for(int i = 0; i < K; i++){
-                okColors.add(i);
+                if(!idPreColored(i)) {
+                    okColors.add(i);
+                }
             }
-            for(Reg w : adjList.get(n)){
+            for(Reg w : adjList.getOrDefault(n, new HashSet<>())){
                 Reg u = getAlias(w);
-                if(coloredNodes.contains(u) || u.isPrecolored()){
-                    if(u.isPrecolored()) {
-                        MCReg mcReg = (MCReg) u;
-                        okColors.remove(mcReg.getPreColor());
-                    }
-                    else okColors.remove(color.get(u));
+                if(coloredNodes.contains(u)){
+                    okColors.remove(colored.get(u).getId());
                 }
             }
             if(okColors.isEmpty()){
                 spilledNodes.add(n);
             }else{
                 coloredNodes.add(n);
-                color.put(n, okColors.iterator().next());
+                int pid = okColors.iterator().next();
+                colored.put(n, new MCReg(pid, true));
             }
         }
 
@@ -146,8 +173,40 @@ public class RegAllocator implements Pass.MCPass {
         }
 
         for(Reg n : coalescedNodes){
-            color.put(n, color.get(getAlias(n)));
+            Reg tmp = getAlias(n);
+            if(tmp.isPrecolored()){
+                colored.put(n, (MCReg) tmp);
+            }
+            else colored.put(n, colored.get(tmp));
         }
+
+        for (MCBlock mb : mf.getMcBlocks()) {
+            //  deleteInsts删除冗余的move指令
+            ArrayList<MCInst> deleteInsts = new ArrayList<>();
+            for (MCInst mcInst : mb.getMCInsts()) {
+                ArrayList<Reg> defs = new ArrayList<>(mcInst.getDefReg());
+                ArrayList<Reg> uses = new ArrayList<>(mcInst.getUseReg());
+
+                defs.stream().filter(colored::containsKey)
+                        .forEach(def -> mcInst.replaceReg(def, colored.get(def)));
+                uses.stream().filter(colored::containsKey)
+                        .forEach(use -> mcInst.replaceReg(use, colored.get(use)));
+
+                if(mcInst instanceof MCMV){
+                    MCMV mcmv = (MCMV) mcInst;
+                    Reg rd = mcmv.getDst();
+                    Reg rs = mcmv.getSrc();
+                    if(rd == rs){
+                        deleteInsts.add(mcInst);
+                    }
+                }
+            }
+
+            for(MCInst deleteInst : deleteInsts){
+                mb.deleteInst(deleteInst);
+            }
+        }
+
     }
 
     private void selectSpill(){
@@ -201,6 +260,7 @@ public class RegAllocator implements Pass.MCPass {
         Reg x = getAlias(mcmv.getDst());
         Reg y = getAlias(mcmv.getSrc());
         Reg u, v;
+        //  如果有precolored, 那么令u为precolored, v为另一个
         if(y.isPrecolored()){
             u = y;
             v = x;
@@ -219,13 +279,12 @@ public class RegAllocator implements Pass.MCPass {
             addWorkList(v);
         } else if ((u.isPrecolored() && adjOk(u, v)) ||
                 (!u.isPrecolored() && conservative(getAdjacent(u), getAdjacent(v)))) {
-            constrainedMoves.add(mcmv);
+            coalescedMoves.add(mcmv);
             combine(u, v);
             addWorkList(u);
         } else {
             activeMoves.add(mcmv);
         }
-
     }
 
     private void combine(Reg u, Reg v){
@@ -239,10 +298,10 @@ public class RegAllocator implements Pass.MCPass {
         alias.put(v, u);
         moveList.get(u).addAll(moveList.get(v));
 
-        getAdjacent(v).forEach(t -> {
-            addEdge(t, u);
-            decrementDegree(t);
-        });
+        for(Reg adjReg : getAdjacent(v)){
+            addEdge(adjReg, u);
+            decrementDegree(adjReg);
+        }
 
         if (getDegree(u) >= K && freezeWorkList.contains(u)) {
             freezeWorkList.remove(u);
@@ -275,7 +334,7 @@ public class RegAllocator implements Pass.MCPass {
 
     private Reg getAlias(Reg reg){
         if(coalescedNodes.contains(reg)){
-            return getAlias(reg);
+            return getAlias(alias.get(reg));
         }
         return reg;
     }
@@ -425,6 +484,9 @@ public class RegAllocator implements Pass.MCPass {
         frozenMoves = new HashSet<>();
         activeMoves = new HashSet<>();
         alias = new HashMap<>();
+        loopDepth = new HashMap<>();
+        rewritePosMap = new HashMap<>();
+        rewriteRegMap = new HashMap<>();
         loopDepth = new HashMap<>();
     }
 

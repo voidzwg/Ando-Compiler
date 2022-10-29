@@ -2,6 +2,7 @@ package Pass;
 
 import Backend.MCModule;
 import IR.IRModule;
+import Pass.IR.Mem2Reg;
 import Pass.MC.RegAllocator;
 import Pass.Pass.*;
 
@@ -16,6 +17,10 @@ public class PassManager {
     ArrayList<MCPass> mcPasses = new ArrayList<>();
 
     private PassManager(){
+        //  IRPasses
+        irPasses.add(new Mem2Reg());
+
+        //  MCPasses
         mcPasses.add(new RegAllocator());
     }
 

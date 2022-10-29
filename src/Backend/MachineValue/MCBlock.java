@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class MCBlock {
-    private MCFunction parentFunc;
-    private ArrayList<MCInst> machineInsts;
-    private String name;
+    private final MCFunction parentFunc;
+    private final ArrayList<MCInst> machineInsts;
+    private final String name;
     private MCBlock trueBlock;
     private MCBlock falseBlock;
-    private boolean isEntry;
+    private final boolean isEntry;
     private boolean hasSucc;
     private boolean hasFalseSucc;
     private int loopDepth;
@@ -85,4 +85,12 @@ public class MCBlock {
         return virtualReg;
     }
 
+    //  在pos位置插入指令mcInst
+    public void insertInst(MCInst mcInst, int pos){
+        machineInsts.add(pos, mcInst);
+    }
+
+    public void deleteInst(MCInst mcInst){
+        machineInsts.remove(mcInst);
+    }
 }

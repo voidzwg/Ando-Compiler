@@ -1,0 +1,772 @@
+.data
+const_a_0: .word 1
+const_a0_0: .word 4
+_const_a1_0: .word 1
+var_a_0: .word 0
+var_a0_0: .word 0
+var_a1_0: .word 0
+var_init_0: .word -1
+var_init0_0: .word -7
+var_init1_0: .word 2
+msg0: .asciiz"19373315\n"
+msg1: .asciiz"this is a yu ju ky\n"
+msg2: .asciiz"unbelievable!\n"
+msg3: .asciiz"var_a from getint() is "
+msg4: .asciiz"\n"
+msg5: .asciiz"getint is "
+msg6: .asciiz"\n"
+msg7: .asciiz"tmp\n"
+msg8: .asciiz"tmp\n"
+msg9: .asciiz"tmp\n"
+msg10: .asciiz"tmp\n"
+msg11: .asciiz"tmp\n"
+.text
+main_0:
+	addi $sp, $sp, -332
+	sw $ra, 328($sp)
+	la $15, var_a_0
+	la $16, var_a0_0
+	la $17, var_a1_0
+	la $a0, msg0
+	li $v0, 4
+	syscall
+
+	li $18, -1
+	sw $18, 0($15)
+
+	li $19, 2
+	li $20, -5
+	mul $21, $19, $20
+	li $22, -1
+	mul $23, $21, $22
+	li $24, 7
+	rem $25, $23, $24
+
+	li $26, 1
+	add $27, $25, $26
+
+	li $28, -5
+	sub $29, $27, $28
+
+	sw $29, 0($16)
+	li $30, 1
+	sw $30, 0($17)
+
+	add $31, $sp, 324
+	sw $zero, 0($31)
+
+	add $32, $sp, 320
+	li $33, 1
+	sw $33, 0($32)
+
+	sw $25, 316($sp)
+	sw $17, 312($sp)
+	sw $21, 308($sp)
+	sw $14, 304($sp)
+	sw $26, 300($sp)
+	sw $23, 296($sp)
+	sw $32, 292($sp)
+	sw $29, 288($sp)
+	sw $24, 284($sp)
+	sw $15, 280($sp)
+	sw $30, 276($sp)
+	sw $31, 272($sp)
+	sw $18, 268($sp)
+	sw $16, 264($sp)
+	sw $28, 260($sp)
+	sw $20, 256($sp)
+	sw $33, 252($sp)
+	sw $19, 248($sp)
+	sw $22, 244($sp)
+	sw $27, 240($sp)
+	jal func_void0_0
+	lw $25, 316($sp)
+	lw $17, 312($sp)
+	lw $21, 308($sp)
+	lw $14, 304($sp)
+	lw $26, 300($sp)
+	lw $23, 296($sp)
+	lw $32, 292($sp)
+	lw $29, 288($sp)
+	lw $24, 284($sp)
+	lw $15, 280($sp)
+	lw $30, 276($sp)
+	lw $31, 272($sp)
+	lw $18, 268($sp)
+	lw $16, 264($sp)
+	lw $28, 260($sp)
+	lw $20, 256($sp)
+	lw $33, 252($sp)
+	lw $19, 248($sp)
+	lw $22, 244($sp)
+	lw $27, 240($sp)
+	li $34, 2
+	la $a0, msg1
+	li $v0, 4
+	syscall
+	li $35, 1
+	sw $35, 0($15)
+	j main_1
+main_1:
+	lw $36, 0($15)
+	sle $37, $36, 10
+	sne $38, $37, 0
+	bnez $38, main_2
+	j main_3
+main_2:
+	lw $39, 0($15)
+	li $40, 1
+	add $41, $39, $40
+	sw $41, 0($15)
+	lw $42, 0($15)
+	sge $43, $42, 8
+	sne $44, $43, 0
+	bnez $44, main_4
+	j main_5
+main_3:
+	li $45, 1
+	bnez $45, main_9
+	j main_10
+main_4:
+	j main_3
+main_5:
+	j main_1
+main_6:
+	j main_1
+main_7:
+	j main_6
+main_8:
+	j main_6
+main_9:
+	li $46, 1
+	sne $47, $46, 0
+	bnez $47, main_11
+	j main_12
+main_10:
+	li $48, 1
+	sne $49, $48, 0
+	bnez $49, main_23
+	j main_24
+main_11:
+	sw $25, 316($sp)
+	sw $17, 312($sp)
+	sw $40, 236($sp)
+	sw $26, 300($sp)
+	sw $37, 232($sp)
+	sw $39, 228($sp)
+	sw $45, 224($sp)
+	sw $32, 292($sp)
+	sw $29, 288($sp)
+	sw $48, 220($sp)
+	sw $30, 276($sp)
+	sw $31, 272($sp)
+	sw $18, 268($sp)
+	sw $16, 264($sp)
+	sw $47, 216($sp)
+	sw $19, 248($sp)
+	sw $36, 212($sp)
+	sw $21, 308($sp)
+	sw $14, 304($sp)
+	sw $38, 208($sp)
+	sw $46, 204($sp)
+	sw $23, 296($sp)
+	sw $24, 284($sp)
+	sw $15, 280($sp)
+	sw $44, 200($sp)
+	sw $41, 196($sp)
+	sw $49, 192($sp)
+	sw $28, 260($sp)
+	sw $20, 256($sp)
+	sw $35, 188($sp)
+	sw $33, 252($sp)
+	sw $42, 184($sp)
+	sw $34, 180($sp)
+	sw $22, 244($sp)
+	sw $43, 176($sp)
+	sw $27, 240($sp)
+	jal func_int0_0
+	move $50, $a0
+	lw $25, 316($sp)
+	lw $17, 312($sp)
+	lw $40, 236($sp)
+	lw $26, 300($sp)
+	lw $37, 232($sp)
+	lw $39, 228($sp)
+	lw $45, 224($sp)
+	lw $32, 292($sp)
+	lw $29, 288($sp)
+	lw $48, 220($sp)
+	lw $30, 276($sp)
+	lw $31, 272($sp)
+	lw $18, 268($sp)
+	lw $16, 264($sp)
+	lw $47, 216($sp)
+	lw $19, 248($sp)
+	lw $36, 212($sp)
+	lw $21, 308($sp)
+	lw $14, 304($sp)
+	lw $38, 208($sp)
+	lw $46, 204($sp)
+	lw $23, 296($sp)
+	lw $24, 284($sp)
+	lw $15, 280($sp)
+	lw $44, 200($sp)
+	lw $41, 196($sp)
+	lw $49, 192($sp)
+	lw $28, 260($sp)
+	lw $20, 256($sp)
+	lw $35, 188($sp)
+	lw $33, 252($sp)
+	lw $42, 184($sp)
+	lw $34, 180($sp)
+	lw $22, 244($sp)
+	lw $43, 176($sp)
+	lw $27, 240($sp)
+	seq $51, $50, 0
+	sne $52, $51, 0
+	bnez $52, main_13
+	j main_14
+main_12:
+	j main_10
+main_13:
+	sw $25, 316($sp)
+	sw $17, 312($sp)
+	sw $40, 236($sp)
+	sw $26, 300($sp)
+	sw $37, 232($sp)
+	sw $39, 228($sp)
+	sw $45, 224($sp)
+	sw $32, 292($sp)
+	sw $29, 288($sp)
+	sw $48, 220($sp)
+	sw $30, 276($sp)
+	sw $31, 272($sp)
+	sw $18, 268($sp)
+	sw $16, 264($sp)
+	sw $47, 216($sp)
+	sw $19, 248($sp)
+	sw $52, 172($sp)
+	sw $36, 212($sp)
+	sw $21, 308($sp)
+	sw $14, 304($sp)
+	sw $38, 208($sp)
+	sw $46, 204($sp)
+	sw $23, 296($sp)
+	sw $24, 284($sp)
+	sw $15, 280($sp)
+	sw $44, 200($sp)
+	sw $41, 196($sp)
+	sw $49, 192($sp)
+	sw $28, 260($sp)
+	sw $20, 256($sp)
+	sw $50, 168($sp)
+	sw $35, 188($sp)
+	sw $33, 252($sp)
+	sw $42, 184($sp)
+	sw $34, 180($sp)
+	sw $51, 164($sp)
+	sw $22, 244($sp)
+	sw $43, 176($sp)
+	sw $27, 240($sp)
+	li $a0, 1
+	jal func_int1_0
+	move $53, $a0
+	lw $25, 316($sp)
+	lw $17, 312($sp)
+	lw $40, 236($sp)
+	lw $26, 300($sp)
+	lw $37, 232($sp)
+	lw $39, 228($sp)
+	lw $45, 224($sp)
+	lw $32, 292($sp)
+	lw $29, 288($sp)
+	lw $48, 220($sp)
+	lw $30, 276($sp)
+	lw $31, 272($sp)
+	lw $18, 268($sp)
+	lw $16, 264($sp)
+	lw $47, 216($sp)
+	lw $19, 248($sp)
+	lw $52, 172($sp)
+	lw $36, 212($sp)
+	lw $21, 308($sp)
+	lw $14, 304($sp)
+	lw $38, 208($sp)
+	lw $46, 204($sp)
+	lw $23, 296($sp)
+	lw $24, 284($sp)
+	lw $15, 280($sp)
+	lw $44, 200($sp)
+	lw $41, 196($sp)
+	lw $49, 192($sp)
+	lw $28, 260($sp)
+	lw $20, 256($sp)
+	lw $50, 168($sp)
+	lw $35, 188($sp)
+	lw $33, 252($sp)
+	lw $42, 184($sp)
+	lw $34, 180($sp)
+	lw $51, 164($sp)
+	lw $22, 244($sp)
+	lw $43, 176($sp)
+	lw $27, 240($sp)
+	seq $54, $53, 1
+	sne $55, $54, 0
+	bnez $55, main_15
+	j main_16
+main_14:
+	j main_12
+main_15:
+	sw $25, 316($sp)
+	sw $17, 312($sp)
+	sw $40, 236($sp)
+	sw $26, 300($sp)
+	sw $37, 232($sp)
+	sw $39, 228($sp)
+	sw $45, 224($sp)
+	sw $32, 292($sp)
+	sw $29, 288($sp)
+	sw $48, 220($sp)
+	sw $30, 276($sp)
+	sw $31, 272($sp)
+	sw $18, 268($sp)
+	sw $16, 264($sp)
+	sw $47, 216($sp)
+	sw $19, 248($sp)
+	sw $52, 172($sp)
+	sw $36, 212($sp)
+	sw $21, 308($sp)
+	sw $55, 160($sp)
+	sw $14, 304($sp)
+	sw $38, 208($sp)
+	sw $46, 204($sp)
+	sw $23, 296($sp)
+	sw $24, 284($sp)
+	sw $15, 280($sp)
+	sw $44, 200($sp)
+	sw $41, 196($sp)
+	sw $53, 156($sp)
+	sw $49, 192($sp)
+	sw $28, 260($sp)
+	sw $54, 152($sp)
+	sw $20, 256($sp)
+	sw $50, 168($sp)
+	sw $35, 188($sp)
+	sw $33, 252($sp)
+	sw $42, 184($sp)
+	sw $34, 180($sp)
+	sw $51, 164($sp)
+	sw $22, 244($sp)
+	sw $43, 176($sp)
+	sw $27, 240($sp)
+	li $a0, 1
+	li $a1, 2
+	jal func_int2_0
+	move $56, $a0
+	lw $25, 316($sp)
+	lw $17, 312($sp)
+	lw $40, 236($sp)
+	lw $26, 300($sp)
+	lw $37, 232($sp)
+	lw $39, 228($sp)
+	lw $45, 224($sp)
+	lw $32, 292($sp)
+	lw $29, 288($sp)
+	lw $48, 220($sp)
+	lw $30, 276($sp)
+	lw $31, 272($sp)
+	lw $18, 268($sp)
+	lw $16, 264($sp)
+	lw $47, 216($sp)
+	lw $19, 248($sp)
+	lw $52, 172($sp)
+	lw $36, 212($sp)
+	lw $21, 308($sp)
+	lw $55, 160($sp)
+	lw $14, 304($sp)
+	lw $38, 208($sp)
+	lw $46, 204($sp)
+	lw $23, 296($sp)
+	lw $24, 284($sp)
+	lw $15, 280($sp)
+	lw $44, 200($sp)
+	lw $41, 196($sp)
+	lw $53, 156($sp)
+	lw $49, 192($sp)
+	lw $28, 260($sp)
+	lw $54, 152($sp)
+	lw $20, 256($sp)
+	lw $50, 168($sp)
+	lw $35, 188($sp)
+	lw $33, 252($sp)
+	lw $42, 184($sp)
+	lw $34, 180($sp)
+	lw $51, 164($sp)
+	lw $22, 244($sp)
+	lw $43, 176($sp)
+	lw $27, 240($sp)
+	li $57, 5
+	sub $58, $56, $57
+	li $59, -1
+	add $60, $58, $59
+	sne $61, $60, 1
+	sne $62, $61, 0
+	bnez $62, main_17
+	j main_18
+main_16:
+	j main_14
+main_17:
+	li $63, 1
+	sne $64, $63, 0
+	bnez $64, main_19
+	j main_20
+main_18:
+	j main_16
+main_19:
+	li $65, 1
+	sne $66, $65, 0
+	bnez $66, main_21
+	j main_22
+main_20:
+	j main_18
+main_21:
+	la $a0, msg2
+	li $v0, 4
+	syscall
+	j main_22
+main_22:
+	j main_20
+main_23:
+	j main_24
+main_24:
+	sw $25, 316($sp)
+	sw $17, 312($sp)
+	sw $40, 236($sp)
+	sw $64, 148($sp)
+	sw $37, 232($sp)
+	sw $39, 228($sp)
+	sw $29, 288($sp)
+	sw $58, 144($sp)
+	sw $31, 272($sp)
+	sw $52, 172($sp)
+	sw $36, 212($sp)
+	sw $21, 308($sp)
+	sw $55, 160($sp)
+	sw $14, 304($sp)
+	sw $38, 208($sp)
+	sw $61, 140($sp)
+	sw $46, 204($sp)
+	sw $23, 296($sp)
+	sw $65, 136($sp)
+	sw $24, 284($sp)
+	sw $15, 280($sp)
+	sw $41, 196($sp)
+	sw $28, 260($sp)
+	sw $54, 152($sp)
+	sw $50, 168($sp)
+	sw $60, 132($sp)
+	sw $22, 244($sp)
+	sw $43, 176($sp)
+	sw $26, 300($sp)
+	sw $45, 224($sp)
+	sw $32, 292($sp)
+	sw $59, 128($sp)
+	sw $62, 124($sp)
+	sw $48, 220($sp)
+	sw $30, 276($sp)
+	sw $18, 268($sp)
+	sw $16, 264($sp)
+	sw $47, 216($sp)
+	sw $57, 120($sp)
+	sw $19, 248($sp)
+	sw $66, 116($sp)
+	sw $56, 112($sp)
+	sw $44, 200($sp)
+	sw $53, 156($sp)
+	sw $63, 108($sp)
+	sw $49, 192($sp)
+	sw $20, 256($sp)
+	sw $35, 188($sp)
+	sw $33, 252($sp)
+	sw $42, 184($sp)
+	sw $34, 180($sp)
+	sw $51, 164($sp)
+	sw $27, 240($sp)
+	jal func_int0_0
+	move $67, $a0
+	lw $25, 316($sp)
+	lw $17, 312($sp)
+	lw $40, 236($sp)
+	lw $64, 148($sp)
+	lw $37, 232($sp)
+	lw $39, 228($sp)
+	lw $29, 288($sp)
+	lw $58, 144($sp)
+	lw $31, 272($sp)
+	lw $52, 172($sp)
+	lw $36, 212($sp)
+	lw $21, 308($sp)
+	lw $55, 160($sp)
+	lw $14, 304($sp)
+	lw $38, 208($sp)
+	lw $61, 140($sp)
+	lw $46, 204($sp)
+	lw $23, 296($sp)
+	lw $65, 136($sp)
+	lw $24, 284($sp)
+	lw $15, 280($sp)
+	lw $41, 196($sp)
+	lw $28, 260($sp)
+	lw $54, 152($sp)
+	lw $50, 168($sp)
+	lw $60, 132($sp)
+	lw $22, 244($sp)
+	lw $43, 176($sp)
+	lw $26, 300($sp)
+	lw $45, 224($sp)
+	lw $32, 292($sp)
+	lw $59, 128($sp)
+	lw $62, 124($sp)
+	lw $48, 220($sp)
+	lw $30, 276($sp)
+	lw $18, 268($sp)
+	lw $16, 264($sp)
+	lw $47, 216($sp)
+	lw $57, 120($sp)
+	lw $19, 248($sp)
+	lw $66, 116($sp)
+	lw $56, 112($sp)
+	lw $44, 200($sp)
+	lw $53, 156($sp)
+	lw $63, 108($sp)
+	lw $49, 192($sp)
+	lw $20, 256($sp)
+	lw $35, 188($sp)
+	lw $33, 252($sp)
+	lw $42, 184($sp)
+	lw $34, 180($sp)
+	lw $51, 164($sp)
+	lw $27, 240($sp)
+	seq $68, $67, 0
+	sne $69, $68, 0
+	bnez $69, main_25
+	j main_26
+main_25:
+	j main_26
+main_26:
+	sw $25, 316($sp)
+	sw $17, 312($sp)
+	sw $40, 236($sp)
+	sw $64, 148($sp)
+	sw $37, 232($sp)
+	sw $39, 228($sp)
+	sw $29, 288($sp)
+	sw $58, 144($sp)
+	sw $31, 272($sp)
+	sw $67, 104($sp)
+	sw $52, 172($sp)
+	sw $36, 212($sp)
+	sw $21, 308($sp)
+	sw $55, 160($sp)
+	sw $14, 304($sp)
+	sw $38, 208($sp)
+	sw $61, 140($sp)
+	sw $46, 204($sp)
+	sw $23, 296($sp)
+	sw $65, 136($sp)
+	sw $24, 284($sp)
+	sw $15, 280($sp)
+	sw $41, 196($sp)
+	sw $28, 260($sp)
+	sw $54, 152($sp)
+	sw $50, 168($sp)
+	sw $60, 132($sp)
+	sw $22, 244($sp)
+	sw $43, 176($sp)
+	sw $26, 300($sp)
+	sw $45, 224($sp)
+	sw $32, 292($sp)
+	sw $59, 128($sp)
+	sw $62, 124($sp)
+	sw $48, 220($sp)
+	sw $30, 276($sp)
+	sw $18, 268($sp)
+	sw $16, 264($sp)
+	sw $47, 216($sp)
+	sw $57, 120($sp)
+	sw $19, 248($sp)
+	sw $68, 100($sp)
+	sw $66, 116($sp)
+	sw $56, 112($sp)
+	sw $69, 96($sp)
+	sw $44, 200($sp)
+	sw $53, 156($sp)
+	sw $63, 108($sp)
+	sw $49, 192($sp)
+	sw $20, 256($sp)
+	sw $35, 188($sp)
+	sw $33, 252($sp)
+	sw $42, 184($sp)
+	sw $34, 180($sp)
+	sw $51, 164($sp)
+	sw $27, 240($sp)
+	li $a0, 1
+	jal func_int1_0
+	move $70, $a0
+	lw $25, 316($sp)
+	lw $17, 312($sp)
+	lw $40, 236($sp)
+	lw $64, 148($sp)
+	lw $37, 232($sp)
+	lw $39, 228($sp)
+	lw $29, 288($sp)
+	lw $58, 144($sp)
+	lw $31, 272($sp)
+	lw $67, 104($sp)
+	lw $52, 172($sp)
+	lw $36, 212($sp)
+	lw $21, 308($sp)
+	lw $55, 160($sp)
+	lw $14, 304($sp)
+	lw $38, 208($sp)
+	lw $61, 140($sp)
+	lw $46, 204($sp)
+	lw $23, 296($sp)
+	lw $65, 136($sp)
+	lw $24, 284($sp)
+	lw $15, 280($sp)
+	lw $41, 196($sp)
+	lw $28, 260($sp)
+	lw $54, 152($sp)
+	lw $50, 168($sp)
+	lw $60, 132($sp)
+	lw $22, 244($sp)
+	lw $43, 176($sp)
+	lw $26, 300($sp)
+	lw $45, 224($sp)
+	lw $32, 292($sp)
+	lw $59, 128($sp)
+	lw $62, 124($sp)
+	lw $48, 220($sp)
+	lw $30, 276($sp)
+	lw $18, 268($sp)
+	lw $16, 264($sp)
+	lw $47, 216($sp)
+	lw $57, 120($sp)
+	lw $19, 248($sp)
+	lw $68, 100($sp)
+	lw $66, 116($sp)
+	lw $56, 112($sp)
+	lw $69, 96($sp)
+	lw $44, 200($sp)
+	lw $53, 156($sp)
+	lw $63, 108($sp)
+	lw $49, 192($sp)
+	lw $20, 256($sp)
+	lw $35, 188($sp)
+	lw $33, 252($sp)
+	lw $42, 184($sp)
+	lw $34, 180($sp)
+	lw $51, 164($sp)
+	lw $27, 240($sp)
+	seq $14, $70, 0
+	li $71, 2
+	sub $72, $71, $14
+	seq $73, $72, 2
+	sne $74, $73, 0
+	bnez $74, main_27
+	j main_28
+main_27:
+	j main_28
+main_28:
+	li $v0, 5
+	syscall
+	sw $v0, 0($15)
+	lw $75, 0($15)
+	la $a0, msg3
+	li $v0, 4
+	syscall
+	move $a0, $75
+	li $v0, 1
+	syscall
+	la $a0, msg4
+	li $v0, 4
+	syscall
+	la $a0, msg5
+	li $v0, 4
+	syscall
+	li $76, 1
+	move $a0, $76
+	li $v0, 1
+	syscall
+	la $a0, msg6
+	li $v0, 4
+	syscall
+	la $a0, msg7
+	li $v0, 4
+	syscall
+	la $a0, msg8
+	li $v0, 4
+	syscall
+	la $a0, msg9
+	li $v0, 4
+	syscall
+	la $a0, msg10
+	li $v0, 4
+	syscall
+	la $a0, msg11
+	li $v0, 4
+	syscall
+	li $a0, 0
+	lw $ra, 328($sp)
+	addi $sp, $sp, 332
+	li $v0, 10
+	syscall
+func_void0_0:
+	addi $sp, $sp, 0
+	addi $sp, $sp, 0
+	jr $ra
+func_void1_0:
+	move $0, $a0
+	addi $sp, $sp, -8
+	add $1, $sp, 4
+	sw $0, 0($1)
+	addi $sp, $sp, 8
+	jr $ra
+func_void2_0:
+	move $2, $a0
+	move $3, $a1
+	move $4, $a2
+	addi $sp, $sp, -24
+	add $5, $sp, 20
+	sw $2, 0($5)
+	add $6, $sp, 16
+	sw $3, 0($6)
+	add $7, $sp, 12
+	sw $4, 0($7)
+	addi $sp, $sp, 24
+	jr $ra
+func_int0_0:
+	addi $sp, $sp, -4
+	li $a0, 0
+	addi $sp, $sp, 4
+	jr $ra
+func_int1_0:
+	move $8, $a0
+	addi $sp, $sp, -12
+	add $9, $sp, 8
+	sw $8, 0($9)
+	li $a0, 1
+	addi $sp, $sp, 12
+	jr $ra
+func_int2_0:
+	move $10, $a0
+	move $11, $a1
+	addi $sp, $sp, -20
+	add $12, $sp, 16
+	sw $10, 0($12)
+	add $13, $sp, 12
+	sw $11, 0($13)
+	li $a0, 2
+	addi $sp, $sp, 20
+	jr $ra
