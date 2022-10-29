@@ -1,7 +1,7 @@
 package Backend.Reg;
 
 public class MCReg extends Reg{
-    protected boolean isAllocated = false;
+    protected boolean isAllocated;
 
     public static MCReg sp = new MCReg("sp", false);
     public static MCReg ra = new MCReg("ra", false);
@@ -11,7 +11,7 @@ public class MCReg extends Reg{
     public static MCReg a2 = new MCReg("a2", false);
     public static MCReg a3 = new MCReg("a3", false);
     public static MCReg v0 = new MCReg("v0", false);
-    private RegNameMap regNameMap = RegNameMap.getInstance();
+    private final RegNameMap regNameMap = RegNameMap.getInstance();
 
     public MCReg(String name, boolean isAllocated){
         super(name);

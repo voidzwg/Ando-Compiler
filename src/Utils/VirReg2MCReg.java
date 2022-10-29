@@ -24,7 +24,7 @@ import java.util.HashSet;
 //  因为ando觉得这个策略太笨蛋了以至于不配叫做寄存器分配
 //  可是为了方便debug 笨蛋ando还是要写一个笨蛋策略qwq
 public class VirReg2MCReg {
-    private MCModule mcModule;
+    private final MCModule mcModule;
     public VirReg2MCReg(MCModule mcModule){
         this.mcModule = mcModule;
     }
@@ -127,10 +127,6 @@ public class VirReg2MCReg {
 
                             //  插入lw指令
                             int pos = spPos.get(reg);
-                            if(reg.toString().equals("$55")){
-                                int aaa = 1;
-
-                            }
                             MCInst lwInst = new MCLW(tmp, MCReg.sp, pos);
                             mb.insertInst(lwInst, i);
                             i++;

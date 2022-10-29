@@ -1,1952 +1,708 @@
 .data
-msg0: .asciiz"\n"
-msg1: .asciiz" "
+msg0: .asciiz"19182636\n"
+msg1: .asciiz"> is ok\n"
+msg2: .asciiz"> has problem\n"
+msg3: .asciiz"<= is ok\n"
+msg4: .asciiz"<= has problem\n"
+msg5: .asciiz">= is ok\n"
+msg6: .asciiz">= has problem\n"
+msg7: .asciiz"== != is ok\n"
+msg8: .asciiz"== != has problem\n"
 .text
 main_0:
-	addiu $sp, $sp, -1268
-	sw $ra, 900($sp)
-	addu $v1, $sp, 800
-	li $t0, 0
-	addu $t0, $t0, $v1
-	li $t1, -1625382311
-	li $t2, -492323543
-	li $t3, -252604752
-	li $t4, -51943305
-	li $t5, -1854253096
-	li $t6, -1024571774
-	li $t7, -1803769826
-	li $s0, -1485716863
-	li $s1, -1192520056
-	li $s2, -1503793409
-	li $s3, -1911831470
-	li $s4, -1387735054
-	li $s5, -274170342
-	li $s6, 307728049
-	sw $s6, 0($t0)
-	li $s7, 4
-	addu $s7, $s7, $t0
-	sw $t1, 0($s7)
-	li $t8, 8
-	addu $t8, $t8, $t0
-	li $t9, 1271106322
-	sw $t9, 0($t8)
-	li $gp, 12
-	sw $gp, 904($sp)
-	lw $gp, 904($sp)
-	lw $fp, 904($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 904($sp)
-	li $gp, 309930583
-	sw $gp, 908($sp)
-	lw $gp, 908($sp)
-	lw $fp, 904($sp)
-	sw $gp, 0($fp)
-	li $gp, 16
-	sw $gp, 912($sp)
-	lw $gp, 912($sp)
-	lw $fp, 912($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 912($sp)
-	li $gp, 2007032850
-	sw $gp, 916($sp)
-	lw $gp, 916($sp)
-	lw $fp, 912($sp)
-	sw $gp, 0($fp)
-	li $gp, 20
-	sw $gp, 920($sp)
-	lw $gp, 920($sp)
-	lw $fp, 920($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 920($sp)
-	li $gp, 1074055550
-	sw $gp, 924($sp)
-	lw $gp, 924($sp)
-	lw $fp, 920($sp)
-	sw $gp, 0($fp)
-	li $gp, 24
-	sw $gp, 928($sp)
-	lw $gp, 928($sp)
-	lw $fp, 928($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 928($sp)
-	li $gp, 2036831205
-	sw $gp, 932($sp)
-	lw $gp, 932($sp)
-	lw $fp, 928($sp)
-	sw $gp, 0($fp)
-	li $gp, 28
-	sw $gp, 936($sp)
-	lw $gp, 936($sp)
-	lw $fp, 936($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 936($sp)
-	lw $gp, 936($sp)
-	sw $t2, 0($gp)
-	li $gp, 32
-	sw $gp, 940($sp)
-	lw $gp, 940($sp)
-	lw $fp, 940($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 940($sp)
-	lw $gp, 940($sp)
-	sw $t3, 0($gp)
-	li $gp, 36
-	sw $gp, 944($sp)
-	lw $gp, 944($sp)
-	lw $fp, 944($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 944($sp)
-	li $gp, 1295820596
-	sw $gp, 948($sp)
-	lw $gp, 948($sp)
-	lw $fp, 944($sp)
-	sw $gp, 0($fp)
-	li $gp, 40
-	sw $gp, 952($sp)
-	lw $gp, 952($sp)
-	lw $fp, 952($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 952($sp)
-	li $gp, 728458994
-	sw $gp, 956($sp)
-	lw $gp, 956($sp)
-	lw $fp, 952($sp)
-	sw $gp, 0($fp)
-	li $gp, 44
-	sw $gp, 960($sp)
-	lw $gp, 960($sp)
-	lw $fp, 960($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 960($sp)
-	li $gp, 1673642498
-	sw $gp, 964($sp)
-	lw $gp, 964($sp)
-	lw $fp, 960($sp)
-	sw $gp, 0($fp)
-	li $gp, 48
-	sw $gp, 968($sp)
-	lw $gp, 968($sp)
-	lw $fp, 968($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 968($sp)
-	lw $gp, 968($sp)
-	sw $t4, 0($gp)
-	li $gp, 52
-	sw $gp, 972($sp)
-	lw $gp, 972($sp)
-	lw $fp, 972($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 972($sp)
-	lw $gp, 972($sp)
-	sw $t5, 0($gp)
-	li $gp, 56
-	sw $gp, 976($sp)
-	lw $gp, 976($sp)
-	lw $fp, 976($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 976($sp)
-	lw $gp, 976($sp)
-	sw $t6, 0($gp)
-	li $gp, 60
-	sw $gp, 980($sp)
-	lw $gp, 980($sp)
-	lw $fp, 980($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 980($sp)
-	li $gp, 1430035460
-	sw $gp, 984($sp)
-	lw $gp, 984($sp)
-	lw $fp, 980($sp)
-	sw $gp, 0($fp)
-	li $gp, 64
-	sw $gp, 988($sp)
-	lw $gp, 988($sp)
-	lw $fp, 988($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 988($sp)
-	li $gp, 1705232663
-	sw $gp, 992($sp)
-	lw $gp, 992($sp)
-	lw $fp, 988($sp)
-	sw $gp, 0($fp)
-	li $gp, 68
-	sw $gp, 996($sp)
-	lw $gp, 996($sp)
-	lw $fp, 996($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 996($sp)
-	lw $gp, 996($sp)
-	sw $t7, 0($gp)
-	li $gp, 72
-	sw $gp, 1000($sp)
-	lw $gp, 1000($sp)
-	lw $fp, 1000($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1000($sp)
-	lw $gp, 1000($sp)
-	sw $s0, 0($gp)
-	li $gp, 76
-	sw $gp, 1004($sp)
-	lw $gp, 1004($sp)
-	lw $fp, 1004($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1004($sp)
-	lw $gp, 1004($sp)
-	sw $s1, 0($gp)
-	li $gp, 80
-	sw $gp, 1008($sp)
-	lw $gp, 1008($sp)
-	lw $fp, 1008($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1008($sp)
-	lw $gp, 1008($sp)
-	sw $s2, 0($gp)
-	li $gp, 84
-	sw $gp, 1012($sp)
-	lw $gp, 1012($sp)
-	lw $fp, 1012($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1012($sp)
-	li $gp, 2027983592
-	sw $gp, 1016($sp)
-	lw $gp, 1016($sp)
-	lw $fp, 1012($sp)
-	sw $gp, 0($fp)
-	li $gp, 88
-	sw $gp, 1020($sp)
-	lw $gp, 1020($sp)
-	lw $fp, 1020($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1020($sp)
-	lw $gp, 1020($sp)
-	sw $s3, 0($gp)
-	li $gp, 92
-	sw $gp, 1024($sp)
-	lw $gp, 1024($sp)
-	lw $fp, 1024($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1024($sp)
-	lw $gp, 1024($sp)
-	sw $s4, 0($gp)
-	li $gp, 96
-	sw $gp, 1028($sp)
-	lw $gp, 1028($sp)
-	lw $fp, 1028($sp)
-	addu $gp, $fp, $t0
-	sw $gp, 1028($sp)
-	lw $gp, 1028($sp)
-	sw $s5, 0($gp)
-	addu $gp, $sp, 700
-	sw $gp, 1032($sp)
-	li $gp, 0
-	sw $gp, 1036($sp)
-	lw $gp, 1036($sp)
-	lw $fp, 1032($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1036($sp)
-	li $gp, -39878981
-	sw $gp, 1040($sp)
-	li $gp, -1839064934
-	sw $gp, 1044($sp)
-	li $gp, -68127266
-	sw $gp, 1048($sp)
-	li $gp, -425501077
-	sw $gp, 1052($sp)
-	li $gp, -1281736928
-	sw $gp, 1056($sp)
-	li $gp, -1304579021
-	sw $gp, 1060($sp)
-	li $gp, -1777897472
-	sw $gp, 1064($sp)
-	li $gp, -1921297034
-	sw $gp, 1068($sp)
-	li $gp, -226241316
-	sw $gp, 1072($sp)
-	li $gp, -1840038765
-	sw $gp, 1076($sp)
-	li $gp, -1238621050
-	sw $gp, 1080($sp)
-	li $gp, -1338682930
-	sw $gp, 1084($sp)
-	lw $gp, 1040($sp)
-	lw $fp, 1036($sp)
-	sw $gp, 0($fp)
-	li $gp, 4
-	sw $gp, 1088($sp)
-	lw $gp, 1088($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1088($sp)
-	li $gp, 1475936537
-	sw $gp, 1092($sp)
-	lw $gp, 1092($sp)
-	lw $fp, 1088($sp)
-	sw $gp, 0($fp)
-	li $gp, 8
-	sw $gp, 1096($sp)
-	lw $gp, 1096($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1096($sp)
-	li $gp, 1944942266
-	sw $gp, 1100($sp)
-	lw $gp, 1100($sp)
-	lw $fp, 1096($sp)
-	sw $gp, 0($fp)
-	li $gp, 12
-	sw $gp, 1104($sp)
-	lw $gp, 1104($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1104($sp)
-	li $gp, 1579815806
-	sw $gp, 1108($sp)
-	lw $gp, 1108($sp)
-	lw $fp, 1104($sp)
-	sw $gp, 0($fp)
-	li $gp, 16
-	sw $gp, 1112($sp)
-	lw $gp, 1112($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1112($sp)
-	li $gp, 1734290467
-	sw $gp, 1116($sp)
-	lw $gp, 1116($sp)
-	lw $fp, 1112($sp)
-	sw $gp, 0($fp)
-	li $gp, 20
-	sw $gp, 1120($sp)
-	lw $gp, 1120($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1120($sp)
-	li $gp, 1606724733
-	sw $gp, 1124($sp)
-	lw $gp, 1124($sp)
-	lw $fp, 1120($sp)
-	sw $gp, 0($fp)
-	li $gp, 24
-	sw $gp, 1128($sp)
-	lw $gp, 1128($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1128($sp)
-	lw $gp, 1044($sp)
-	lw $fp, 1128($sp)
-	sw $gp, 0($fp)
-	li $gp, 28
-	sw $gp, 1132($sp)
-	lw $gp, 1132($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1132($sp)
-	li $gp, 1749681186
-	sw $gp, 1136($sp)
-	lw $gp, 1136($sp)
-	lw $fp, 1132($sp)
-	sw $gp, 0($fp)
-	li $gp, 32
-	sw $gp, 1140($sp)
-	lw $gp, 1140($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1140($sp)
-	li $gp, 1409364573
-	sw $gp, 1144($sp)
-	lw $gp, 1144($sp)
-	lw $fp, 1140($sp)
-	sw $gp, 0($fp)
-	li $gp, 36
-	sw $gp, 1148($sp)
-	lw $gp, 1148($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1148($sp)
-	lw $gp, 1048($sp)
-	lw $fp, 1148($sp)
-	sw $gp, 0($fp)
-	li $gp, 40
-	sw $gp, 1152($sp)
-	lw $gp, 1152($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1152($sp)
-	li $gp, 1869282840
-	sw $gp, 1156($sp)
-	lw $gp, 1156($sp)
-	lw $fp, 1152($sp)
-	sw $gp, 0($fp)
-	li $gp, 44
-	sw $gp, 1160($sp)
-	lw $gp, 1160($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1160($sp)
-	li $gp, 1574753938
-	sw $gp, 1164($sp)
-	lw $gp, 1164($sp)
-	lw $fp, 1160($sp)
-	sw $gp, 0($fp)
-	li $gp, 48
-	sw $gp, 1168($sp)
-	lw $gp, 1168($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1168($sp)
-	li $gp, 1959861217
-	sw $gp, 1172($sp)
-	lw $gp, 1172($sp)
-	lw $fp, 1168($sp)
-	sw $gp, 0($fp)
-	li $gp, 52
-	sw $gp, 1176($sp)
-	lw $gp, 1176($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1176($sp)
-	lw $gp, 1052($sp)
-	lw $fp, 1176($sp)
-	sw $gp, 0($fp)
-	li $gp, 56
-	sw $gp, 1180($sp)
-	lw $gp, 1180($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1180($sp)
-	lw $gp, 1056($sp)
-	lw $fp, 1180($sp)
-	sw $gp, 0($fp)
-	li $gp, 60
-	sw $gp, 1184($sp)
-	lw $gp, 1184($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1184($sp)
-	lw $gp, 1060($sp)
-	lw $fp, 1184($sp)
-	sw $gp, 0($fp)
-	li $gp, 64
-	sw $gp, 1188($sp)
-	lw $gp, 1188($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1188($sp)
-	lw $gp, 1064($sp)
-	lw $fp, 1188($sp)
-	sw $gp, 0($fp)
-	li $gp, 68
-	sw $gp, 1192($sp)
-	lw $gp, 1192($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1192($sp)
-	lw $gp, 1068($sp)
-	lw $fp, 1192($sp)
-	sw $gp, 0($fp)
-	li $gp, 72
-	sw $gp, 1196($sp)
-	lw $gp, 1196($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1196($sp)
-	li $gp, 1623258471
-	sw $gp, 1200($sp)
-	lw $gp, 1200($sp)
-	lw $fp, 1196($sp)
-	sw $gp, 0($fp)
-	li $gp, 76
-	sw $gp, 1204($sp)
-	lw $gp, 1204($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1204($sp)
-	lw $gp, 1072($sp)
-	lw $fp, 1204($sp)
-	sw $gp, 0($fp)
-	li $gp, 80
-	sw $gp, 1208($sp)
-	lw $gp, 1208($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1208($sp)
-	li $gp, 824482268
-	sw $gp, 1212($sp)
-	lw $gp, 1212($sp)
-	lw $fp, 1208($sp)
-	sw $gp, 0($fp)
-	li $gp, 84
-	sw $gp, 1216($sp)
-	lw $gp, 1216($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1216($sp)
-	lw $gp, 1076($sp)
-	lw $fp, 1216($sp)
-	sw $gp, 0($fp)
-	li $gp, 88
-	sw $gp, 1220($sp)
-	lw $gp, 1220($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1220($sp)
-	lw $gp, 1080($sp)
-	lw $fp, 1220($sp)
-	sw $gp, 0($fp)
-	li $gp, 92
-	sw $gp, 1224($sp)
-	lw $gp, 1224($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1224($sp)
-	li $gp, 1453319654
-	sw $gp, 1228($sp)
-	lw $gp, 1228($sp)
-	lw $fp, 1224($sp)
-	sw $gp, 0($fp)
-	li $gp, 96
-	sw $gp, 1232($sp)
-	lw $gp, 1232($sp)
-	lw $fp, 1036($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1232($sp)
-	lw $gp, 1084($sp)
-	lw $fp, 1232($sp)
-	sw $gp, 0($fp)
-	addu $gp, $sp, 600
-	sw $gp, 1236($sp)
-	li $gp, 0
-	sw $gp, 1240($sp)
-	lw $gp, 1240($sp)
-	lw $fp, 1236($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1240($sp)
-	li $gp, 0
-	sw $gp, 1244($sp)
-	lw $gp, 1244($sp)
-	lw $fp, 1236($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1244($sp)
-	li $gp, 0
-	sw $gp, 1248($sp)
-	lw $gp, 1248($sp)
-	lw $fp, 1248($sp)
-	addu $gp, $fp, $v1
-	sw $gp, 1248($sp)
-	li $gp, 0
-	sw $gp, 1252($sp)
-	lw $gp, 1252($sp)
-	lw $fp, 1032($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1252($sp)
-	lw $gp, 920($sp)
-	sw $gp, 596($sp)
-	lw $gp, 1000($sp)
-	sw $gp, 592($sp)
-	lw $gp, 1244($sp)
-	sw $gp, 588($sp)
-	lw $gp, 1232($sp)
-	sw $gp, 584($sp)
-	lw $gp, 1184($sp)
-	sw $gp, 580($sp)
-	lw $gp, 1056($sp)
-	sw $gp, 576($sp)
-	lw $gp, 924($sp)
-	sw $gp, 572($sp)
-	lw $gp, 1008($sp)
-	sw $gp, 568($sp)
-	lw $gp, 1084($sp)
-	sw $gp, 564($sp)
-	lw $gp, 1072($sp)
-	sw $gp, 560($sp)
-	lw $gp, 952($sp)
-	sw $gp, 556($sp)
-	lw $gp, 932($sp)
-	sw $gp, 552($sp)
-	lw $gp, 1048($sp)
-	sw $gp, 548($sp)
-	lw $gp, 1160($sp)
-	sw $gp, 544($sp)
-	sw $s0, 540($sp)
-	lw $gp, 1216($sp)
-	sw $gp, 536($sp)
-	lw $gp, 1104($sp)
-	sw $gp, 532($sp)
-	lw $gp, 996($sp)
-	sw $gp, 528($sp)
-	lw $gp, 960($sp)
-	sw $gp, 524($sp)
-	lw $gp, 1052($sp)
-	sw $gp, 520($sp)
-	lw $gp, 1120($sp)
-	sw $gp, 516($sp)
-	sw $t0, 512($sp)
-	lw $gp, 1200($sp)
-	sw $gp, 508($sp)
-	lw $gp, 912($sp)
-	sw $gp, 504($sp)
-	lw $gp, 1036($sp)
-	sw $gp, 500($sp)
-	lw $gp, 1156($sp)
-	sw $gp, 496($sp)
-	lw $gp, 948($sp)
-	sw $gp, 492($sp)
-	lw $gp, 1192($sp)
-	sw $gp, 488($sp)
-	lw $gp, 908($sp)
-	sw $gp, 484($sp)
-	lw $gp, 1212($sp)
-	sw $gp, 480($sp)
-	sw $v1, 476($sp)
-	lw $gp, 964($sp)
-	sw $gp, 472($sp)
-	lw $gp, 992($sp)
-	sw $gp, 468($sp)
-	lw $gp, 956($sp)
-	sw $gp, 464($sp)
-	lw $gp, 1144($sp)
-	sw $gp, 460($sp)
-	sw $t4, 456($sp)
-	lw $gp, 1040($sp)
-	sw $gp, 452($sp)
-	lw $gp, 1220($sp)
-	sw $gp, 448($sp)
-	lw $gp, 1064($sp)
-	sw $gp, 444($sp)
-	lw $gp, 1240($sp)
-	sw $gp, 440($sp)
-	lw $gp, 1204($sp)
-	sw $gp, 436($sp)
-	sw $t2, 432($sp)
-	lw $gp, 1092($sp)
-	sw $gp, 428($sp)
-	sw $s2, 424($sp)
-	sw $t6, 420($sp)
-	lw $gp, 1132($sp)
-	sw $gp, 416($sp)
-	lw $gp, 1228($sp)
-	sw $gp, 412($sp)
-	lw $gp, 1236($sp)
-	sw $gp, 408($sp)
-	lw $gp, 1168($sp)
-	sw $gp, 404($sp)
-	sw $s6, 400($sp)
-	lw $gp, 1208($sp)
-	sw $gp, 396($sp)
-	lw $gp, 1152($sp)
-	sw $gp, 392($sp)
-	sw $t5, 388($sp)
-	lw $gp, 936($sp)
-	sw $gp, 384($sp)
-	lw $gp, 1124($sp)
-	sw $gp, 380($sp)
-	lw $gp, 1060($sp)
-	sw $gp, 376($sp)
-	lw $gp, 1080($sp)
-	sw $gp, 372($sp)
-	lw $gp, 976($sp)
-	sw $gp, 368($sp)
-	lw $gp, 1044($sp)
-	sw $gp, 364($sp)
-	lw $gp, 968($sp)
-	sw $gp, 360($sp)
-	lw $gp, 940($sp)
-	sw $gp, 356($sp)
-	lw $gp, 972($sp)
-	sw $gp, 352($sp)
-	lw $gp, 1076($sp)
-	sw $gp, 348($sp)
-	lw $gp, 1088($sp)
-	sw $gp, 344($sp)
-	lw $gp, 1224($sp)
-	sw $gp, 340($sp)
-	lw $gp, 1016($sp)
-	sw $gp, 336($sp)
-	lw $gp, 1136($sp)
-	sw $gp, 332($sp)
-	lw $gp, 1164($sp)
-	sw $gp, 328($sp)
-	lw $gp, 904($sp)
-	sw $gp, 324($sp)
-	lw $gp, 1188($sp)
-	sw $gp, 320($sp)
-	lw $gp, 1004($sp)
-	sw $gp, 316($sp)
-	sw $t1, 312($sp)
-	lw $gp, 1096($sp)
-	sw $gp, 308($sp)
-	lw $gp, 980($sp)
-	sw $gp, 304($sp)
-	lw $gp, 1032($sp)
-	sw $gp, 300($sp)
-	sw $t9, 296($sp)
-	lw $gp, 1020($sp)
-	sw $gp, 292($sp)
-	sw $t7, 288($sp)
-	sw $s7, 284($sp)
-	lw $gp, 1248($sp)
-	sw $gp, 280($sp)
-	lw $gp, 1172($sp)
-	sw $gp, 276($sp)
-	lw $gp, 1196($sp)
-	sw $gp, 272($sp)
-	lw $gp, 928($sp)
-	sw $gp, 268($sp)
-	lw $gp, 988($sp)
-	sw $gp, 264($sp)
-	lw $gp, 1068($sp)
-	sw $gp, 260($sp)
-	sw $s3, 256($sp)
-	lw $gp, 916($sp)
-	sw $gp, 252($sp)
-	sw $s1, 248($sp)
-	sw $s4, 244($sp)
-	lw $gp, 1180($sp)
-	sw $gp, 240($sp)
-	lw $gp, 1112($sp)
-	sw $gp, 236($sp)
-	lw $gp, 1024($sp)
-	sw $gp, 232($sp)
-	lw $gp, 1252($sp)
-	sw $gp, 228($sp)
-	sw $t8, 224($sp)
-	lw $gp, 1148($sp)
-	sw $gp, 220($sp)
-	sw $t3, 216($sp)
-	lw $gp, 1100($sp)
-	sw $gp, 212($sp)
-	lw $gp, 1012($sp)
-	sw $gp, 208($sp)
-	lw $gp, 1108($sp)
-	sw $gp, 204($sp)
-	lw $gp, 944($sp)
-	sw $gp, 200($sp)
-	lw $gp, 1140($sp)
-	sw $gp, 196($sp)
-	lw $gp, 984($sp)
-	sw $gp, 192($sp)
-	lw $gp, 1116($sp)
-	sw $gp, 188($sp)
-	lw $gp, 1128($sp)
-	sw $gp, 184($sp)
-	sw $s5, 180($sp)
-	lw $gp, 1176($sp)
-	sw $gp, 176($sp)
-	lw $gp, 1028($sp)
-	sw $gp, 172($sp)
-	lw $gp, 1244($sp)
-	move $a0, $gp
-	lw $gp, 1248($sp)
-	move $a1, $gp
-	lw $gp, 1252($sp)
-	move $a2, $gp
-	li $a3, 4
-	jal matrixMul_0
-	lw $gp, 596($sp)
-	sw $gp, 920($sp)
-	lw $gp, 592($sp)
-	sw $gp, 1000($sp)
-	lw $gp, 588($sp)
-	sw $gp, 1244($sp)
-	lw $gp, 584($sp)
-	sw $gp, 1232($sp)
-	lw $gp, 580($sp)
-	sw $gp, 1184($sp)
-	lw $gp, 576($sp)
-	sw $gp, 1056($sp)
-	lw $gp, 572($sp)
-	sw $gp, 924($sp)
-	lw $gp, 568($sp)
-	sw $gp, 1008($sp)
-	lw $gp, 564($sp)
-	sw $gp, 1084($sp)
-	lw $gp, 560($sp)
-	sw $gp, 1072($sp)
-	lw $gp, 556($sp)
-	sw $gp, 952($sp)
-	lw $gp, 552($sp)
-	sw $gp, 932($sp)
-	lw $gp, 548($sp)
-	sw $gp, 1048($sp)
-	lw $gp, 544($sp)
-	sw $gp, 1160($sp)
-	lw $s0, 540($sp)
-	lw $gp, 536($sp)
-	sw $gp, 1216($sp)
-	lw $gp, 532($sp)
-	sw $gp, 1104($sp)
-	lw $gp, 528($sp)
-	sw $gp, 996($sp)
-	lw $gp, 524($sp)
-	sw $gp, 960($sp)
-	lw $gp, 520($sp)
-	sw $gp, 1052($sp)
-	lw $gp, 516($sp)
-	sw $gp, 1120($sp)
-	lw $t0, 512($sp)
-	lw $gp, 508($sp)
-	sw $gp, 1200($sp)
-	lw $gp, 504($sp)
-	sw $gp, 912($sp)
-	lw $gp, 500($sp)
-	sw $gp, 1036($sp)
-	lw $gp, 496($sp)
-	sw $gp, 1156($sp)
-	lw $gp, 492($sp)
-	sw $gp, 948($sp)
-	lw $gp, 488($sp)
-	sw $gp, 1192($sp)
-	lw $gp, 484($sp)
-	sw $gp, 908($sp)
-	lw $gp, 480($sp)
-	sw $gp, 1212($sp)
-	lw $v1, 476($sp)
-	lw $gp, 472($sp)
-	sw $gp, 964($sp)
-	lw $gp, 468($sp)
-	sw $gp, 992($sp)
-	lw $gp, 464($sp)
-	sw $gp, 956($sp)
-	lw $gp, 460($sp)
-	sw $gp, 1144($sp)
-	lw $t4, 456($sp)
-	lw $gp, 452($sp)
-	sw $gp, 1040($sp)
-	lw $gp, 448($sp)
-	sw $gp, 1220($sp)
-	lw $gp, 444($sp)
-	sw $gp, 1064($sp)
-	lw $gp, 440($sp)
-	sw $gp, 1240($sp)
-	lw $gp, 436($sp)
-	sw $gp, 1204($sp)
-	lw $t2, 432($sp)
-	lw $gp, 428($sp)
-	sw $gp, 1092($sp)
-	lw $s2, 424($sp)
-	lw $t6, 420($sp)
-	lw $gp, 416($sp)
-	sw $gp, 1132($sp)
-	lw $gp, 412($sp)
-	sw $gp, 1228($sp)
-	lw $gp, 408($sp)
-	sw $gp, 1236($sp)
-	lw $gp, 404($sp)
-	sw $gp, 1168($sp)
-	lw $s6, 400($sp)
-	lw $gp, 396($sp)
-	sw $gp, 1208($sp)
-	lw $gp, 392($sp)
-	sw $gp, 1152($sp)
-	lw $t5, 388($sp)
-	lw $gp, 384($sp)
-	sw $gp, 936($sp)
-	lw $gp, 380($sp)
-	sw $gp, 1124($sp)
-	lw $gp, 376($sp)
-	sw $gp, 1060($sp)
-	lw $gp, 372($sp)
-	sw $gp, 1080($sp)
-	lw $gp, 368($sp)
-	sw $gp, 976($sp)
-	lw $gp, 364($sp)
-	sw $gp, 1044($sp)
-	lw $gp, 360($sp)
-	sw $gp, 968($sp)
-	lw $gp, 356($sp)
-	sw $gp, 940($sp)
-	lw $gp, 352($sp)
-	sw $gp, 972($sp)
-	lw $gp, 348($sp)
-	sw $gp, 1076($sp)
-	lw $gp, 344($sp)
-	sw $gp, 1088($sp)
-	lw $gp, 340($sp)
-	sw $gp, 1224($sp)
-	lw $gp, 336($sp)
-	sw $gp, 1016($sp)
-	lw $gp, 332($sp)
-	sw $gp, 1136($sp)
-	lw $gp, 328($sp)
-	sw $gp, 1164($sp)
-	lw $gp, 324($sp)
-	sw $gp, 904($sp)
-	lw $gp, 320($sp)
-	sw $gp, 1188($sp)
-	lw $gp, 316($sp)
-	sw $gp, 1004($sp)
-	lw $t1, 312($sp)
-	lw $gp, 308($sp)
-	sw $gp, 1096($sp)
-	lw $gp, 304($sp)
-	sw $gp, 980($sp)
-	lw $gp, 300($sp)
-	sw $gp, 1032($sp)
-	lw $t9, 296($sp)
-	lw $gp, 292($sp)
-	sw $gp, 1020($sp)
-	lw $t7, 288($sp)
-	lw $s7, 284($sp)
-	lw $gp, 280($sp)
-	sw $gp, 1248($sp)
-	lw $gp, 276($sp)
-	sw $gp, 1172($sp)
-	lw $gp, 272($sp)
-	sw $gp, 1196($sp)
-	lw $gp, 268($sp)
-	sw $gp, 928($sp)
-	lw $gp, 264($sp)
-	sw $gp, 988($sp)
-	lw $gp, 260($sp)
-	sw $gp, 1068($sp)
-	lw $s3, 256($sp)
-	lw $gp, 252($sp)
-	sw $gp, 916($sp)
-	lw $s1, 248($sp)
-	lw $s4, 244($sp)
-	lw $gp, 240($sp)
-	sw $gp, 1180($sp)
-	lw $gp, 236($sp)
-	sw $gp, 1112($sp)
-	lw $gp, 232($sp)
-	sw $gp, 1024($sp)
-	lw $gp, 228($sp)
-	sw $gp, 1252($sp)
-	lw $t8, 224($sp)
-	lw $gp, 220($sp)
-	sw $gp, 1148($sp)
-	lw $t3, 216($sp)
-	lw $gp, 212($sp)
-	sw $gp, 1100($sp)
-	lw $gp, 208($sp)
-	sw $gp, 1012($sp)
-	lw $gp, 204($sp)
-	sw $gp, 1108($sp)
-	lw $gp, 200($sp)
-	sw $gp, 944($sp)
-	lw $gp, 196($sp)
-	sw $gp, 1140($sp)
-	lw $gp, 192($sp)
-	sw $gp, 984($sp)
-	lw $gp, 188($sp)
-	sw $gp, 1116($sp)
-	lw $gp, 184($sp)
-	sw $gp, 1128($sp)
-	lw $s5, 180($sp)
-	lw $gp, 176($sp)
-	sw $gp, 1176($sp)
-	lw $gp, 172($sp)
-	sw $gp, 1028($sp)
-	li $gp, 0
-	sw $gp, 1256($sp)
-	lw $gp, 1256($sp)
-	lw $fp, 1236($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1256($sp)
-	li $gp, 0
-	sw $gp, 1260($sp)
-	lw $gp, 1260($sp)
-	lw $fp, 1032($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 1260($sp)
-	li $gp, 0
-	sw $gp, 1264($sp)
-	lw $gp, 1264($sp)
-	lw $fp, 1264($sp)
-	addu $gp, $fp, $v1
-	sw $gp, 1264($sp)
-	lw $gp, 920($sp)
-	sw $gp, 596($sp)
-	lw $gp, 1000($sp)
-	sw $gp, 592($sp)
-	lw $gp, 1244($sp)
-	sw $gp, 588($sp)
-	lw $gp, 1232($sp)
-	sw $gp, 584($sp)
-	lw $gp, 1184($sp)
-	sw $gp, 580($sp)
-	lw $gp, 1056($sp)
-	sw $gp, 576($sp)
-	lw $gp, 924($sp)
-	sw $gp, 572($sp)
-	lw $gp, 1008($sp)
-	sw $gp, 568($sp)
-	lw $gp, 1084($sp)
-	sw $gp, 564($sp)
-	lw $gp, 1072($sp)
-	sw $gp, 560($sp)
-	lw $gp, 952($sp)
-	sw $gp, 556($sp)
-	lw $gp, 932($sp)
-	sw $gp, 552($sp)
-	lw $gp, 1048($sp)
-	sw $gp, 548($sp)
-	lw $gp, 1160($sp)
-	sw $gp, 544($sp)
-	sw $s0, 540($sp)
-	lw $gp, 1216($sp)
-	sw $gp, 536($sp)
-	lw $gp, 1104($sp)
-	sw $gp, 532($sp)
-	lw $gp, 996($sp)
-	sw $gp, 528($sp)
-	lw $gp, 960($sp)
-	sw $gp, 524($sp)
-	lw $gp, 1052($sp)
-	sw $gp, 520($sp)
-	lw $gp, 1120($sp)
-	sw $gp, 516($sp)
-	sw $t0, 512($sp)
-	lw $gp, 1200($sp)
-	sw $gp, 508($sp)
-	lw $gp, 912($sp)
-	sw $gp, 504($sp)
-	lw $gp, 1036($sp)
-	sw $gp, 500($sp)
-	lw $gp, 1156($sp)
-	sw $gp, 496($sp)
-	lw $gp, 948($sp)
-	sw $gp, 492($sp)
-	lw $gp, 1192($sp)
-	sw $gp, 488($sp)
-	lw $gp, 908($sp)
-	sw $gp, 484($sp)
-	lw $gp, 1212($sp)
-	sw $gp, 480($sp)
-	sw $v1, 476($sp)
-	lw $gp, 964($sp)
-	sw $gp, 472($sp)
-	lw $gp, 992($sp)
-	sw $gp, 468($sp)
-	lw $gp, 956($sp)
-	sw $gp, 464($sp)
-	lw $gp, 1144($sp)
-	sw $gp, 460($sp)
-	sw $t4, 456($sp)
-	lw $gp, 1040($sp)
-	sw $gp, 452($sp)
-	lw $gp, 1220($sp)
-	sw $gp, 448($sp)
-	lw $gp, 1064($sp)
-	sw $gp, 444($sp)
-	lw $gp, 1240($sp)
-	sw $gp, 440($sp)
-	lw $gp, 1204($sp)
-	sw $gp, 436($sp)
-	sw $t2, 432($sp)
-	lw $gp, 1092($sp)
-	sw $gp, 428($sp)
-	sw $s2, 424($sp)
-	sw $t6, 420($sp)
-	lw $gp, 1132($sp)
-	sw $gp, 416($sp)
-	lw $gp, 1228($sp)
-	sw $gp, 412($sp)
-	lw $gp, 1236($sp)
-	sw $gp, 408($sp)
-	lw $gp, 1264($sp)
-	sw $gp, 168($sp)
-	lw $gp, 1168($sp)
-	sw $gp, 404($sp)
-	sw $s6, 400($sp)
-	lw $gp, 1208($sp)
-	sw $gp, 396($sp)
-	lw $gp, 1152($sp)
-	sw $gp, 392($sp)
-	sw $t5, 388($sp)
-	lw $gp, 936($sp)
-	sw $gp, 384($sp)
-	lw $gp, 1124($sp)
-	sw $gp, 380($sp)
-	lw $gp, 1060($sp)
-	sw $gp, 376($sp)
-	lw $gp, 1080($sp)
-	sw $gp, 372($sp)
-	lw $gp, 976($sp)
-	sw $gp, 368($sp)
-	lw $gp, 1044($sp)
-	sw $gp, 364($sp)
-	lw $gp, 968($sp)
-	sw $gp, 360($sp)
-	lw $gp, 1260($sp)
-	sw $gp, 164($sp)
-	lw $gp, 940($sp)
-	sw $gp, 356($sp)
-	lw $gp, 972($sp)
-	sw $gp, 352($sp)
-	lw $gp, 1076($sp)
-	sw $gp, 348($sp)
-	lw $gp, 1088($sp)
-	sw $gp, 344($sp)
-	lw $gp, 1224($sp)
-	sw $gp, 340($sp)
-	lw $gp, 1016($sp)
-	sw $gp, 336($sp)
-	lw $gp, 1136($sp)
-	sw $gp, 332($sp)
-	lw $gp, 1164($sp)
-	sw $gp, 328($sp)
-	lw $gp, 904($sp)
-	sw $gp, 324($sp)
-	lw $gp, 1188($sp)
-	sw $gp, 320($sp)
-	lw $gp, 1004($sp)
-	sw $gp, 316($sp)
-	sw $t1, 312($sp)
-	lw $gp, 1096($sp)
-	sw $gp, 308($sp)
-	lw $gp, 980($sp)
-	sw $gp, 304($sp)
-	lw $gp, 1032($sp)
-	sw $gp, 300($sp)
-	sw $t9, 296($sp)
-	lw $gp, 1020($sp)
-	sw $gp, 292($sp)
-	sw $t7, 288($sp)
-	sw $s7, 284($sp)
-	lw $gp, 1248($sp)
-	sw $gp, 280($sp)
-	lw $gp, 1172($sp)
-	sw $gp, 276($sp)
-	lw $gp, 1256($sp)
-	sw $gp, 160($sp)
-	lw $gp, 1196($sp)
-	sw $gp, 272($sp)
-	lw $gp, 928($sp)
-	sw $gp, 268($sp)
-	lw $gp, 988($sp)
-	sw $gp, 264($sp)
-	lw $gp, 1068($sp)
-	sw $gp, 260($sp)
-	sw $s3, 256($sp)
-	lw $gp, 916($sp)
-	sw $gp, 252($sp)
-	sw $s1, 248($sp)
-	sw $s4, 244($sp)
-	lw $gp, 1180($sp)
-	sw $gp, 240($sp)
-	lw $gp, 1112($sp)
-	sw $gp, 236($sp)
-	lw $gp, 1024($sp)
-	sw $gp, 232($sp)
-	lw $gp, 1252($sp)
-	sw $gp, 228($sp)
-	sw $t8, 224($sp)
-	lw $gp, 1148($sp)
-	sw $gp, 220($sp)
-	sw $t3, 216($sp)
-	lw $gp, 1100($sp)
-	sw $gp, 212($sp)
-	lw $gp, 1012($sp)
-	sw $gp, 208($sp)
-	lw $gp, 1108($sp)
-	sw $gp, 204($sp)
-	lw $gp, 944($sp)
-	sw $gp, 200($sp)
-	lw $gp, 1140($sp)
-	sw $gp, 196($sp)
-	lw $gp, 984($sp)
-	sw $gp, 192($sp)
-	lw $gp, 1116($sp)
-	sw $gp, 188($sp)
-	lw $gp, 1128($sp)
-	sw $gp, 184($sp)
-	sw $s5, 180($sp)
-	lw $gp, 1176($sp)
-	sw $gp, 176($sp)
-	lw $gp, 1028($sp)
-	sw $gp, 172($sp)
-	lw $gp, 1256($sp)
-	move $a0, $gp
-	lw $gp, 1260($sp)
-	move $a1, $gp
-	lw $gp, 1264($sp)
-	move $a2, $gp
-	li $a3, 5
-	jal matrixMul_0
-	lw $gp, 596($sp)
-	sw $gp, 920($sp)
-	lw $gp, 592($sp)
-	sw $gp, 1000($sp)
-	lw $gp, 588($sp)
-	sw $gp, 1244($sp)
-	lw $gp, 584($sp)
-	sw $gp, 1232($sp)
-	lw $gp, 580($sp)
-	sw $gp, 1184($sp)
-	lw $gp, 576($sp)
-	sw $gp, 1056($sp)
-	lw $gp, 572($sp)
-	sw $gp, 924($sp)
-	lw $gp, 568($sp)
-	sw $gp, 1008($sp)
-	lw $gp, 564($sp)
-	sw $gp, 1084($sp)
-	lw $gp, 560($sp)
-	sw $gp, 1072($sp)
-	lw $gp, 556($sp)
-	sw $gp, 952($sp)
-	lw $gp, 552($sp)
-	sw $gp, 932($sp)
-	lw $gp, 548($sp)
-	sw $gp, 1048($sp)
-	lw $gp, 544($sp)
-	sw $gp, 1160($sp)
-	lw $s0, 540($sp)
-	lw $gp, 536($sp)
-	sw $gp, 1216($sp)
-	lw $gp, 532($sp)
-	sw $gp, 1104($sp)
-	lw $gp, 528($sp)
-	sw $gp, 996($sp)
-	lw $gp, 524($sp)
-	sw $gp, 960($sp)
-	lw $gp, 520($sp)
-	sw $gp, 1052($sp)
-	lw $gp, 516($sp)
-	sw $gp, 1120($sp)
-	lw $t0, 512($sp)
-	lw $gp, 508($sp)
-	sw $gp, 1200($sp)
-	lw $gp, 504($sp)
-	sw $gp, 912($sp)
-	lw $gp, 500($sp)
-	sw $gp, 1036($sp)
-	lw $gp, 496($sp)
-	sw $gp, 1156($sp)
-	lw $gp, 492($sp)
-	sw $gp, 948($sp)
-	lw $gp, 488($sp)
-	sw $gp, 1192($sp)
-	lw $gp, 484($sp)
-	sw $gp, 908($sp)
-	lw $gp, 480($sp)
-	sw $gp, 1212($sp)
-	lw $v1, 476($sp)
-	lw $gp, 472($sp)
-	sw $gp, 964($sp)
-	lw $gp, 468($sp)
-	sw $gp, 992($sp)
-	lw $gp, 464($sp)
-	sw $gp, 956($sp)
-	lw $gp, 460($sp)
-	sw $gp, 1144($sp)
-	lw $t4, 456($sp)
-	lw $gp, 452($sp)
-	sw $gp, 1040($sp)
-	lw $gp, 448($sp)
-	sw $gp, 1220($sp)
-	lw $gp, 444($sp)
-	sw $gp, 1064($sp)
-	lw $gp, 440($sp)
-	sw $gp, 1240($sp)
-	lw $gp, 436($sp)
-	sw $gp, 1204($sp)
-	lw $t2, 432($sp)
-	lw $gp, 428($sp)
-	sw $gp, 1092($sp)
-	lw $s2, 424($sp)
-	lw $t6, 420($sp)
-	lw $gp, 416($sp)
-	sw $gp, 1132($sp)
-	lw $gp, 412($sp)
-	sw $gp, 1228($sp)
-	lw $gp, 408($sp)
-	sw $gp, 1236($sp)
-	lw $gp, 168($sp)
-	sw $gp, 1264($sp)
-	lw $gp, 404($sp)
-	sw $gp, 1168($sp)
-	lw $s6, 400($sp)
-	lw $gp, 396($sp)
-	sw $gp, 1208($sp)
-	lw $gp, 392($sp)
-	sw $gp, 1152($sp)
-	lw $t5, 388($sp)
-	lw $gp, 384($sp)
-	sw $gp, 936($sp)
-	lw $gp, 380($sp)
-	sw $gp, 1124($sp)
-	lw $gp, 376($sp)
-	sw $gp, 1060($sp)
-	lw $gp, 372($sp)
-	sw $gp, 1080($sp)
-	lw $gp, 368($sp)
-	sw $gp, 976($sp)
-	lw $gp, 364($sp)
-	sw $gp, 1044($sp)
-	lw $gp, 360($sp)
-	sw $gp, 968($sp)
-	lw $gp, 164($sp)
-	sw $gp, 1260($sp)
-	lw $gp, 356($sp)
-	sw $gp, 940($sp)
-	lw $gp, 352($sp)
-	sw $gp, 972($sp)
-	lw $gp, 348($sp)
-	sw $gp, 1076($sp)
-	lw $gp, 344($sp)
-	sw $gp, 1088($sp)
-	lw $gp, 340($sp)
-	sw $gp, 1224($sp)
-	lw $gp, 336($sp)
-	sw $gp, 1016($sp)
-	lw $gp, 332($sp)
-	sw $gp, 1136($sp)
-	lw $gp, 328($sp)
-	sw $gp, 1164($sp)
-	lw $gp, 324($sp)
-	sw $gp, 904($sp)
-	lw $gp, 320($sp)
-	sw $gp, 1188($sp)
-	lw $gp, 316($sp)
-	sw $gp, 1004($sp)
-	lw $t1, 312($sp)
-	lw $gp, 308($sp)
-	sw $gp, 1096($sp)
-	lw $gp, 304($sp)
-	sw $gp, 980($sp)
-	lw $gp, 300($sp)
-	sw $gp, 1032($sp)
-	lw $t9, 296($sp)
-	lw $gp, 292($sp)
-	sw $gp, 1020($sp)
-	lw $t7, 288($sp)
-	lw $s7, 284($sp)
-	lw $gp, 280($sp)
-	sw $gp, 1248($sp)
-	lw $gp, 276($sp)
-	sw $gp, 1172($sp)
-	lw $gp, 160($sp)
-	sw $gp, 1256($sp)
-	lw $gp, 272($sp)
-	sw $gp, 1196($sp)
-	lw $gp, 268($sp)
-	sw $gp, 928($sp)
-	lw $gp, 264($sp)
-	sw $gp, 988($sp)
-	lw $gp, 260($sp)
-	sw $gp, 1068($sp)
-	lw $s3, 256($sp)
-	lw $gp, 252($sp)
-	sw $gp, 916($sp)
-	lw $s1, 248($sp)
-	lw $s4, 244($sp)
-	lw $gp, 240($sp)
-	sw $gp, 1180($sp)
-	lw $gp, 236($sp)
-	sw $gp, 1112($sp)
-	lw $gp, 232($sp)
-	sw $gp, 1024($sp)
-	lw $gp, 228($sp)
-	sw $gp, 1252($sp)
-	lw $t8, 224($sp)
-	lw $gp, 220($sp)
-	sw $gp, 1148($sp)
-	lw $t3, 216($sp)
-	lw $gp, 212($sp)
-	sw $gp, 1100($sp)
-	lw $gp, 208($sp)
-	sw $gp, 1012($sp)
-	lw $gp, 204($sp)
-	sw $gp, 1108($sp)
-	lw $gp, 200($sp)
-	sw $gp, 944($sp)
-	lw $gp, 196($sp)
-	sw $gp, 1140($sp)
-	lw $gp, 192($sp)
-	sw $gp, 984($sp)
-	lw $gp, 188($sp)
-	sw $gp, 1116($sp)
-	lw $gp, 184($sp)
-	sw $gp, 1128($sp)
-	lw $s5, 180($sp)
-	lw $gp, 176($sp)
-	sw $gp, 1176($sp)
-	lw $gp, 172($sp)
-	sw $gp, 1028($sp)
-	li $a0, 0
-	lw $ra, 900($sp)
-	addiu $sp, $sp, 1268
-	li $v0, 10
-	syscall
-matrixPrint_0:
-	move $v1, $a0
-	move $t0, $a1
-	addiu $sp, $sp, -164
-	sw $ra, 128($sp)
-	addu $t1, $sp, 124
-	sw $t0, 0($t1)
-	addu $t2, $sp, 120
-	sw $v1, 0($t2)
-	addu $t3, $sp, 116
-	sw $zero, 0($t3)
-	j matrixPrint_1
-matrixPrint_1:
-	lw $t4, 0($t3)
-	lw $t5, 0($t1)
-	slt $t6, $t4, $t5
-	sne $t7, $t6, $zero
-	bnez $t7, matrixPrint_2
-	j matrixPrint_3
-matrixPrint_2:
-	addu $s0, $sp, 112
-	sw $zero, 0($s0)
-	j matrixPrint_4
-matrixPrint_3:
+	addiu $sp, $sp, -1592
+	sw $ra, 972($sp)
 	la $a0, msg0
 	li $v0, 4
 	syscall
-	lw $ra, 128($sp)
-	addiu $sp, $sp, 164
-	jr $ra
-matrixPrint_4:
-	lw $s1, 0($s0)
-	lw $s2, 0($t1)
-	slt $s3, $s1, $s2
-	sne $s4, $s3, $zero
-	bnez $s4, matrixPrint_5
-	j matrixPrint_6
-matrixPrint_5:
-	lw $s5, 0($t2)
-	lw $s6, 0($t3)
-	lw $s7, 0($s0)
+	addu $v1, $sp, 968
+	li $t0, 5
+	sw $t0, 0($v1)
+	addu $t1, $sp, 964
+	li $t2, 6
+	sw $t2, 0($t1)
+	addu $t3, $sp, 940
+	li $t4, 0
+	addu $t4, $t4, $t3
+	sw $zero, 0($t4)
+	li $t5, 4
+	addu $t5, $t5, $t4
+	li $t6, 1
+	sw $t6, 0($t5)
+	li $t7, 8
+	addu $t7, $t7, $t4
+	li $s0, 2
+	sw $s0, 0($t7)
+	li $s1, 12
+	addu $s1, $s1, $t4
+	li $s2, 3
+	sw $s2, 0($s1)
+	li $s3, 16
+	addu $s3, $s3, $t4
+	li $s4, 6
+	sw $s4, 0($s3)
+	li $s5, 20
+	addu $s5, $s5, $t4
+	li $s6, 12
+	sw $s6, 0($s5)
+	addu $s7, $sp, 916
 	li $t8, 0
-	mul $t9, $s6, 20
-	addu $t8, $t8, $t9
-	mul $gp, $s7, 4
-	sw $gp, 132($sp)
-	lw $gp, 132($sp)
-	addu $t8, $t8, $gp
-	addu $t8, $t8, $s5
-	lw $gp, 0($t8)
-	sw $gp, 136($sp)
-	lw $gp, 136($sp)
-	move $a0, $gp
-	li $v0, 1
-	syscall
+	addu $t8, $t8, $s7
+	li $t9, 10
+	sw $t9, 0($t8)
+	li $gp, 4
+	sw $gp, 976($sp)
+	lw $gp, 976($sp)
+	lw $fp, 976($sp)
+	addu $gp, $fp, $t8
+	sw $gp, 976($sp)
+	li $gp, 11
+	sw $gp, 980($sp)
+	lw $gp, 980($sp)
+	lw $fp, 976($sp)
+	sw $gp, 0($fp)
+	li $gp, 8
+	sw $gp, 984($sp)
+	lw $gp, 984($sp)
+	lw $fp, 984($sp)
+	addu $gp, $fp, $t8
+	sw $gp, 984($sp)
+	li $gp, 12
+	sw $gp, 988($sp)
+	lw $gp, 988($sp)
+	lw $fp, 984($sp)
+	sw $gp, 0($fp)
+	li $gp, 12
+	sw $gp, 992($sp)
+	lw $gp, 992($sp)
+	lw $fp, 992($sp)
+	addu $gp, $fp, $t8
+	sw $gp, 992($sp)
+	li $gp, 13
+	sw $gp, 996($sp)
+	lw $gp, 996($sp)
+	lw $fp, 992($sp)
+	sw $gp, 0($fp)
+	li $gp, 16
+	sw $gp, 1000($sp)
+	lw $gp, 1000($sp)
+	lw $fp, 1000($sp)
+	addu $gp, $fp, $t8
+	sw $gp, 1000($sp)
+	li $gp, 14
+	sw $gp, 1004($sp)
+	lw $gp, 1004($sp)
+	lw $fp, 1000($sp)
+	sw $gp, 0($fp)
+	li $gp, 20
+	sw $gp, 1008($sp)
+	lw $gp, 1008($sp)
+	lw $fp, 1008($sp)
+	addu $gp, $fp, $t8
+	sw $gp, 1008($sp)
+	li $gp, 15
+	sw $gp, 1012($sp)
+	lw $gp, 1012($sp)
+	lw $fp, 1008($sp)
+	sw $gp, 0($fp)
+	lw $gp, 0($v1)
+	sw $gp, 1016($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1020($sp)
+	lw $gp, 1016($sp)
+	lw $fp, 1020($sp)
+	mul $gp, $gp, $fp
+	sw $gp, 1024($sp)
+	li $gp, 8
+	sw $gp, 1028($sp)
+	lw $gp, 1028($sp)
+	lw $fp, 1028($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1028($sp)
+	lw $gp, 1028($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1032($sp)
+	li $gp, 20
+	sw $gp, 1036($sp)
+	lw $gp, 1036($sp)
+	lw $fp, 1036($sp)
+	addu $gp, $fp, $s7
+	sw $gp, 1036($sp)
+	lw $gp, 1036($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1040($sp)
+	lw $gp, 1032($sp)
+	lw $fp, 1040($sp)
+	mul $gp, $gp, $fp
+	sw $gp, 1044($sp)
+	lw $gp, 1024($sp)
+	lw $fp, 1044($sp)
+	sgt $gp, $gp, $fp
+	sw $gp, 1048($sp)
+	lw $gp, 1048($sp)
+	seq $gp, $gp, $zero
+	sw $gp, 1052($sp)
+	lw $gp, 1052($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1056($sp)
+	lw $gp, 1056($sp)
+	bnez $gp, main_4
+	j main_2
+main_1:
 	la $a0, msg1
 	li $v0, 4
 	syscall
-	lw $gp, 0($s0)
-	sw $gp, 140($sp)
-	li $gp, 1
-	sw $gp, 144($sp)
-	lw $gp, 140($sp)
-	lw $fp, 144($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 148($sp)
-	lw $gp, 148($sp)
-	lw $fp, 148($sp)
-	sw $gp, 0($s0)
-	j matrixPrint_4
-matrixPrint_6:
-	lw $gp, 0($t3)
-	sw $gp, 152($sp)
-	li $gp, 1
-	sw $gp, 156($sp)
-	lw $gp, 152($sp)
-	lw $fp, 156($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 160($sp)
-	lw $gp, 160($sp)
-	lw $fp, 160($sp)
-	sw $gp, 0($t3)
-	j matrixPrint_1
-matrixMul_0:
-	move $v1, $a0
-	move $t0, $a1
-	move $t1, $a2
-	move $t2, $a3
-	addiu $sp, $sp, -568
-	sw $ra, 332($sp)
-	addu $t3, $sp, 328
-	sw $t2, 0($t3)
-	addu $t4, $sp, 324
-	sw $v1, 0($t4)
-	addu $t5, $sp, 320
-	sw $t0, 0($t5)
-	addu $t6, $sp, 316
-	sw $t1, 0($t6)
-	addu $t7, $sp, 312
-	sw $zero, 0($t7)
-	lw $s0, 0($t5)
-	lw $s1, 0($t3)
-	sw $v1, 308($sp)
-	sw $t0, 304($sp)
-	sw $t6, 300($sp)
-	sw $t3, 296($sp)
-	sw $t4, 292($sp)
-	sw $t5, 288($sp)
-	sw $t2, 284($sp)
-	sw $s1, 280($sp)
-	sw $t7, 276($sp)
-	sw $s0, 272($sp)
-	sw $t1, 268($sp)
-	move $a0, $s0
-	move $a1, $s1
-	jal matrixPrint_0
-	lw $v1, 308($sp)
-	lw $t0, 304($sp)
-	lw $t6, 300($sp)
-	lw $t3, 296($sp)
-	lw $t4, 292($sp)
-	lw $t5, 288($sp)
-	lw $t2, 284($sp)
-	lw $s1, 280($sp)
-	lw $t7, 276($sp)
-	lw $s0, 272($sp)
-	lw $t1, 268($sp)
-	lw $s2, 0($t6)
-	lw $s3, 0($t3)
-	sw $v1, 308($sp)
-	sw $t0, 304($sp)
-	sw $s3, 264($sp)
-	sw $t6, 300($sp)
-	sw $t3, 296($sp)
-	sw $t4, 292($sp)
-	sw $t5, 288($sp)
-	sw $s2, 260($sp)
-	sw $t2, 284($sp)
-	sw $s1, 280($sp)
-	sw $t7, 276($sp)
-	sw $s0, 272($sp)
-	sw $t1, 268($sp)
-	move $a0, $s2
-	move $a1, $s3
-	jal matrixPrint_0
-	lw $v1, 308($sp)
-	lw $t0, 304($sp)
-	lw $s3, 264($sp)
-	lw $t6, 300($sp)
-	lw $t3, 296($sp)
-	lw $t4, 292($sp)
-	lw $t5, 288($sp)
-	lw $s2, 260($sp)
-	lw $t2, 284($sp)
-	lw $s1, 280($sp)
-	lw $t7, 276($sp)
-	lw $s0, 272($sp)
-	lw $t1, 268($sp)
-	j matrixMul_1
-matrixMul_1:
-	lw $s4, 0($t7)
-	lw $s5, 0($t3)
-	slt $s6, $s4, $s5
-	sne $s7, $s6, $zero
-	bnez $s7, matrixMul_2
-	j matrixMul_3
-matrixMul_2:
-	addu $t8, $sp, 256
-	sw $zero, 0($t8)
-	j matrixMul_4
-matrixMul_3:
-	lw $t9, 0($t5)
-	lw $gp, 0($t3)
-	sw $gp, 336($sp)
-	sw $v1, 308($sp)
-	sw $s6, 252($sp)
-	sw $t0, 304($sp)
-	sw $s3, 264($sp)
-	sw $s5, 248($sp)
-	sw $t6, 300($sp)
-	sw $t3, 296($sp)
-	sw $t4, 292($sp)
-	sw $t5, 288($sp)
-	sw $s2, 260($sp)
-	sw $s4, 244($sp)
-	lw $gp, 336($sp)
-	sw $gp, 240($sp)
-	sw $s7, 236($sp)
-	sw $t2, 284($sp)
-	sw $s1, 280($sp)
-	sw $t7, 276($sp)
-	sw $t8, 232($sp)
-	sw $s0, 272($sp)
-	sw $t9, 228($sp)
-	sw $t1, 268($sp)
-	move $a0, $t9
-	lw $gp, 336($sp)
-	move $a1, $gp
-	jal matrixPrint_0
-	lw $v1, 308($sp)
-	lw $s6, 252($sp)
-	lw $t0, 304($sp)
-	lw $s3, 264($sp)
-	lw $s5, 248($sp)
-	lw $t6, 300($sp)
-	lw $t3, 296($sp)
-	lw $t4, 292($sp)
-	lw $t5, 288($sp)
-	lw $s2, 260($sp)
-	lw $s4, 244($sp)
-	lw $gp, 240($sp)
-	sw $gp, 336($sp)
-	lw $s7, 236($sp)
-	lw $t2, 284($sp)
-	lw $s1, 280($sp)
-	lw $t7, 276($sp)
-	lw $t8, 232($sp)
-	lw $s0, 272($sp)
-	lw $t9, 228($sp)
-	lw $t1, 268($sp)
-	lw $gp, 0($t6)
-	sw $gp, 340($sp)
-	lw $gp, 0($t3)
-	sw $gp, 344($sp)
-	sw $v1, 308($sp)
-	sw $s6, 252($sp)
-	sw $t0, 304($sp)
-	sw $s3, 264($sp)
-	sw $s5, 248($sp)
-	lw $gp, 340($sp)
-	sw $gp, 224($sp)
-	sw $t6, 300($sp)
-	sw $t3, 296($sp)
-	sw $t4, 292($sp)
-	sw $t5, 288($sp)
-	sw $s2, 260($sp)
-	sw $s4, 244($sp)
-	lw $gp, 344($sp)
-	sw $gp, 220($sp)
-	lw $gp, 336($sp)
-	sw $gp, 240($sp)
-	sw $s7, 236($sp)
-	sw $t2, 284($sp)
-	sw $s1, 280($sp)
-	sw $t7, 276($sp)
-	sw $t8, 232($sp)
-	sw $s0, 272($sp)
-	sw $t9, 228($sp)
-	sw $t1, 268($sp)
-	lw $gp, 340($sp)
-	move $a0, $gp
-	lw $gp, 344($sp)
-	move $a1, $gp
-	jal matrixPrint_0
-	lw $v1, 308($sp)
-	lw $s6, 252($sp)
-	lw $t0, 304($sp)
-	lw $s3, 264($sp)
-	lw $s5, 248($sp)
-	lw $gp, 224($sp)
-	sw $gp, 340($sp)
-	lw $t6, 300($sp)
-	lw $t3, 296($sp)
-	lw $t4, 292($sp)
-	lw $t5, 288($sp)
-	lw $s2, 260($sp)
-	lw $s4, 244($sp)
-	lw $gp, 220($sp)
-	sw $gp, 344($sp)
-	lw $gp, 240($sp)
-	sw $gp, 336($sp)
-	lw $s7, 236($sp)
-	lw $t2, 284($sp)
-	lw $s1, 280($sp)
-	lw $t7, 276($sp)
-	lw $t8, 232($sp)
-	lw $s0, 272($sp)
-	lw $t9, 228($sp)
-	lw $t1, 268($sp)
-	lw $gp, 0($t4)
-	sw $gp, 348($sp)
-	lw $gp, 0($t3)
-	sw $gp, 352($sp)
-	sw $v1, 308($sp)
-	sw $s6, 252($sp)
-	sw $t0, 304($sp)
-	sw $s3, 264($sp)
-	sw $s5, 248($sp)
-	lw $gp, 340($sp)
-	sw $gp, 224($sp)
-	sw $t6, 300($sp)
-	sw $t3, 296($sp)
-	lw $gp, 352($sp)
-	sw $gp, 216($sp)
-	sw $t4, 292($sp)
-	sw $t5, 288($sp)
-	lw $gp, 348($sp)
-	sw $gp, 212($sp)
-	sw $s2, 260($sp)
-	sw $s4, 244($sp)
-	lw $gp, 344($sp)
-	sw $gp, 220($sp)
-	lw $gp, 336($sp)
-	sw $gp, 240($sp)
-	sw $s7, 236($sp)
-	sw $t2, 284($sp)
-	sw $s1, 280($sp)
-	sw $t7, 276($sp)
-	sw $t8, 232($sp)
-	sw $s0, 272($sp)
-	sw $t9, 228($sp)
-	sw $t1, 268($sp)
-	lw $gp, 348($sp)
-	move $a0, $gp
-	lw $gp, 352($sp)
-	move $a1, $gp
-	jal matrixPrint_0
-	lw $v1, 308($sp)
-	lw $s6, 252($sp)
-	lw $t0, 304($sp)
-	lw $s3, 264($sp)
-	lw $s5, 248($sp)
-	lw $gp, 224($sp)
-	sw $gp, 340($sp)
-	lw $t6, 300($sp)
-	lw $t3, 296($sp)
-	lw $gp, 216($sp)
-	sw $gp, 352($sp)
-	lw $t4, 292($sp)
-	lw $t5, 288($sp)
-	lw $gp, 212($sp)
-	sw $gp, 348($sp)
-	lw $s2, 260($sp)
-	lw $s4, 244($sp)
-	lw $gp, 220($sp)
-	sw $gp, 344($sp)
-	lw $gp, 240($sp)
-	sw $gp, 336($sp)
-	lw $s7, 236($sp)
-	lw $t2, 284($sp)
-	lw $s1, 280($sp)
-	lw $t7, 276($sp)
-	lw $t8, 232($sp)
-	lw $s0, 272($sp)
-	lw $t9, 228($sp)
-	lw $t1, 268($sp)
-	lw $ra, 332($sp)
-	addiu $sp, $sp, 568
-	jr $ra
-matrixMul_4:
-	lw $gp, 0($t8)
-	sw $gp, 356($sp)
-	lw $gp, 0($t3)
-	sw $gp, 360($sp)
-	lw $gp, 356($sp)
-	lw $fp, 360($sp)
-	slt $gp, $gp, $fp
-	sw $gp, 364($sp)
-	lw $gp, 364($sp)
+	j main_3
+main_2:
+	la $a0, msg2
+	li $v0, 4
+	syscall
+	j main_3
+main_3:
+	lw $gp, 0($v1)
+	sw $gp, 1060($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1064($sp)
+	lw $gp, 1060($sp)
+	lw $fp, 1064($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1068($sp)
+	lw $gp, 1068($sp)
 	sne $gp, $gp, $zero
-	sw $gp, 368($sp)
-	lw $gp, 368($sp)
-	bnez $gp, matrixMul_5
-	j matrixMul_6
-matrixMul_5:
-	addu $gp, $sp, 208
-	sw $gp, 372($sp)
-	lw $gp, 372($sp)
-	sw $zero, 0($gp)
-	lw $gp, 0($t4)
-	sw $gp, 376($sp)
-	lw $gp, 0($t7)
-	sw $gp, 380($sp)
-	lw $gp, 0($t8)
-	sw $gp, 384($sp)
-	li $gp, 0
-	sw $gp, 388($sp)
-	lw $gp, 380($sp)
-	mul $gp, $gp, 20
-	sw $gp, 392($sp)
-	lw $gp, 388($sp)
-	lw $fp, 392($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 388($sp)
-	lw $gp, 384($sp)
-	mul $gp, $gp, 4
-	sw $gp, 396($sp)
-	lw $gp, 388($sp)
-	lw $fp, 396($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 388($sp)
-	lw $gp, 388($sp)
-	lw $fp, 376($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 388($sp)
-	lw $gp, 388($sp)
-	sw $zero, 0($gp)
-	j matrixMul_7
-matrixMul_6:
-	lw $gp, 0($t7)
-	sw $gp, 400($sp)
-	li $gp, 1
-	sw $gp, 404($sp)
-	lw $gp, 400($sp)
-	lw $fp, 404($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 408($sp)
-	lw $gp, 408($sp)
-	lw $fp, 408($sp)
-	sw $gp, 0($t7)
-	j matrixMul_1
-matrixMul_7:
-	lw $gp, 372($sp)
+	sw $gp, 1072($sp)
+	lw $gp, 1072($sp)
+	bnez $gp, main_10
+	j main_8
+main_4:
+	li $gp, 4
+	sw $gp, 1076($sp)
+	lw $gp, 1076($sp)
+	lw $fp, 1076($sp)
+	addu $gp, $fp, $s7
+	sw $gp, 1076($sp)
+	lw $gp, 1076($sp)
 	lw $gp, 0($gp)
-	sw $gp, 412($sp)
-	lw $gp, 0($t3)
-	sw $gp, 416($sp)
-	lw $gp, 412($sp)
-	lw $fp, 416($sp)
-	slt $gp, $gp, $fp
-	sw $gp, 420($sp)
-	lw $gp, 420($sp)
+	sw $gp, 1080($sp)
+	li $gp, 8
+	sw $gp, 1084($sp)
+	lw $gp, 1084($sp)
+	lw $fp, 1084($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1084($sp)
+	lw $gp, 1084($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1088($sp)
+	lw $gp, 1080($sp)
+	lw $fp, 1088($sp)
+	sub $gp, $gp, $fp
+	sw $gp, 1092($sp)
+	lw $gp, 0($v1)
+	sw $gp, 1096($sp)
+	lw $gp, 1092($sp)
+	lw $fp, 1096($sp)
+	rem $gp, $gp, $fp
+	sw $gp, 1100($sp)
+	li $gp, 20
+	sw $gp, 1104($sp)
+	lw $gp, 1104($sp)
+	lw $fp, 1104($sp)
+	addu $gp, $fp, $s7
+	sw $gp, 1104($sp)
+	lw $gp, 1104($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1108($sp)
+	lw $gp, 0($v1)
+	sw $gp, 1112($sp)
+	lw $gp, 1108($sp)
+	lw $fp, 1112($sp)
+	div $gp, $gp, $fp
+	sw $gp, 1116($sp)
+	lw $gp, 1100($sp)
+	lw $fp, 1116($sp)
+	sgt $gp, $gp, $fp
+	sw $gp, 1120($sp)
+	lw $gp, 1120($sp)
 	sne $gp, $gp, $zero
-	sw $gp, 424($sp)
-	lw $gp, 424($sp)
-	bnez $gp, matrixMul_8
-	j matrixMul_9
-matrixMul_8:
-	lw $gp, 0($t4)
-	sw $gp, 428($sp)
-	lw $gp, 0($t7)
-	sw $gp, 432($sp)
-	lw $gp, 0($t8)
-	sw $gp, 436($sp)
-	li $gp, 0
-	sw $gp, 440($sp)
-	lw $gp, 432($sp)
-	mul $gp, $gp, 20
-	sw $gp, 444($sp)
-	lw $gp, 440($sp)
-	lw $fp, 444($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 440($sp)
-	lw $gp, 436($sp)
-	mul $gp, $gp, 4
-	sw $gp, 448($sp)
-	lw $gp, 440($sp)
-	lw $fp, 448($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 440($sp)
-	lw $gp, 440($sp)
-	lw $fp, 428($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 440($sp)
-	lw $gp, 440($sp)
+	sw $gp, 1124($sp)
+	lw $gp, 1124($sp)
+	bnez $gp, main_5
+	j main_2
+main_5:
+	li $gp, 20
+	sw $gp, 1128($sp)
+	lw $gp, 1128($sp)
+	lw $fp, 1128($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1128($sp)
+	lw $gp, 1128($sp)
 	lw $gp, 0($gp)
-	sw $gp, 452($sp)
-	lw $gp, 0($t5)
-	sw $gp, 456($sp)
-	lw $gp, 0($t7)
-	sw $gp, 460($sp)
-	lw $gp, 372($sp)
+	sw $gp, 1132($sp)
+	lw $gp, 0($v1)
+	sw $gp, 1136($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1140($sp)
+	lw $gp, 1136($sp)
+	lw $fp, 1140($sp)
+	addu $gp, $gp, $fp
+	sw $gp, 1144($sp)
+	li $gp, 2
+	sw $gp, 1148($sp)
+	lw $gp, 1144($sp)
+	lw $fp, 1148($sp)
+	addu $gp, $gp, $fp
+	sw $gp, 1152($sp)
+	lw $gp, 1152($sp)
+	sgt $gp, $gp, $zero
+	sw $gp, 1156($sp)
+	lw $gp, 1132($sp)
+	lw $fp, 1156($sp)
+	sgt $gp, $gp, $fp
+	sw $gp, 1160($sp)
+	lw $gp, 1160($sp)
+	seq $gp, $gp, $zero
+	sw $gp, 1164($sp)
+	lw $gp, 1164($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1168($sp)
+	lw $gp, 1168($sp)
+	bnez $gp, main_6
+	j main_2
+main_6:
+	li $gp, 20
+	sw $gp, 1172($sp)
+	lw $gp, 1172($sp)
+	lw $fp, 1172($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1172($sp)
+	lw $gp, 1172($sp)
 	lw $gp, 0($gp)
-	sw $gp, 464($sp)
-	li $gp, 0
-	sw $gp, 468($sp)
-	lw $gp, 460($sp)
-	mul $gp, $gp, 20
-	sw $gp, 472($sp)
-	lw $gp, 468($sp)
-	lw $fp, 472($sp)
+	sw $gp, 1176($sp)
+	lw $gp, 0($v1)
+	sw $gp, 1180($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1184($sp)
+	lw $gp, 1180($sp)
+	lw $fp, 1184($sp)
 	addu $gp, $gp, $fp
-	sw $gp, 468($sp)
-	lw $gp, 464($sp)
-	mul $gp, $gp, 4
-	sw $gp, 476($sp)
-	lw $gp, 468($sp)
-	lw $fp, 476($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 468($sp)
-	lw $gp, 468($sp)
-	lw $fp, 456($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 468($sp)
-	lw $gp, 468($sp)
+	sw $gp, 1188($sp)
+	li $gp, 4
+	sw $gp, 1192($sp)
+	lw $gp, 1192($sp)
+	lw $fp, 1192($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1192($sp)
+	lw $gp, 1192($sp)
 	lw $gp, 0($gp)
-	sw $gp, 480($sp)
-	lw $gp, 0($t6)
-	sw $gp, 484($sp)
-	lw $gp, 372($sp)
-	lw $gp, 0($gp)
-	sw $gp, 488($sp)
-	lw $gp, 0($t8)
-	sw $gp, 492($sp)
-	li $gp, 0
-	sw $gp, 496($sp)
-	lw $gp, 488($sp)
-	mul $gp, $gp, 20
-	sw $gp, 500($sp)
-	lw $gp, 496($sp)
-	lw $fp, 500($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 496($sp)
-	lw $gp, 492($sp)
-	mul $gp, $gp, 4
-	sw $gp, 504($sp)
-	lw $gp, 496($sp)
-	lw $fp, 504($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 496($sp)
-	lw $gp, 496($sp)
-	lw $fp, 484($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 496($sp)
-	lw $gp, 496($sp)
-	lw $gp, 0($gp)
-	sw $gp, 508($sp)
-	lw $gp, 480($sp)
-	lw $fp, 508($sp)
-	mul $gp, $gp, $fp
-	sw $gp, 512($sp)
-	lw $gp, 452($sp)
-	lw $fp, 512($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 516($sp)
-	lw $gp, 0($t4)
-	sw $gp, 520($sp)
-	lw $gp, 0($t7)
-	sw $gp, 524($sp)
-	lw $gp, 0($t8)
-	sw $gp, 528($sp)
-	li $gp, 0
-	sw $gp, 532($sp)
-	lw $gp, 524($sp)
-	mul $gp, $gp, 20
-	sw $gp, 536($sp)
-	lw $gp, 532($sp)
-	lw $fp, 536($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 532($sp)
-	lw $gp, 528($sp)
-	mul $gp, $gp, 4
-	sw $gp, 540($sp)
-	lw $gp, 532($sp)
-	lw $fp, 540($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 532($sp)
-	lw $gp, 532($sp)
-	lw $fp, 520($sp)
-	addu $gp, $gp, $fp
-	sw $gp, 532($sp)
-	lw $gp, 516($sp)
-	lw $fp, 532($sp)
-	sw $gp, 0($fp)
-	lw $gp, 372($sp)
-	lw $gp, 0($gp)
-	sw $gp, 544($sp)
+	sw $gp, 1196($sp)
+	lw $gp, 1188($sp)
+	lw $fp, 1196($sp)
+	slt $gp, $gp, $fp
+	sw $gp, 1200($sp)
+	lw $gp, 1176($sp)
+	lw $fp, 1200($sp)
+	sgt $gp, $gp, $fp
+	sw $gp, 1204($sp)
+	lw $gp, 1204($sp)
+	seq $gp, $gp, $zero
+	sw $gp, 1208($sp)
+	lw $gp, 1208($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1212($sp)
+	lw $gp, 1212($sp)
+	bnez $gp, main_1
+	j main_2
+main_7:
+	la $a0, msg3
+	li $v0, 4
+	syscall
+	j main_9
+main_8:
+	la $a0, msg4
+	li $v0, 4
+	syscall
+	j main_9
+main_9:
+	lw $gp, 0($t1)
+	sw $gp, 1216($sp)
+	lw $gp, 0($v1)
+	sw $gp, 1220($sp)
 	li $gp, 1
-	sw $gp, 548($sp)
-	lw $gp, 544($sp)
-	lw $fp, 548($sp)
+	sw $gp, 1224($sp)
+	lw $gp, 1220($sp)
+	lw $fp, 1224($sp)
 	addu $gp, $gp, $fp
-	sw $gp, 552($sp)
-	lw $gp, 552($sp)
-	lw $fp, 372($sp)
-	sw $gp, 0($fp)
-	j matrixMul_7
-matrixMul_9:
-	lw $gp, 0($t8)
-	sw $gp, 556($sp)
+	sw $gp, 1228($sp)
+	lw $gp, 1216($sp)
+	lw $fp, 1228($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1232($sp)
+	lw $gp, 1232($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1236($sp)
+	lw $gp, 1236($sp)
+	bnez $gp, main_16
+	j main_14
+main_10:
+	lw $gp, 0($v1)
+	sw $gp, 1240($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1244($sp)
+	li $gp, 4
+	sw $gp, 1248($sp)
+	lw $gp, 1248($sp)
+	lw $fp, 1248($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1248($sp)
+	lw $gp, 1248($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1252($sp)
+	lw $gp, 1244($sp)
+	lw $fp, 1252($sp)
+	addu $gp, $gp, $fp
+	sw $gp, 1256($sp)
+	lw $gp, 1240($sp)
+	lw $fp, 1256($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1260($sp)
+	lw $gp, 1260($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1264($sp)
+	lw $gp, 1264($sp)
+	bnez $gp, main_11
+	j main_8
+main_11:
+	lw $gp, 0($v1)
+	sw $gp, 1268($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1272($sp)
+	li $gp, 0
+	sw $gp, 1276($sp)
+	lw $gp, 1276($sp)
+	lw $fp, 1276($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1276($sp)
+	lw $gp, 1276($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1280($sp)
+	lw $gp, 1272($sp)
+	lw $fp, 1280($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1284($sp)
+	lw $gp, 1268($sp)
+	lw $fp, 1284($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1288($sp)
+	lw $gp, 1288($sp)
+	seq $gp, $gp, $zero
+	sw $gp, 1292($sp)
+	lw $gp, 1292($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1296($sp)
+	lw $gp, 1296($sp)
+	bnez $gp, main_12
+	j main_8
+main_12:
+	lw $gp, 0($v1)
+	sw $gp, 1300($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1304($sp)
+	li $gp, 8
+	sw $gp, 1308($sp)
+	lw $gp, 1308($sp)
+	lw $fp, 1308($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1308($sp)
+	lw $gp, 1308($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1312($sp)
 	li $gp, 1
-	sw $gp, 560($sp)
-	lw $gp, 556($sp)
-	lw $fp, 560($sp)
+	sw $gp, 1316($sp)
+	lw $gp, 1312($sp)
+	lw $fp, 1316($sp)
+	slt $gp, $gp, $fp
+	sw $gp, 1320($sp)
+	lw $gp, 1304($sp)
+	lw $fp, 1320($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1324($sp)
+	lw $gp, 1300($sp)
+	lw $fp, 1324($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1328($sp)
+	lw $gp, 1328($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1332($sp)
+	lw $gp, 1332($sp)
+	bnez $gp, main_7
+	j main_8
+main_13:
+	la $a0, msg5
+	li $v0, 4
+	syscall
+	j main_15
+main_14:
+	la $a0, msg6
+	li $v0, 4
+	syscall
+	j main_15
+main_15:
+	lw $gp, 0($v1)
+	sw $gp, 1336($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1340($sp)
+	lw $gp, 1336($sp)
+	lw $fp, 1340($sp)
+	sne $gp, $gp, $fp
+	sw $gp, 1344($sp)
+	lw $gp, 1344($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1348($sp)
+	lw $gp, 1348($sp)
+	bnez $gp, main_22
+	j main_20
+main_16:
+	lw $gp, 0($t1)
+	sw $gp, 1352($sp)
+	li $gp, 16
+	sw $gp, 1356($sp)
+	lw $gp, 1356($sp)
+	lw $fp, 1356($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1356($sp)
+	lw $gp, 1356($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1360($sp)
+	li $gp, 4
+	sw $gp, 1364($sp)
+	lw $gp, 1364($sp)
+	lw $fp, 1364($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1364($sp)
+	lw $gp, 1364($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1368($sp)
+	lw $gp, 1360($sp)
+	lw $fp, 1368($sp)
 	addu $gp, $gp, $fp
-	sw $gp, 564($sp)
-	lw $gp, 564($sp)
-	lw $fp, 564($sp)
-	sw $gp, 0($t8)
-	j matrixMul_4
+	sw $gp, 1372($sp)
+	lw $gp, 1352($sp)
+	lw $fp, 1372($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1376($sp)
+	li $gp, 1
+	sw $gp, 1380($sp)
+	lw $gp, 1376($sp)
+	lw $fp, 1380($sp)
+	sne $gp, $gp, $fp
+	sw $gp, 1384($sp)
+	lw $gp, 1384($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1388($sp)
+	lw $gp, 1388($sp)
+	bnez $gp, main_17
+	j main_14
+main_17:
+	lw $gp, 0($v1)
+	sw $gp, 1392($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1396($sp)
+	li $gp, 4
+	sw $gp, 1400($sp)
+	lw $gp, 1400($sp)
+	lw $fp, 1400($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1400($sp)
+	lw $gp, 1400($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1404($sp)
+	li $gp, 1
+	sw $gp, 1408($sp)
+	lw $gp, 1404($sp)
+	lw $fp, 1408($sp)
+	addu $gp, $gp, $fp
+	sw $gp, 1412($sp)
+	lw $gp, 1396($sp)
+	lw $fp, 1412($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1416($sp)
+	lw $gp, 1392($sp)
+	lw $fp, 1416($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1420($sp)
+	lw $gp, 1420($sp)
+	seq $gp, $gp, $zero
+	sw $gp, 1424($sp)
+	lw $gp, 1424($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1428($sp)
+	lw $gp, 1428($sp)
+	bnez $gp, main_18
+	j main_14
+main_18:
+	lw $gp, 0($v1)
+	sw $gp, 1432($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1436($sp)
+	li $gp, 0
+	sw $gp, 1440($sp)
+	lw $gp, 1440($sp)
+	lw $fp, 1440($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1440($sp)
+	lw $gp, 1440($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1444($sp)
+	li $gp, 0
+	sw $gp, 1448($sp)
+	lw $gp, 1448($sp)
+	lw $fp, 1448($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1448($sp)
+	lw $gp, 1448($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1452($sp)
+	lw $gp, 1444($sp)
+	lw $fp, 1452($sp)
+	sle $gp, $gp, $fp
+	sw $gp, 1456($sp)
+	lw $gp, 1436($sp)
+	lw $fp, 1456($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1460($sp)
+	lw $gp, 1432($sp)
+	lw $fp, 1460($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1464($sp)
+	li $gp, 1
+	sw $gp, 1468($sp)
+	lw $gp, 1464($sp)
+	lw $fp, 1468($sp)
+	sne $gp, $gp, $fp
+	sw $gp, 1472($sp)
+	lw $gp, 1472($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1476($sp)
+	lw $gp, 1476($sp)
+	bnez $gp, main_13
+	j main_14
+main_19:
+	la $a0, msg7
+	li $v0, 4
+	syscall
+	j main_21
+main_20:
+	la $a0, msg8
+	li $v0, 4
+	syscall
+	j main_21
+main_21:
+	li $a0, 0
+	lw $ra, 972($sp)
+	addiu $sp, $sp, 1592
+	li $v0, 10
+	syscall
+main_22:
+	lw $gp, 0($v1)
+	sw $gp, 1480($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1484($sp)
+	lw $gp, 1484($sp)
+	seq $gp, $gp, $zero
+	sw $gp, 1488($sp)
+	lw $gp, 1480($sp)
+	lw $fp, 1488($sp)
+	seq $gp, $gp, $fp
+	sw $gp, 1492($sp)
+	lw $gp, 1492($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1496($sp)
+	lw $gp, 1496($sp)
+	bnez $gp, main_23
+	j main_20
+main_23:
+	lw $gp, 0($v1)
+	sw $gp, 1500($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1504($sp)
+	lw $gp, 1500($sp)
+	lw $fp, 1504($sp)
+	sgt $gp, $gp, $fp
+	sw $gp, 1508($sp)
+	lw $gp, 0($v1)
+	sw $gp, 1512($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1516($sp)
+	lw $gp, 1512($sp)
+	lw $fp, 1516($sp)
+	slt $gp, $gp, $fp
+	sw $gp, 1520($sp)
+	li $gp, 1
+	sw $gp, 1524($sp)
+	lw $gp, 1520($sp)
+	lw $fp, 1524($sp)
+	sne $gp, $gp, $fp
+	sw $gp, 1528($sp)
+	lw $gp, 1508($sp)
+	lw $fp, 1528($sp)
+	seq $gp, $gp, $fp
+	sw $gp, 1532($sp)
+	lw $gp, 1532($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1536($sp)
+	lw $gp, 1536($sp)
+	bnez $gp, main_24
+	j main_20
+main_24:
+	lw $gp, 0($v1)
+	sw $gp, 1540($sp)
+	lw $gp, 0($t1)
+	sw $gp, 1544($sp)
+	lw $gp, 1540($sp)
+	lw $fp, 1544($sp)
+	sge $gp, $gp, $fp
+	sw $gp, 1548($sp)
+	li $gp, 8
+	sw $gp, 1552($sp)
+	lw $gp, 1552($sp)
+	lw $fp, 1552($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1552($sp)
+	lw $gp, 1552($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1556($sp)
+	li $gp, 0
+	sw $gp, 1560($sp)
+	lw $gp, 1560($sp)
+	lw $fp, 1560($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1560($sp)
+	lw $gp, 1560($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1564($sp)
+	li $gp, 16
+	sw $gp, 1568($sp)
+	lw $gp, 1568($sp)
+	lw $fp, 1568($sp)
+	addu $gp, $fp, $t3
+	sw $gp, 1568($sp)
+	lw $gp, 1568($sp)
+	lw $gp, 0($gp)
+	sw $gp, 1572($sp)
+	lw $gp, 1564($sp)
+	lw $fp, 1572($sp)
+	sne $gp, $gp, $fp
+	sw $gp, 1576($sp)
+	lw $gp, 1556($sp)
+	lw $fp, 1576($sp)
+	sne $gp, $gp, $fp
+	sw $gp, 1580($sp)
+	lw $gp, 1548($sp)
+	lw $fp, 1580($sp)
+	seq $gp, $gp, $fp
+	sw $gp, 1584($sp)
+	lw $gp, 1584($sp)
+	sne $gp, $gp, $zero
+	sw $gp, 1588($sp)
+	lw $gp, 1588($sp)
+	bnez $gp, main_19
+	j main_20
